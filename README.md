@@ -1,5 +1,11 @@
 # Hermes Brain — Obsidian Vault Template for Hermes Agent
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
+[![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
+
+![Hermes Brain graph view](assets/graph-view-screenshot.png)
+
 A ready-to-use **Obsidian "second brain"** template that pairs with a
 [Hermes](https://claude-code.nousresearch.com/docs) AI agent: a human-readable,
 version-controllable memory layer on top of Hermes's native session/memory
@@ -92,3 +98,9 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 ## License
 
 MIT — see [LICENSE](LICENSE). Use, fork, and adapt freely.
+
+## Contributing
+
+Issues and PRs welcome — especially more platform-specific install fixes,
+additional Obsidian plugin recipes, or extra automation scripts. Discussions
+are enabled if you'd rather ask a question first.

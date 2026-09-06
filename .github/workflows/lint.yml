@@ -1,0 +1,61 @@
+name: Lint Scripts
+
+on:
+  push:
+    paths:
+      - "Scripts/**"
+      - "install.sh"
+      - "install.ps1"
+  pull_request:
+    paths:
+      - "Scripts/**"
+      - "install.sh"
+      - "install.ps1"
+
+jobs:
+  bash-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check all bash scripts
+        run: |
+          set -e
+          for f in install.sh Scripts/*.sh; do
+            echo "Checking $f"
+            bash -n "$f"
+          done
+
+  python-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Byte-compile all Python scripts
+        run: |
+          set -e
+          for f in Scripts/*.py; do
+            echo "Checking $f"
+            python3 -m py_compile "$f"
+          done
+
+  powershell-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse-check all PowerShell scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = @("install.ps1") + (Get-ChildItem -Path Scripts -Filter *.ps1 | ForEach-Object { $_.FullName })
+          $failed = $false
+          foreach ($f in $files) {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              Write-Host "FAILED: $f"
+              $errors | ForEach-Object { Write-Host "  $($_.Message)" }
+              $failed = $true
+            } else {
+              Write-Host "OK: $f"
+            }
+          }
+          if ($failed) { exit 1 }
