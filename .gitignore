@@ -1,0 +1,23 @@
+# Personal/generated content — never commit your own data back into the template
+Daily/**
+!Daily/.gitkeep
+!Daily/README.md
+
+Memory-Review/*
+!Memory-Review/TEMPLATE.md
+
+Research/**
+!Research/README.md
+
+.smart-env/
+graphify-out/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/data.json
+
+scratch/
+scratch_analysis.txt
+*.log
+
+.obsidian/app.json
+.obsidian/graph.json
