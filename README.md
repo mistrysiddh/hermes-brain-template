@@ -29,13 +29,13 @@ what was intentionally left out.
 ### Option A — paste into Hermes (easiest)
 
 If you already run a Hermes agent, skip cloning/scripting entirely: open
-**[INSTALL_PROMPT.md](INSTALL_PROMPT.md)** and paste its first block straight
-into your Hermes chat. Hermes clones this repo, runs the right installer for
-your OS, and asks you the same questions the installer would.
+**[INSTALL_PROMPT.md](INSTALL_PROMPT.md)** and paste one block straight into
+your Hermes chat:
 
-`INSTALL_PROMPT.md` also has a second copy-paste block that sets up an
-**hourly cron job** to auto-archive your Hermes sessions into the vault's
-`Daily/` folder — the automated half of the memory pipeline.
+- **Prompt 1** — installs the vault only
+- **Prompt 2** — sets up the hourly archiving cron job only (vault must already exist)
+- **Prompt 3 (master)** — does both in one paste: install the vault, then set
+  up the hourly cron job, no follow-up needed
 
 ### Option B — run the installer yourself
 

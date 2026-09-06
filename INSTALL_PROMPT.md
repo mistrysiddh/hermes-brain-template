@@ -56,6 +56,45 @@ If you'd rather set the cron job up yourself directly, the underlying pattern
 is documented in Hermes's `hermes-chat-archiving` skill — the schedule is
 `0 * * * *` (hourly) and the target is `<vault>/Daily/YYYY/MM/DD/`.
 
+## 3. Master prompt (install + hourly cron in one paste)
+
+Want everything done in a single paste — install the vault AND set up the
+hourly archiving cron job, no follow-up needed? Use this:
+
+```
+Set up a Hermes Brain vault for me end-to-end:
+
+PART 1 — Install
+1. Ask me where I want the vault folder to live (default: ~/Hermes Brain on
+   Linux/macOS, or %USERPROFILE%\Hermes Brain on Windows).
+2. Clone https://github.com/mistrysiddh/hermes-brain-template into that
+   location (or download+extract if git isn't available).
+3. Run the platform-appropriate installer from inside it:
+   - Linux/macOS: chmod +x install.sh && ./install.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\install.ps1
+4. Let the installer's own prompts run (embedding backend choice, Obsidian
+   detection, HERMES_VAULT_PATH registration) — relay its questions to me
+   and pass my answers through if you're driving it non-interactively.
+5. Confirm env.HERMES_VAULT_PATH is set afterward
+   (`hermes config get env.HERMES_VAULT_PATH`).
+
+PART 2 — Hourly archiving cron job
+6. Check with `cronjob_manage(action='list')` that no other job is already
+   archiving into this vault's Daily/ folder — only one archiving job should
+   ever write there, to avoid manifest.jsonl race conditions.
+7. If clear, create a cron job named "hermes-brain-archive-hourly" that runs
+   every hour (cron expression: 0 * * * *) and exports my Hermes chat
+   sessions from the last hour as redacted markdown into
+   <vault>/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
+   in the vault's Daily/README.md. Use env.HERMES_VAULT_PATH for the vault
+   location.
+8. Tell me the final vault path and confirm the cron job was created.
+```
+
+This is just prompts 1 and 2 combined — use it if you know you want both up
+front; use the separate prompts above if you'd rather review/approve the
+cron job after seeing the vault installed first.
+
 ---
 
 ## Notes
