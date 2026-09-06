@@ -26,6 +26,19 @@ what was intentionally left out.
 
 ## Quick start
 
+### Option A — paste into Hermes (easiest)
+
+If you already run a Hermes agent, skip cloning/scripting entirely: open
+**[INSTALL_PROMPT.md](INSTALL_PROMPT.md)** and paste its first block straight
+into your Hermes chat. Hermes clones this repo, runs the right installer for
+your OS, and asks you the same questions the installer would.
+
+`INSTALL_PROMPT.md` also has a second copy-paste block that sets up an
+**hourly cron job** to auto-archive your Hermes sessions into the vault's
+`Daily/` folder — the automated half of the memory pipeline.
+
+### Option B — run the installer yourself
+
 **Linux / macOS:**
 ```bash
 git clone https://github.com/mistrysiddh/hermes-brain-template.git
@@ -46,8 +59,9 @@ embedding backend you want for the optional trend-digest scripts (Ollama or
 sentence-transformers), and whether to auto-register the vault path with the
 Hermes CLI — then finishes the setup for you.
 
-No installer, or want full manual control? Follow **[SETUP.md](SETUP.md)**
-step by step instead.
+### Option C — full manual control
+
+Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 
 ## Cross-platform scripts
 
