@@ -45,6 +45,11 @@ your Hermes chat:
 
 ### Option B — run the installer yourself
 
+`install.sh` / `install.ps1` walk through the same questions interactively.
+Real transcript from an actual run:
+
+![install.sh demo transcript](assets/install-demo.png)
+
 **Linux / macOS:**
 ```bash
 git clone https://github.com/mistrysiddh/hermes-brain-template.git
