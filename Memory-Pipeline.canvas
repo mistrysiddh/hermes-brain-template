@@ -1,0 +1,22 @@
+{
+  "nodes": [
+    {"id":"daily","type":"text","text":"# Daily/\nRaw session archive\n\nHermes cron exports every chat\nas redacted markdown, hourly\n\n`Daily/YYYY/MM/DD/*.md`","x":-460,"y":-120,"width":360,"height":220,"color":"5"},
+    {"id":"memreview","type":"text","text":"# Memory-Review/\nStaged candidate facts\n\nconsolidate_memory.py:\n- dedupes exact + fuzzy\n- strips secrets\n- flags 60+ day stale\n\n`Promotion-Candidates.md`","x":80,"y":-120,"width":360,"height":220,"color":"4"},
+    {"id":"native","type":"text","text":"# Native Memory\nHermes MEMORY.md / USER.md\n\nDurable, injected every turn\n\nPromotion is always a MANUAL\nhuman step \u2014 never automatic","x":620,"y":-120,"width":360,"height":220,"color":"3"},
+    {"id":"research","type":"text","text":"# Research/\nIn-progress investigation\n\nTrend-digest scripts (Ollama or\nsentence-transformers) can\nsurface relevant notes here","x":-460,"y":180,"width":360,"height":160,"color":"6"},
+    {"id":"skills","type":"text","text":"# Skills-Notes/\nInstalled skills index +\nteam profiles (multi-agent)\n\nCross-referenced from Daily/\nsessions that used them","x":80,"y":180,"width":360,"height":160,"color":"6"},
+    {"id":"projects","type":"text","text":"# Projects/\nOne note per active project\n\nGoal, status, decisions,\nnext actions, sources","x":620,"y":180,"width":360,"height":160,"color":"6"},
+    {"id":"consolidate","type":"text","text":"consolidate_memory.py\n(nightly \"dream cycle\")\n\nmechanical only,\nno LLM involved","x":-190,"y":-260,"width":260,"height":100,"color":"2"},
+    {"id":"human","type":"text","text":"Human review\n(checkbox in\nPromotion-Candidates.md)","x":350,"y":-260,"width":260,"height":100,"color":"2"}
+  ],
+  "edges": [
+    {"id":"e1","fromNode":"daily","fromSide":"right","toNode":"memreview","toSide":"left","label":"reviewed for durable facts"},
+    {"id":"e2","fromNode":"memreview","fromSide":"right","toNode":"native","toSide":"left","label":"promoted after review"},
+    {"id":"e3","fromNode":"consolidate","fromSide":"bottom","toNode":"memreview","toSide":"top"},
+    {"id":"e4","fromNode":"memreview","fromSide":"top","toNode":"human","toSide":"left"},
+    {"id":"e5","fromNode":"human","fromSide":"right","toNode":"native","toSide":"top"},
+    {"id":"e6","fromNode":"research","fromSide":"top","toNode":"daily","toSide":"bottom","label":"working space alongside"},
+    {"id":"e7","fromNode":"skills","fromSide":"top","toNode":"memreview","toSide":"bottom","label":"documents who/what did the work"},
+    {"id":"e8","fromNode":"projects","fromSide":"top","toNode":"native","toSide":"bottom","label":"project context"}
+  ]
+}
