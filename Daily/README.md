@@ -1,10 +1,19 @@
 # Daily
 
-Raw session archive, organized `YYYY/MM/DD/<session-file>.md` — one file per Hermes session, exported nightly (redacted) by cron job `7c98ab303154` (`hermes-chat-archive-daily`, 02:00 IST). `manifest.jsonl` in this folder indexes every exported session. Do not silently mutate old files — the exporter only adds new ones.
+Raw session archive, organized `YYYY/MM/DD/<session-file>.md` — one file per
+Hermes session, exported by your archiving cron job. `manifest.jsonl` (once
+your cron job creates it) indexes every exported session. Don't silently
+mutate old files — the exporter should only add new ones.
 
-Also contains **Supermemory imports**: files prefixed `supermemory_<id>-<title>.md`, one per document pulled from the Supermemory API (containerTag `hermes`, 114 docs imported 2026-08-24) and placed under the date it was created. These include both full-session transcripts and explicit memories Supermemory had stored independently — cross-check against local exports before treating as non-duplicate. See [[Supermemory-Session-Index]] for the full list.
-
-This is the raw material for the memory pipeline: review sessions here for durable facts, stage candidates in [[../Memory-Review/TEMPLATE|Memory-Review]], then promote to Hermes's native MEMORY.md/USER.md. See [[../Projects/Hermes-Agent-Vault-Setup]] for the full pipeline diagram, and [[../Skills-Notes/Team-Profiles-Index]] for which agent produced which session.
+This is the raw material for the memory pipeline: review sessions here for
+durable facts, stage candidates in [[../Memory-Review/TEMPLATE|Memory-Review]],
+then promote to Hermes's native MEMORY.md/USER.md. See
+[[../Projects/README]] for project context and the pipeline overview, and
+[[../Memory-Pipeline.canvas|Memory-Pipeline]] for a visual map.
 
 ## Browse chronologically
-All 287+ files across every date folder are connected in one browsable, sortable view: [[Timeline]] (live Dataview table — click any row to open that day's folder).
+
+Once sessions start landing here, [[Timeline]] gives a live, sortable
+Dataview table across every date folder — no more clicking through
+`YYYY/MM/DD/` one at a time. [[Chat-Correlation]] breaks archived chats down
+by source pattern and (optionally) by agent profile.

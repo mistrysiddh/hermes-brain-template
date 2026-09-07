@@ -19,12 +19,14 @@ Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md
                               facts, human-reviewed)    turn — promoted by hand)
 ```
 
-- **`Daily/`** — every Hermes session exported as redacted markdown, one file per session, organized by date.
+- **`Daily/`** — every Hermes session exported as redacted markdown, one file per session, organized by date, with a live [[Daily/Timeline|Timeline]] and [[Daily/Chat-Correlation|Chat-Correlation]] Dataview view.
 - **`Memory-Review/`** — durable-fact candidates staged for human review before promotion, with an automated dedupe/secret-scrub pass (`consolidate_memory.py`).
 - **`Research/`** — working space for in-progress investigation, plus optional local-embedding "trend digest" scripts.
-- **`Skills-Notes/`** — index of installed Hermes skills and (if you run a multi-agent setup) teammate profiles.
-- **`Projects/`** — one note per active project.
-- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, plus the Tokyo Night theme.
+- **`Skills-Notes/`** — index of installed Hermes skills, plus a [[Skills-Notes/Dataview-Query-Library|Dataview Query Library]] of copy-paste queries for this vault.
+- **`Projects/`** — one note per active project, with a `Project.md` template and Kanban board support.
+- **`Templates/`** — Project, Daily-Review, and Research-Note templates, wired into Obsidian's core Templates plugin.
+- **`Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
+- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus the Tokyo Night theme.
 
 This repo ships as a **template only** — no personal data, chat history, or
 API keys are included. See [SETUP.md](SETUP.md) for the full breakdown of

@@ -2,6 +2,8 @@
 Daily/**
 !Daily/.gitkeep
 !Daily/README.md
+!Daily/Timeline.md
+!Daily/Chat-Correlation.md
 
 Memory-Review/*
 !Memory-Review/TEMPLATE.md
