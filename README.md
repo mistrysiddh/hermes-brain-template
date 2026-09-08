@@ -4,14 +4,24 @@
 [![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
 [![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
 
+**Give your Hermes agent a memory it can't forget — and you can actually read.**
+
+Every session your agent runs gets archived as plain markdown, deduped and
+secret-scrubbed automatically, and staged for you to review before anything
+becomes permanent. No black box, no vendor lock-in — it's just an Obsidian
+vault, so you can search it, link it, graph it, and back it up like any
+other notes.
+
 ![Hermes Brain graph view](assets/graph-view-screenshot.png)
 
-A ready-to-use **Obsidian "second brain"** template that pairs with a
-[Hermes](https://claude-code.nousresearch.com/docs) AI agent: a human-readable,
-version-controllable memory layer on top of Hermes's native session/memory
-system.
+## Why this instead of nothing?
 
-It gives your agent (and you) a shared place where:
+- **You stop losing context.** Every Hermes session gets archived automatically — nothing lives only in a chat log you'll never scroll back to.
+- **You stay in control of what becomes "memory."** Nothing gets promoted to Hermes's real memory without a human reading and approving it first.
+- **It's just markdown.** Open it in Obsidian, `grep` it, put it in git, read it in Notepad — no proprietary format, no export step.
+- **Set up once, in one paste.** A single prompt into your Hermes chat installs the vault *and* wires up hourly archiving — see below.
+
+## What's inside
 
 ```
 Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md / USER.md
