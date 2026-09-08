@@ -42,6 +42,33 @@ if (!file) {
 }
 ```
 
+## Approved candidates awaiting manual promotion
+
+Requires `Memory-Review/Consolidation-Log.md` (written by
+`Scripts/consolidate_memory.py` once you check a box in
+`Promotion-Candidates.md` and re-run the script). Native `MEMORY.md`/`USER.md`
+live outside this vault, so Dataview can't confirm you've actually copied a
+fact over — this just lists every `[x]` from the most recent run as a
+copy-paste-ready checklist, so an approved fact can't quietly sit forgotten.
+
+```dataviewjs
+const file = dv.page("Memory-Review/Consolidation-Log");
+if (!file) {
+  dv.paragraph("No Consolidation-Log.md found yet — approve a candidate in Promotion-Candidates.md and re-run consolidate_memory.py.");
+} else {
+  const content = await dv.io.load(file.file.path);
+  const runs = content.split(/^## Run /m).filter(Boolean);
+  const lastRun = runs[runs.length - 1];
+  const lines = lastRun.split("\n").slice(1).filter(l => l.trim().startsWith("- [x]"));
+  if (lines.length === 0) {
+    dv.paragraph("No approved candidates in the most recent run.");
+  } else {
+    dv.paragraph(`**${lines.length} candidate(s) approved in the most recent run** — copy these into native MEMORY.md/USER.md, then they're done:`);
+    dv.list(lines.map(l => l.replace(/^- \[x\] /, "")));
+  }
+}
+```
+
 ## Skill notes index (if you document skill usage per note)
 
 ```dataview
@@ -86,6 +113,35 @@ WHERE !completed
 LIST
 FROM ""
 WHERE length(file.outlinks) = 0 AND file.name != "Dataview-Query-Library"
+```
+
+## Topic index (every tag, grouped)
+
+Groups every tagged note in the vault by tag, so a topic that shows up in a
+`Projects/` note, a `Research/` note, and elsewhere becomes visible in one
+place instead of requiring you to already know it's been touched before.
+Unlike "Files by tag" below (a two-tag OR filter you customize by hand),
+this discovers every tag actually in use — a lightweight cross-index across
+folders without needing a MOC entry for each topic.
+
+```dataviewjs
+const pages = dv.pages('""').where(p => p.file.tags && p.file.tags.length > 0);
+const byTag = {};
+for (const p of pages) {
+  for (const tag of p.file.tags) {
+    if (!byTag[tag]) byTag[tag] = [];
+    byTag[tag].push(p.file.link);
+  }
+}
+const tags = Object.keys(byTag).sort();
+if (tags.length === 0) {
+  dv.paragraph("No tagged notes yet — add `tags: [...]` frontmatter to a note to start building this index.");
+} else {
+  for (const tag of tags) {
+    dv.header(3, tag);
+    dv.list(byTag[tag]);
+  }
+}
 ```
 
 ## Files by tag

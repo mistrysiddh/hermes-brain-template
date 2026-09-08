@@ -99,7 +99,7 @@ embeddings — pick whichever backend you already have set up:
 | Backend | Windows | Linux/macOS |
 |---|---|---|
 | Ollama (`nomic-embed-text`, no Python deps) | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
-| sentence-transformers (pure Python) | `Scripts\New-TrendDigest.ps1` / `Write-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
+| sentence-transformers (pure Python) | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
 
 All of them default to `<this vault>/Research/Trend-Digest/` for output and
 resolve the vault path relative to their own location, so they work out of

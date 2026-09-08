@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# trend_digest.sh — Linux/macOS port of New-TrendDigest.ps1 / Write-TrendDigest.ps1.
+# trend_digest.sh — Linux/macOS port of New-TrendDigest.ps1.
 # Uses trend_digest.py (sentence-transformers) instead of Ollama.
 # Usage: ./trend_digest.sh [vault_path] [query] [top_n]
 set -euo pipefail

@@ -1,103 +1,54 @@
 # New-TrendDigest.ps1
-# Generates a daily trend digest using local embeddings (sentence-transformers)
+# Generates a daily trend digest using local embeddings (sentence-transformers).
+# Delegates to Scripts/trend_digest.py — the embedding/ranking logic lives there
+# once, shared with trend_digest.sh, instead of being duplicated per shell.
 # Output: markdown note in Vault\Research\Trend-Digest\<yyyy-MM-dd>.md
-
-# -------------------------- USER SETTINGS --------------------------
-# Defaults to the vault this script lives in (Scripts\.. = vault root).
-# Override with -VaultPath if you keep the vault somewhere else.
 param(
-    [string]$VaultPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+    # Defaults to the vault this script lives in (Scripts\.. = vault root).
+    [string]$VaultPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$VenvPython = "$env:LOCALAPPDATA\hermes\hermes-agent\venv\Scripts\python.exe"
 )
 $Query = "local LLM agents offline"
 $TopN = 8
 $DigestFolder = Join-Path $VaultPath "Research\Trend-Digest"
-# -------------------------------------------------------------------
 
-# Ensure output folder exists
 if (-not (Test-Path $DigestFolder)) {
     New-Item -ItemType Directory -Path $DigestFolder | Out-Null
 }
 
-# Define Python script as a string
-$pythonScript = @"
-import os, sys, json, numpy as np
-from sentence_transformers import SentenceTransformer
+# Prefer a Hermes-managed venv if present, else fall back to python/py on PATH.
+$PY = $VenvPython
+if (-not (Test-Path $PY)) {
+    $cmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $cmd) { $cmd = Get-Command py -ErrorAction SilentlyContinue }
+    if (-not $cmd) {
+        Write-Error "No python interpreter found on PATH."
+        exit 1
+    }
+    Write-Warning "Venv python not found at $VenvPython — falling back to '$($cmd.Source)'"
+    $PY = $cmd.Source
+}
 
-def main():
-    vault = sys.argv[1]
-    query = sys.argv[2]
-    top_n = int(sys.argv[3])
-
-    docs = []
-    paths = []
-    for root, _, files in os.walk(vault):
-        for f in files:
-            if f.lower().endswith('.md'):
-                full = os.path.join(root, f)
-                try:
-                    with open(full, 'r', encoding='utf-8', errors='ignore') as fh:
-                        text = fh.read()
-                        # Strip simple YAML frontmatter
-                        if text.startswith('---'):
-                            parts = text.split('---', 2)
-                            if len(parts) >= 3:
-                                text = parts[2]
-                        text = text.strip()
-                        if not text:
-                            continue
-                        docs.append(text[:800])  # truncate to keep memory sane
-                        paths.append(full)
-                except Exception as e:
-                    # skip unreadable files
-                    pass
-
-    if not docs:
-        print(json.dumps([]))
-        return
-
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    model = SentenceTransformer(model_name)
-
-    doc_emb = model.encode(docs, batch_size=32, show_progress_bar=False, convert_to_numpy=True)
-    doc_emb_norm = doc_emb / np.linalg.norm(doc_emb, axis=1, keepdims=True)
-
-    q_emb = model.encode([query], convert_to_numpy=True)[0]
-    q_emb_norm = q_emb / np.linalg.norm(q_emb)
-
-    sims = np.dot(doc_emb_norm, q_emb_norm)
-    top_idx = np.argsort(sims)[::-1][:top_n]
-
-    results = []
-    for idx in top_idx:
-        score = float(sims[idx])
-        rel_path = os.path.relpath(paths[idx], vault)
-        snippet = docs[idx].replace('\n', ' ')[:220]
-        results.append({
-            "path": rel_path.replace('\\', '/'),
-            "score": round(score, 4),
-            "snippet": snippet
-        })
-
-    print(json.dumps(results, ensure_ascii=False))
-
-if __name__ == '__main__':
-    main()
-"@
-
-# Write Python script to a temporary file
-$tempPy = Join-Path $env:TEMP "embed_script.py"
-$pythonScript | Out-File -FilePath $tempPy -Encoding UTF8
-
-# Run Python script and capture JSON output
-$notesJson = & python $tempPy "`"$VaultPath`"" "`"$Query`"" $TopN
+& $PY -c "import sentence_transformers" 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Python script failed"
+    Write-Error "sentence-transformers not installed for $PY.`nInstall it with: $PY -m pip install sentence-transformers numpy"
+    exit 1
+}
+
+# Pass $VaultPath/$Query as plain strings — PowerShell's call operator already
+# keeps a spaced string as one argument, so wrapping it in extra quote characters
+# here would inject literal `"` chars into argv and break paths like the
+# installer's own default "~\Hermes Brain" (has a space).
+$pythonScript = Join-Path $PSScriptRoot "trend_digest.py"
+$notesJson = & $PY $pythonScript $VaultPath $Query $TopN
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "trend_digest.py failed"
     exit 1
 }
 $notes = $notesJson | ConvertFrom-Json
 
 if (-not $notes) {
-    Write-Warning "No notes returned – check that the vault path is correct and contains .md files."
+    Write-Warning "No notes returned — check that the vault path is correct and contains .md files."
     exit 1
 }
 
@@ -113,5 +64,5 @@ foreach ($n in $notes) {
     $line | Out-File -FilePath $outFile -Append -Encoding UTF8
 }
 
-Write-Host "`n✅ Digest written to:`n$outFile"
-Write-Host "Open it in Obsidian to see click‑through links."
+Write-Host "`nDigest written to:`n$outFile"
+Write-Host "Open it in Obsidian to see click-through links."

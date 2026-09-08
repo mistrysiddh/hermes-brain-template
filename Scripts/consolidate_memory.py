@@ -172,7 +172,12 @@ def main():
             f.write("\n")
 
     # Bucket incoming facts: secret / transient-flag / normal, dedupe by hash.
-    seen_hashes = set(state["decided_hashes"].keys())
+    # decided_hashes is keyed by the 8-char tag shown in Promotion-Candidates.md
+    # (that tag is the candidate's public identity), so compare on h[:8] here too -
+    # comparing the full 40-char hash against those 8-char keys never matched,
+    # which meant already-decided candidates kept reappearing on every run.
+    decided_prefixes = set(state["decided_hashes"].keys())
+    seen_hashes = set()  # full-hash dedupe within this run
     excluded_secrets = []
     grouped = {}  # date -> list of (hash, text, flags)
     dup_count = 0
@@ -184,7 +189,7 @@ def main():
         if is_secret(text):
             excluded_secrets.append((e["date"], text))
             continue
-        if h in seen_hashes:
+        if h[:8] in decided_prefixes or h in seen_hashes:
             dup_count += 1
             continue
         seen_hashes.add(h)  # dedupe within this run too

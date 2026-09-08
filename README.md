@@ -22,7 +22,7 @@ Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md
 - **`Daily/`** — every Hermes session exported as redacted markdown, one file per session, organized by date, with a live [[Daily/Timeline|Timeline]] and [[Daily/Chat-Correlation|Chat-Correlation]] Dataview view.
 - **`Memory-Review/`** — durable-fact candidates staged for human review before promotion, with an automated dedupe/secret-scrub pass (`consolidate_memory.py`).
 - **`Research/`** — working space for in-progress investigation, plus optional local-embedding "trend digest" scripts.
-- **`Skills-Notes/`** — index of installed Hermes skills, plus a [[Skills-Notes/Dataview-Query-Library|Dataview Query Library]] of copy-paste queries for this vault.
+- **`Skills-Notes/`** — index of installed Hermes skills, a team-profiles index, a generated `Skill-to-Chat-Links.md` (which sessions actually used which skill — `generate_skill_links.py`), plus a [[Skills-Notes/Dataview-Query-Library|Dataview Query Library]] of copy-paste queries for this vault.
 - **`Projects/`** — one note per active project, with a `Project.md` template and Kanban board support.
 - **`Templates/`** — Project, Daily-Review, and Research-Note templates, wired into Obsidian's core Templates plugin.
 - **`Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
@@ -81,6 +81,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | Purpose | Windows | Linux/macOS |
 |---|---|---|
 | Memory consolidation ("dream cycle") | `python Scripts\consolidate_memory.py` | `python3 Scripts/consolidate_memory.py` |
+| Skill-to-Chat-Links regeneration | `python Scripts\generate_skill_links.py` | `python3 Scripts/generate_skill_links.py` |
 | Trend digest — Ollama backend | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
 | Trend digest — sentence-transformers backend | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
 

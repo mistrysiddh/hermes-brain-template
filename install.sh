@@ -36,10 +36,6 @@ read -rp "Where should the vault live? [$DEFAULT_DEST]: " DEST
 DEST="${DEST:-$DEFAULT_DEST}"
 DEST="${DEST/#\~/$HOME}"
 
-if [ "$(cd "$TEMPLATE_ROOT" && pwd)" = "$(cd "$(dirname "$DEST")" 2>/dev/null && pwd)/$(basename "$DEST")" ] 2>/dev/null; then
-  : # same location, no-op
-fi
-
 if [ -e "$DEST" ] && [ "$(cd "$DEST" 2>/dev/null && pwd || true)" = "$TEMPLATE_ROOT" ]; then
   info "Installing in place at $DEST"
 else
