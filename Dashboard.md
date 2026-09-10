@@ -11,6 +11,33 @@ One glance at everything live in this vault. Requires the **Dataview**
 plugin (already enabled) to render; without it these show as raw code
 blocks instead of tables/lists.
 
+## Template update check
+
+```dataviewjs
+const versionFile = app.vault.getAbstractFileByPath("VERSION");
+if (!versionFile) {
+  dv.paragraph("⚠️ No `VERSION` file found — can't check for updates. (Vaults created before this feature was added: create one with the current version string, e.g. `1.2.0`.)");
+} else {
+  const local = (await app.vault.read(versionFile)).trim();
+  try {
+    const res = await fetch("https://api.github.com/repos/mistrysiddh/hermes-brain-template/releases/latest");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const latest = (data.tag_name || "").replace(/^v/, "");
+    if (!latest) throw new Error("no tag_name in response");
+    if (latest === local) {
+      dv.paragraph(`✅ Up to date — running **v${local}**.`);
+    } else {
+      dv.paragraph(`🔔 **Update available: v${latest}** (you have v${local}). [Release notes](${data.html_url}) — run \`update.sh\` / \`update.ps1\` to pull it in.`);
+    }
+  } catch (e) {
+    dv.paragraph(`⚠️ Couldn't check for updates (offline, or GitHub API unreachable): ${e.message}. Running v${local}.`);
+  }
+}
+```
+
+_Checked live each time this note opens — needs internet access. Nothing is sent anywhere; this only reads GitHub's public releases API._
+
 ## Active projects
 
 ```dataview
