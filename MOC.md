@@ -13,6 +13,7 @@ vault has more than a few dozen notes).
 
 ## Start here
 - [[Welcome]] — orientation
+- [[Dashboard]] — live at-a-glance view: active projects, open memory candidates, recent sessions, installed skills
 - [[Projects/README]] — active project index
 
 ## Memory pipeline
