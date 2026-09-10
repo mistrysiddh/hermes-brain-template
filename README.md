@@ -1,11 +1,11 @@
-# Hermes Brain — Obsidian Vault Template for Hermes Agent
+# Hermes Brain — Obsidian Vault Template for Hermes Agent (including OpenClaw)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
 [![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](CHANGELOG.md)
 
-**Give your Hermes agent a memory it can't forget — and you can actually read.**
+**Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
 Every session your agent runs gets archived as plain markdown, deduped and
 secret-scrubbed automatically, and staged for you to review before anything
@@ -100,7 +100,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 ## Requirements
 
 - [Obsidian](https://obsidian.md) (free)
-- A [Hermes](https://claude-code.nousresearch.com/docs) agent install, if you want the automated session-archive/memory pipeline
+- A [Hermes](https://claude-code.nousresearch.com/docs) agent install (e.g., via [OpenClaw](https://openclaw.nousresearch.com/)), if you want the automated session-archive/memory pipeline
 - Optional, for the trend-digest scripts: [Ollama](https://ollama.com) *or* Python 3 with `sentence-transformers`
 
 ## Security notes
