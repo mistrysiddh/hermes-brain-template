@@ -2,6 +2,16 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.4.0] — 2026-09-10
+### Added
+- Dashboard.md — new "Vault health" section: flags a stale/dead hourly archiver (based on the newest Daily/ session's timestamp) and a growing Memory-Review backlog, both read-only against files already in the vault.
+- `Scripts/hourly_archive.py` — exports Hermes sessions from the last hour, reorganizes them into `Daily/YYYY/MM/DD/`, and maintains a deduped `Daily/manifest.jsonl`. Designed to be idempotent — safe to re-run.
+- `Scripts/pull_supermemory.py` — pulls all memories for a Supermemory container tag and saves them as both a raw JSON dump and a human-readable markdown note.
+- `CHANGELOG.md` and `.github/ISSUE_TEMPLATE/` (bug report + feature request templates, Discussions link).
+- `INSTALL_PROMPT.md` — new "Upgrade prompt" section for pulling template updates into an existing vault via a single Hermes paste (wraps `update.sh`/`update.ps1`).
+### Changed
+- `.gitignore` — added `.smart-env/`.
+
 ## [1.3.0] — 2026-09-10
 ### Added
 - In-vault update notifications: `Dashboard.md` now checks GitHub's releases API live and shows a banner if a newer template version is available (fails soft if offline).
