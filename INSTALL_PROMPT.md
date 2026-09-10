@@ -56,7 +56,41 @@ If you'd rather set the cron job up yourself directly, the underlying pattern
 is documented in Hermes's `hermes-chat-archiving` skill — the schedule is
 `0 * * * *` (hourly) and the target is `<vault>/Daily/YYYY/MM/DD/`.
 
-## 3. Master prompt (install + hourly cron in one paste)
+## 3. Upgrade prompt (pull the latest template into an existing vault)
+
+If you already have a Hermes Brain vault installed and just want the latest
+template changes (new Dashboard features, bug fixes, updated plugins, etc.)
+without losing anything you've hand-edited, paste this:
+
+```
+I already have a Hermes Brain vault installed and want to update it to the
+latest version of the template. Steps:
+
+1. Find my vault: use env.HERMES_VAULT_PATH if it's set
+   (`hermes config get env.HERMES_VAULT_PATH`), otherwise ask me for the
+   vault folder path.
+2. Check the vault's current version — read the VERSION file at the vault
+   root if present.
+3. From inside the vault folder, run the platform-appropriate update script:
+   - Linux/macOS: chmod +x update.sh && ./update.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\update.ps1
+4. This turns the vault into a local git repo (first run only) tracking the
+   template as a read-only remote, then fetches and merges. If I have
+   uncommitted changes, the script will ask whether to snapshot them first —
+   relay that prompt to me.
+5. If the merge reports conflicts, list the conflicting files for me and
+   stop — don't try to resolve them yourself, since conflicts mean I
+   hand-edited something the template also changed.
+6. On success, tell me the new version (check VERSION again) and that my
+   personal content (Daily/, Memory-Review/*, Projects/* beyond README,
+   plugin data.json files) was untouched — it's protected by the vault's own
+   .gitignore the whole way through.
+```
+
+This is a **pull only** — it never pushes anything from your vault anywhere.
+The `template` git remote it creates has push explicitly disabled.
+
+## 4. Master prompt (install + hourly cron in one paste)
 
 Want everything done in a single paste — install the vault AND set up the
 hourly archiving cron job, no follow-up needed? Use this:
@@ -104,6 +138,6 @@ cron job after seeing the vault installed first.
   decision points above (vault location, embedding backend, whether you want
   the cron job).
 - If you already ran `install.sh`/`install.ps1` by hand, skip straight to
-  prompt 2 for the cron job.
+  prompt 2 for the cron job, or prompt 3 if you just want to pull updates.
 - Only run **one** archiving cron job per vault — see the Security notes in
   the main [README.md](README.md).
