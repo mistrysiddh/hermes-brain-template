@@ -12,3 +12,6 @@ This vault is scoped for the Hermes agent team (Codex, Ledger, Vox, Argus) — k
 
 ## Active projects
 - [[Hermes-Agent-Vault-Setup]] — this vault's own setup: structure, archiving cron, memory pipeline, open decisions.
+
+## Table view
+Open **[[Projects.base]]** for a sortable/filterable table of every project note (grouped by `status`, using the frontmatter every `Templates/Project.md` note already ships with) — no Dataview query needed, uses Obsidian's built-in Bases.

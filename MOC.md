@@ -25,6 +25,8 @@ vault has more than a few dozen notes).
 
 ## Team & skills
 - [[Skills-Notes/README]] — how to document installed skills for this vault
+- [[Skills-Notes/Installed-Skills-Index]] — catalog of skills installed for this vault
+- [[Skills-Notes/Team-Profiles-Index]] — per-teammate profile index
 
 ## Active work
 - [[Research/README]] — in-progress investigations
