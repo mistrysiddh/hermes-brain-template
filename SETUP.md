@@ -118,6 +118,33 @@ Read [[Welcome]] and [[MOC]] for orientation, then let sessions accumulate in
 first consolidation run) periodically and promote durable facts into Hermes's
 real memory by hand.
 
+## 8. (Optional) Pulling in later template updates
+`install.sh`/`install.ps1` do a one-shot copy — there's no `.git` in the
+destination, so there was previously no safe way to pull in template
+changes (a new script, an updated bundled plugin, a fixed bug) without
+risking an overwrite of anything you'd hand-edited.
+
+`update.sh` / `update.ps1` fix this: run one from inside your installed
+vault (not the template) and it turns the vault into a local git repo
+tracking the template as a read-only remote, then fetches and merges.
+git's own 3-way merge surfaces a conflict on any file you changed
+yourself instead of silently clobbering it — resolve those like any git
+merge conflict, then commit.
+
+```bash
+./update.sh                 # Linux/macOS — first run sets everything up
+```
+```powershell
+.\update.ps1                 # Windows
+```
+
+Your personal content (`Daily/`, `Memory-Review/*`, `Projects/*` beyond
+`README.md`, plugin `data.json` files, etc.) is protected the same way it
+always was — this vault's own `.gitignore` already excludes it, so it
+never enters the diff/merge at all. The `template` remote this creates
+also has push disabled on purpose: this is a one-way pull, never a way
+for your vault's content to leave the machine.
+
 ---
 
 ## What's NOT included (by design)

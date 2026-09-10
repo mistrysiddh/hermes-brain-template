@@ -94,6 +94,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | Skill-to-Chat-Links regeneration | `python Scripts\generate_skill_links.py` | `python3 Scripts/generate_skill_links.py` |
 | Trend digest — Ollama backend | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
 | Trend digest — sentence-transformers backend | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
+| Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
 
 ## Requirements
 
