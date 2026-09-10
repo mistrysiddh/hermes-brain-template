@@ -9,7 +9,7 @@ tags: [hub, welcome]
 
 This is the shared Obsidian memory layer for the Hermes agent team (Codex, Ledger, Vox, Argus, and this profile).
 
-Start here: [[Projects/Hermes-Agent-Vault-Setup]] — the master hub note explaining the folder structure, the memory pipeline (Daily → Memory-Review → native memory), and current status/decisions. For topic-based browsing instead of folder-by-folder, see [[MOC]].
+Start here: [[Projects/Hermes-Agent-Vault-Setup]] — the master hub note explaining the folder structure, the memory pipeline (Daily → Memory-Review → native memory), and current status/decisions. For topic-based browsing instead of folder-by-folder, see [[MOC]]. For a live at-a-glance view of what's active right now, see [[Dashboard]].
 
 ## Folders
 - `Projects/` — one note per active project, indexed via [[Projects/README]]
