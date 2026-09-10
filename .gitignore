@@ -29,3 +29,9 @@ scratch_analysis.txt
 .obsidian/graph.json
 __pycache__/
 *.pyc
+
+
+
+
+# Ignore Smart Environment folder
+.smart-env
