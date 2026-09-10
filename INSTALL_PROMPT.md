@@ -1,7 +1,7 @@
 # Hermes Install Prompt
 
-Copy-paste blocks below straight into a Hermes Agent chat. No manual cloning,
-no running scripts by hand — Hermes does it for you and asks the same
+Copy-paste blocks below straight into a Hermes/OpenClaw Agent chat. No manual cloning,
+no running scripts by hand — Hermes/OpenClaw does it for you and asks the same
 questions the installer would (where to put the vault, which embedding
 backend, etc).
 
