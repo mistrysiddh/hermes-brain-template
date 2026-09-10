@@ -38,6 +38,41 @@ if (!versionFile) {
 
 _Checked live each time this note opens — needs internet access. Nothing is sent anywhere; this only reads GitHub's public releases API._
 
+## Vault health
+
+```dataviewjs
+// Last archived session — catches a dead/misconfigured hourly cron job.
+const dailyPages = dv.pages('"Daily"')
+  .where(p => p.file.name !== "README" && p.file.name !== "manifest"
+    && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation");
+if (dailyPages.length === 0) {
+  dv.paragraph("⚪ No archived sessions yet. If you expected the hourly archiver to be running, check `cronjob_manage(action='list')` or your platform's task scheduler.");
+} else {
+  const newest = dailyPages.sort(p => p.file.mtime, 'desc').array()[0];
+  const hoursAgo = (Date.now() - newest.file.mtime.toMillis()) / 3600000;
+  if (hoursAgo < 3) {
+    dv.paragraph(`✅ Last session archived ${Math.round(hoursAgo * 10) / 10}h ago — archiver looks alive.`);
+  } else if (hoursAgo < 48) {
+    dv.paragraph(`ℹ️ Last session archived ${Math.round(hoursAgo)}h ago. Fine if you simply haven't used Hermes since then.`);
+  } else {
+    dv.paragraph(`⚠️ Last session archived ${Math.round(hoursAgo / 24)} day(s) ago. If you expected hourly archiving, the cron job may have stopped — check \`cronjob_manage(action='list')\`.`);
+  }
+}
+
+// Memory-Review backlog size — catches a review queue nobody's touching.
+const openTasks = dv.pages('"Memory-Review"').file.tasks
+  .where(t => !t.completed).length;
+if (openTasks === 0) {
+  dv.paragraph("✅ No open Memory-Review candidates.");
+} else if (openTasks <= 20) {
+  dv.paragraph(`ℹ️ **${openTasks}** open Memory-Review candidate(s) awaiting your review.`);
+} else {
+  dv.paragraph(`⚠️ **${openTasks}** open Memory-Review candidates — backlog is growing. Consider a review pass, or check whether \`Scripts/consolidate_memory.py\` is running on schedule.`);
+}
+```
+
+_Read-only checks against files already in this vault — nothing leaves your machine._
+
 ## Active projects
 
 ```dataview
