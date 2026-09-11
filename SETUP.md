@@ -112,11 +112,48 @@ the box — pass a vault path / query / top-N as arguments (or
 ./Scripts/trend_digest.sh . "docker security" 10
 ```
 
-## 7. Start writing
-Read [[Welcome]] and [[MOC]] for orientation, then let sessions accumulate in
-`Daily/` naturally. Review `Memory-Review/Promotion-Candidates.md` (created on
-first consolidation run) periodically and promote durable facts into Hermes's
-real memory by hand.
+## 7. (Optional) Hourly session archiving + token tracking
+
+`Scripts/hourly_archive.py` is the core automation that:
+- Exports the last hour of Hermes sessions as redacted markdown into `Daily/YYYY/MM/DD/`
+- Maintains a deduplicated `Daily/manifest.jsonl` (idempotent — safe to re-run)
+- **Also exports JSONL to extract token usage** (prompt + completion tokens) and appends daily totals to `Skills-Notes/Token-Usage.log`
+
+Run it once manually first to confirm it works:
+```bash
+python Scripts/hourly_archive.py
+```
+Then schedule it hourly via your platform's scheduler (cron, Task Scheduler, etc.) or via Hermes's `cronjob_manage` tool (see [[INSTALL_PROMPT.md]] for ready-to-paste prompts).
+
+## 8. (Optional) Weekly vault audit
+
+`Scripts/vault_audit.py` scans the vault for common issues:
+- Broken wikilinks
+- Stale Memory-Review entries (>30 days with incomplete tasks)
+- Duplicate session_ids in manifest
+- Orphaned files (no incoming wikilinks)
+
+Writes a detailed report to `Skills-Notes/Vault-Audit-Report.md` which the Dashboard summarizes.
+
+Run it manually or schedule weekly (e.g., Sunday 2 AM):
+```bash
+python Scripts/vault_audit.py
+```
+
+## 9. (Optional) Agent performance dashboard
+
+`Scripts/agent_performance.py` analyzes session archives and skill usage to produce:
+- Skill usage frequency (from Skill-to-Chat-Links)
+- Tool call frequency
+- Daily session/message/token trends
+- Top sessions by token usage
+
+Writes `Skills-Notes/Agent-Performance.md` which the Dashboard summarizes.
+
+Run it manually or schedule weekly (e.g., Monday 3 AM):
+```bash
+python Scripts/agent_performance.py
+```
 
 ## 8. (Optional) Pulling in later template updates
 `install.sh`/`install.ps1` do a one-shot copy — there's no `.git` in the
@@ -150,7 +187,7 @@ for your vault's content to leave the machine.
 ## What's NOT included (by design)
 - Any chat history, session archives, or Supermemory exports
 - Any API keys, tokens, or `.obsidian/plugins/*/data.json` settings
-- Generated caches (`.smart-env/`, `graphify-out/`)
+- Generated caches (`.smart-env/`, `graphify-out/`, `Skills-Notes/Token-Usage.log`, `Skills-Notes/Vault-Audit-Report.md`, `Skills-Notes/Agent-Performance.md`)
 - Anyone's personal file paths — everything here is relative/portable
 
 If you find a leftover personal path or credential anywhere in this template,

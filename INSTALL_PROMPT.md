@@ -36,6 +36,9 @@ Clone https://github.com/mistrysiddh/hermes-brain-template into a new
 This makes Hermes export every chat session from the last hour into your new
 vault's `Daily/YYYY/MM/DD/` folder automatically — the same pipeline this
 template's `Welcome.md` / `Projects/Hermes-Agent-Vault-Setup.md` describe.
+The script now also extracts **token usage** (prompt + completion tokens)
+from each session and appends daily totals to `Skills-Notes/Token-Usage.log`,
+which the Dashboard reads live.
 
 Paste this into Hermes (after the vault is installed, or on its own if you
 already have a Hermes Brain vault set up):
@@ -45,7 +48,9 @@ Create a cron job named "hermes-brain-archive-hourly" that runs every hour
 (cron expression: 0 * * * *) and exports my Hermes chat sessions from the
 last hour as redacted markdown into my Hermes Brain vault's Daily folder,
 organized as Daily/YYYY/MM/DD/<session>.md, matching the structure documented
-in that vault's Daily/README.md. Use env.HERMES_VAULT_PATH for the vault
+in that vault's Daily/README.md. The script also exports a JSONL copy to
+extract token usage (prompt + completion tokens) and appends daily totals to
+Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
 location if it's set, otherwise ask me for the vault path first. Before
 creating it, check with `cronjob_manage(action='list')` that no other job is
 already archiving into the same Daily/ folder — only one archiving job should
@@ -55,6 +60,33 @@ ever write there, to avoid manifest.jsonl race conditions.
 If you'd rather set the cron job up yourself directly, the underlying pattern
 is documented in Hermes's `hermes-chat-archiving` skill — the schedule is
 `0 * * * *` (hourly) and the target is `<vault>/Daily/YYYY/MM/DD/`.
+
+---
+
+## 2b. Optional: Weekly vault audit + agent performance cron jobs
+
+These run less frequently (weekly/monthly) and keep your vault healthy
+while giving you insights into agent usage:
+
+**Vault audit (weekly, Sunday 2 AM):**
+```
+Create a cron job named "hermes-brain-vault-audit-weekly" that runs
+weekly on Sunday at 2 AM (cron: 0 2 * * 0) and runs:
+python3 Scripts/vault_audit.py
+inside the vault (using env.HERMES_VAULT_PATH). This checks for broken
+wikilinks, stale Memory-Review entries (>30 days), duplicate sessions,
+and orphaned files, writing a report to Skills-Notes/Vault-Audit-Report.md.
+```
+
+**Agent performance (weekly, Monday 3 AM):**
+```
+Create a cron job named "hermes-brain-agent-perf-weekly" that runs
+weekly on Monday at 3 AM (cron: 0 3 * * 1) and runs:
+python3 Scripts/agent_performance.py
+inside the vault. This analyzes session archives and skill usage to
+produce Skills-Notes/Agent-Performance.md with skill frequency, tool
+usage, daily trends, and top sessions by tokens.
+```
 
 ## 3. Upgrade prompt (pull the latest template into an existing vault)
 
@@ -120,9 +152,14 @@ PART 2 — Hourly archiving cron job
    every hour (cron expression: 0 * * * *) and exports my Hermes chat
    sessions from the last hour as redacted markdown into
    <vault>/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
-   in the vault's Daily/README.md. Use env.HERMES_VAULT_PATH for the vault
+   in the vault's Daily/README.md. The script also exports a JSONL copy to
+   extract token usage (prompt + completion tokens) and appends daily totals to
+   Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
    location.
-8. Tell me the final vault path and confirm the cron job was created.
+8. **Optional: Vault audit + Agent performance cron jobs**
+   - Create "hermes-brain-vault-audit-weekly" (Sunday 2 AM): runs `python3 Scripts/vault_audit.py` → writes `Skills-Notes/Vault-Audit-Report.md`
+   - Create "hermes-brain-agent-perf-weekly" (Monday 3 AM): runs `python3 Scripts/agent_performance.py` → writes `Skills-Notes/Agent-Performance.md`
+9. Tell me the final vault path and confirm all cron jobs were created.
 ```
 
 This is just prompts 1 and 2 combined — use it if you know you want both up
