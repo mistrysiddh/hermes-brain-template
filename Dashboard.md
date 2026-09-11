@@ -141,7 +141,121 @@ if (!tokenLog) {
 }
 ```
 
-_Updates live each time this note opens — reads from `Skills-Notes/Token-Usage.log` which is maintained by `hourly_archive.py`._
+_Updates live each time this note opens — reads from Skills-Notes/Token-Usage.log which is maintained by hourly_archive.py._
+
+## Token Usage Trend (Live Graph)
+
+```dataviewjs
+const tokenLog = app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
+if (!tokenLog) {
+  dv.paragraph("ℹ️ Token usage log not found.");
+} else {
+  const content = await app.vault.read(tokenLog);
+  const lines = content.split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#") && !l.startsWith("--") && !l.startsWith("<!--"));
+  
+  const data = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const match = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)\s*tokens?\s*\((\d+)\s*session/);
+    if (match) {
+      const date = match[1];
+      const tokens = parseInt(match[2]);
+      const sessions = parseInt(match[3]);
+      data.push({ date, tokens, sessions });
+    }
+  }
+  
+  // Sort by date ascending
+  data.sort(function(a, b) {
+    return a.date.localeCompare(b.date);
+  });
+  
+  // Keep last 30 days
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 30);
+  const recent = data.filter(function(d) {
+    return new Date(d.date) >= cutoffDate;
+  });
+  
+  if (recent.length === 0) {
+    dv.paragraph("ℹ️ No token data for the last 30 days.");
+  } else {
+    // Determine dimensions
+    const width = 600;
+    const height = 200;
+    const padding = 40;
+    const chartWidth = width - 2 * padding;
+    const chartHeight = height - 2 * padding;
+    
+    // Find min and max tokens for scaling
+    let minTokens = Infinity;
+    let maxTokens = -Infinity;
+    for (let i = 0; i < recent.length; i++) {
+      const t = recent[i].tokens;
+      if (t < minTokens) minTokens = t;
+      if (t > maxTokens) maxTokens = t;
+    }
+    const tokenRange = maxTokens - minTokens || 1; // avoid division by zero
+    
+    // Generate SVG
+    let svg = '<svg width="' + width + '" height="' + height + '" style="background:#f8f9fa; border-radius:4px;">';
+    // Axes
+    svg += '<line x1="' + padding + '" y1="' + (height - padding) + '" x2="' + (width - padding) + '" y2="' + (height - padding) + '" stroke="#ccc" stroke-width="1"/>'; // X axis
+    svg += '<line x1="' + padding + '" y1="' + padding + '" x2="' + padding + '" y2="' + (height - padding) + '" stroke="#ccc" stroke-width="1"/>"; // Y axis
+    
+    // Y axis labels (5 ticks)
+    for (let i = 0; i <= 5; i++) {
+      const tokenVal = minTokens + (i / 5) * tokenRange;
+      const y = height - padding - (i / 5) * chartHeight;
+      svg += '<text x="' + (padding - 10) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="#666">' + tokenVal.toLocaleString() + '</text>';
+      svg += '<line x1="' + (padding - 4) + '" y1="' + y + '" x2="' + padding + '" y2="' + y + '" stroke="#eee" stroke-width="1"/>';
+    }
+    
+    // X axis labels (dates)
+    const numXLabels = Math.min(recent.length, 6);
+    for (let i = 0; i < numXLabels; i++) {
+      const idx = Math.floor((recent.length - 1) * i / (numXLabels - 1));
+      const dateStr = recent[idx].date;
+      const x = padding + (i / (numXLabels - 1)) * chartWidth;
+      svg += '<text x="' + x + '" y="' + (height - padding + 20) + '" text-anchor="middle" font-size="10" fill="#666" transform="rotate(-45 ' + x + ',' + (height - padding + 20) + ')">' + dateStr + '</text>';
+    }
+    
+    // Line path
+    let points = '';
+    for (let i = 0; i < recent.length; i++) {
+      const d = recent[i];
+      const x = padding + (i / (recent.length - 1)) * chartWidth;
+      const y = height - padding - ((d.tokens - minTokens) / tokenRange) * chartHeight;
+      if (i > 0) points += ' ';
+      points += x + ',' + y;
+    }
+    svg += '<polyline fill="none" stroke="#0066cc" stroke-width="2" points="' + points + '" />';
+    
+    // Points as circles
+    for (let i = 0; i < recent.length; i++) {
+      const d = recent[i];
+      const x = padding + (i / (recent.length - 1)) * chartWidth;
+      const y = height - padding - ((d.tokens - minTokens) / tokenRange) * chartHeight;
+      svg += '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#0066cc" />';
+    }
+    
+    svg += '</svg>';
+    
+    dv.paragraph(svg);
+    
+    // Also show summary below
+    let totalTokens = 0;
+    for (let i = 0; i < recent.length; i++) {
+      totalTokens += recent[i].tokens;
+    }
+    const avgTokens = Math.round(totalTokens / recent.length);
+    dv.paragraph('📊 **Last ' + recent.length + ' days**: ' + totalTokens.toLocaleString() + ' tokens total (avg ' + avgTokens.toLocaleString() + '/day)');
+  }
+}
+```
+```
 
 ## Vault audit
 
