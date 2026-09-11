@@ -2,6 +2,20 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.5.0] — 2026-09-11
+### Added
+- **Token usage tracking** — `hourly_archive.py` now extracts prompt/completion tokens from JSONL exports and maintains a running total in `Skills-Notes/Token-Usage.log`. Dashboard shows live token usage (today, all-time, 7-day trend, day-over-day).
+- **Vault integrity audit** — `vault_audit.py` scans for broken wikilinks, stale Memory-Review entries (>30 days), duplicate sessions in manifest, and orphaned files. Writes `Skills-Notes/Vault-Audit-Report.md`. Dashboard shows summary.
+- **Agent performance dashboard** — `agent_performance.py` analyzes session archives for skill usage frequency, tool call patterns, daily trends, top sessions by tokens. Writes `Skills-Notes/Agent-Performance.md`. Dashboard shows snapshot.
+- Dashboard tiles for all three new features (Token usage, Vault audit, Agent performance) with click-through links.
+- `Skills-Notes/Token-Usage.log` starter file.
+- Updated `INSTALL_PROMPT.md` with optional weekly cron prompts for vault audit (Sunday 2 AM) and agent performance (Monday 3 AM).
+- README script table updated with three new automation scripts.
+
+### Changed
+- `hourly_archive.py` — now dual-exports (markdown for vault + JSONL for token extraction), idempotent token logging.
+- `INSTALL_PROMPT.md` — added optional weekly cron prompts for vault audit and agent performance.
+
 ## [1.4.0] — 2026-09-10
 ### Added
 - Dashboard.md — new "Vault health" section: flags a stale/dead hourly archiver (based on the newest Daily/ session's timestamp) and a growing Memory-Review backlog, both read-only against files already in the vault.

@@ -95,6 +95,9 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | Skill-to-Chat-Links regeneration | `python Scripts\generate_skill_links.py` | `python3 Scripts/generate_skill_links.py` |
 | Trend digest — Ollama backend | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
 | Trend digest — sentence-transformers backend | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
+| **Hourly session archiving + token tracking** | `python Scripts\hourly_archive.py` | `python3 Scripts/hourly_archive.py` |
+| **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
+| **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
 | Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
 
 ## Requirements

@@ -73,6 +73,162 @@ if (openTasks === 0) {
 
 _Read-only checks against files already in this vault — nothing leaves your machine._
 
+## Token usage
+
+```dataviewjs
+const tokenLog = app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
+if (!tokenLog) {
+  dv.paragraph("ℹ️ Token usage log not found — will appear after first hourly archive run with token extraction.");
+} else {
+  const content = await app.vault.read(tokenLog);
+  const lines = content.split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#") && !l.startsWith("---") && !l.startsWith("<!--"));
+  
+  if (lines.length === 0) {
+    dv.paragraph("ℹ️ No token usage recorded yet — will appear after first hourly archive run with token extraction.");
+  } else {
+    // Parse and sum
+    let runningTotal = 0;
+    const dailyData = [];
+    for (const line of lines) {
+      const match = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)\s*tokens?\s*\((\d+)\s*session/);
+      if (match) {
+        const [, date, tokens, sessions] = match;
+        const t = parseInt(tokens);
+        const s = parseInt(sessions);
+        runningTotal += t;
+        dailyData.push({ date, tokens: t, sessions: s });
+      }
+    }
+    
+    if (dailyData.length === 0) {
+      dv.paragraph("⚠️ Token log found but no valid entries parsed yet.");
+    } else {
+      // Today's entry (if any)
+      const today = new Date().toISOString().split("T")[0];
+      const todayEntry = dailyData.find(d => d.date === today);
+      
+      let output = "";
+      if (todayEntry) {
+        output += `⚡ **Today: ${todayEntry.tokens.toLocaleString()} tokens** (${todayEntry.sessions} session${todayEntry.sessions !== 1 ? "s" : ""})  \n`;
+      }
+      
+      // Running total
+      output += `🔢 **All-time total: ${runningTotal.toLocaleString()} tokens**  \n`;
+      
+      // Last 7 days
+      const last7 = dailyData.slice(-7);
+      if (last7.length > 1) {
+        const weekTotal = last7.reduce((a, b) => a + b.tokens, 0);
+        const avg = Math.round(weekTotal / last7.length);
+        output += `📊 **Last ${last7.length} days: ${weekTotal.toLocaleString()} tokens** (avg ${avg.toLocaleString()}/day)  \n`;
+      }
+      
+      // Trend indicator (compare last two days)
+      if (dailyData.length >= 2) {
+        const last = dailyData[dailyData.length - 1];
+        const prev = dailyData[dailyData.length - 2];
+        const diff = last.tokens - prev.tokens;
+        const pct = prev.tokens > 0 ? Math.round((diff / prev.tokens) * 100) : 0;
+        const trend = diff > 0 ? `📈 +${diff.toLocaleString()} (${pct}%)` : diff < 0 ? `📉 ${diff.toLocaleString()} (${pct}%)` : `➡️ No change`;
+        output += `📈 **Day-over-day: ${trend}**`;
+      }
+      
+      dv.paragraph(output);
+    }
+  }
+}
+```
+
+_Updates live each time this note opens — reads from `Skills-Notes/Token-Usage.log` which is maintained by `hourly_archive.py`._
+
+## Vault audit
+
+```dataviewjs
+const auditReport = app.vault.getAbstractFileByPath("Skills-Notes/Vault-Audit-Report.md");
+if (!auditReport) {
+  dv.paragraph("ℹ️ Vault audit report not found — will appear after first `vault_audit.py` run. Run manually or wait for scheduled cron.");
+} else {
+  const content = await app.vault.read(auditReport);
+  // Extract summary lines
+  const summaryMatch = content.match(/## Summary\n\n([\s\S]*?)\n---/);
+  if (summaryMatch) {
+    const summary = summaryMatch[1].trim();
+    // Convert markdown list to simple display
+    const lines = summary.split('\n').map(l => l.trim()).filter(l => l.startsWith('-'));
+    if (lines.length > 0) {
+      let output = "📋 **Latest Vault Audit Summary:**\n";
+      for (const line of lines) {
+        // Parse "- **Broken wikilinks**: 0"
+        const match = line.match(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/);
+        if (match) {
+          const [, label, count] = match;
+          const icon = parseInt(count) > 0 ? "⚠️" : "✅";
+          output += `  ${icon} **${label}**: ${count}\n`;
+        }
+      }
+      dv.paragraph(output);
+    }
+  }
+  // Show last generated time
+  const genMatch = content.match(/Generated:\s*([^\n]+)/);
+  if (genMatch) {
+    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](Skills-Notes/Vault-Audit-Report.md)`);
+  }
+}
+```
+
+_Updated by `Scripts/vault_audit.py` on schedule (weekly/monthly via cron). Click the link above to see full details._
+
+## Agent performance
+
+```dataviewjs
+const perfReport = app.vault.getAbstractFileByPath("Skills-Notes/Agent-Performance.md");
+if (!perfReport) {
+  dv.paragraph("ℹ️ Agent performance report not found — run `Scripts/agent_performance.py` or wait for scheduled cron.");
+} else {
+  const content = await app.vault.read(perfReport);
+  // Extract Overview stats
+  const overviewMatch = content.match(/## Overview\n\n([\s\S]*?)\n---/);
+  if (overviewMatch) {
+    const overview = overviewMatch[1].trim();
+    const lines = overview.split('\n').map(l => l.trim()).filter(l => l.startsWith('-'));
+    let output = "📊 **Agent Performance Snapshot:**\n";
+    for (const line of lines) {
+      const match = line.match(/-\s+\*\*([^*]+)\*\*:\s*([\d,\.]+)/);
+      if (match) {
+        const [, label, value] = match;
+        output += `  🔹 **${label}**: ${value}\n`;
+      }
+    }
+    dv.paragraph(output);
+  }
+  // Show top skills if present
+  const skillsMatch = content.match(/## 🎯 Skill Usage.*?\n\| Skill \| Sessions Invoked \|\n([\s\S]*?)\n\|/);
+  if (skillsMatch) {
+    const skillLines = skillsMatch[1].trim().split('\n').slice(0, 5); // top 5
+    if (skillLines.length > 0) {
+      let output = "🎯 **Top Skills:**\n";
+      for (const line of skillLines) {
+        const parts = line.split('|').map(p => p.trim()).filter(p => p);
+        if (parts.length >= 2) {
+          output += `  • ${parts[0]} — ${parts[1]} session${parts[1] !== '1' ? 's' : ''}\n`;
+        }
+      }
+      dv.paragraph(output);
+    }
+  }
+  // Last generated
+  const genMatch = content.match(/Generated:\s*([^\n]+)/);
+  if (genMatch) {
+    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](Skills-Notes/Agent-Performance.md)`);
+  }
+}
+```
+
+_Updated by `Scripts/agent_performance.py` on schedule (run alongside other scripts). Click the link above to see full details._
+
 ## Active projects
 
 ```dataview
