@@ -2,13 +2,15 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.6.0] — 2026-09-11
+### Added
+- **User-Profile.md** — new template note documenting the human user's identity, communication preferences, technical environment, standing facts, current focus, interests, and boundaries for the agent. Includes a distinctive "What the agent has noticed about you" section, written by the agent (not the user) based on real interaction patterns — a mirror, not a form.
+- **Nemoclaw theme** — new custom dark theme bundled in `.obsidian/themes/Nemoclaw/`, NVIDIA-inspired black background with signature green (#76b900) accents, monospace headings, and a subtle grid overlay. Now the template's default theme (was Tokyo Night, still available as an alternative via Settings → Appearance).
+- MOC.md and Dashboard.md link to User-Profile.md for discoverability.
+
 ## [1.5.3] — 2026-09-11
 ### Removed
 - **Token usage trend graph** — Removed the live SVG line graph visualization of token usage from Dashboard.md to simplify the token usage section.
-
-# Changelog
-
-All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
 ## [1.5.0] — 2026-09-11
 ### Added
