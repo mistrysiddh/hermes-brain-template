@@ -2,6 +2,14 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.5.3] — 2026-09-11
+### Removed
+- **Token usage trend graph** — Removed the live SVG line graph visualization of token usage from Dashboard.md to simplify the token usage section.
+
+# Changelog
+
+All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
+
 ## [1.5.0] — 2026-09-11
 ### Added
 - **Token usage tracking** — `hourly_archive.py` now extracts prompt/completion tokens from JSONL exports and maintains a running total in `Skills-Notes/Token-Usage.log`. Dashboard shows live token usage (today, all-time, 7-day trend, day-over-day).
