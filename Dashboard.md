@@ -151,7 +151,8 @@ if (!tokenLog) {
   dv.paragraph("ℹ️ Token usage log not found.");
 } else {
   const content = await app.vault.read(tokenLog);
-  const lines = content.split("\n")
+  const lines = content.split("
+")
     .map(l => l.trim())
     .filter(l => l && !l.startsWith("#") && !l.startsWith("--") && !l.startsWith("<!--"));
   
@@ -168,16 +169,12 @@ if (!tokenLog) {
   }
   
   // Sort by date ascending
-  data.sort(function(a, b) {
-    return a.date.localeCompare(b.date);
-  });
+  data.sort((a, b) => a.date.localeCompare(b.date));
   
   // Keep last 30 days
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 30);
-  const recent = data.filter(function(d) {
-    return new Date(d.date) >= cutoffDate;
-  });
+  const recent = data.filter(d => new Date(d.date) >= cutoffDate);
   
   if (recent.length === 0) {
     dv.paragraph("ℹ️ No token data for the last 30 days.");
