@@ -255,7 +255,6 @@ if (!tokenLog) {
   }
 }
 ```
-```
 
 ## Vault audit
 
