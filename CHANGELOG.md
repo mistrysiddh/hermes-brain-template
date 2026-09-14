@@ -2,7 +2,7 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
-## [Unreleased]
+## [1.7.0] — 2026-09-14
 ### Added
 - **`try.sh` / `try.ps1`** — copy the template into a scratch temp directory and open it in Obsidian with zero commitment: no Hermes CLI registration, no cron setup, doesn't touch your real Obsidian config. Delete the copy any time.
 - **`uninstall.sh` / `uninstall.ps1`** — cleanly remove a vault installation: unsets `env.HERMES_VAULT_PATH` if it points at the target vault, warns about any Hermes cron job that may still reference it, and optionally deletes the vault directory after a typed confirmation.
