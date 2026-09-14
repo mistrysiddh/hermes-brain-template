@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.9.1] — 2026-09-14
+### Changed
+- **`INSTALL_PROMPT.md` — all 4 cron-job creation prompts now check before creating.** Previously the wording only asked the agent to check for a *conflicting* archiving job before creating the hourly archiver; it didn't explicitly tell it to skip creation if a job with the *same name* already existed for any of the 4 cron prompts (hourly archive, weekly vault audit, weekly agent performance, and the combined master install+cron prompt). Each now explicitly instructs: call `cronjob_manage(action='list')` first, and if a job with that name (or targeting the same vault Daily/ folder) already exists, don't create a duplicate — just report that it's already set up.
+
 ## [1.9.0] — 2026-09-14
 ### Added
 - **Light-mode variant of the Nemoclaw theme** (fixes #2) — added a full `.theme-light` block to `.obsidian/themes/Nemoclaw/theme.css` (all CSS variables + structural touches mirrored from the existing `.theme-dark` block, same NVIDIA-green accent darkened for AA contrast on white surfaces). Switch via Settings → Appearance → Base color scheme → Light while Nemoclaw is active. Theme manifest bumped to 1.1.0.
