@@ -230,3 +230,228 @@
   font-size: 0.75em;
   letter-spacing: 0.05em;
 }
+
+/* =========================================================================
+   LIGHT MODE — same NVIDIA-green accent, light surfaces instead of black.
+   Switch via Settings → Appearance → Base color scheme → Light while
+   Nemoclaw is the active theme.
+   ========================================================================= */
+
+.theme-light {
+  /* === Core surfaces === */
+  --background-primary: #ffffff;
+  --background-primary-alt: #f7f9f5;
+  --background-secondary: #f2f4ef;
+  --background-secondary-alt: #eceef0;
+  --background-modifier-border: #dcdfd6;
+  --background-modifier-border-hover: #c7cbc0;
+  --background-modifier-border-focus: #5c9200;
+  --background-modifier-hover: rgba(92, 146, 0, 0.08);
+  --background-modifier-active-hover: rgba(92, 146, 0, 0.14);
+  --background-modifier-form-field: #ffffff;
+  --background-modifier-box-shadow: rgba(0, 0, 0, 0.08);
+  --background-modifier-cover: rgba(255, 255, 255, 0.8);
+  --background-modifier-error: #d13c3c;
+  --background-modifier-error-rgb: 209, 60, 60;
+  --background-modifier-success: #5c9200;
+  --background-modifier-success-rgb: 92, 146, 0;
+
+  /* === Text === */
+  --text-normal: #1a1a1a;
+  --text-muted: #5f5f5f;
+  --text-faint: #8f8f8f;
+  --text-on-accent: #ffffff;
+  --text-error: #d13c3c;
+  --text-error-hover: #b02e2e;
+  --text-highlight-bg: rgba(92, 146, 0, 0.2);
+  --text-selection: rgba(92, 146, 0, 0.18);
+
+  /* === Accent: NVIDIA green, darkened for AA contrast on white === */
+  --text-accent: #5c9200;
+  --text-accent-hover: #4a7800;
+  --interactive-accent: #5c9200;
+  --interactive-accent-hgb: 92, 146, 0;
+  --interactive-accent-rgb: 92, 146, 0;
+  --interactive-accent-hover: #4a7800;
+  --interactive-normal: #f2f4ef;
+  --interactive-hover: #e6e9e1;
+
+  /* === Links === */
+  --link-color: #5c9200;
+  --link-color-hover: #487400;
+  --link-unresolved-color: #9a9a9a;
+  --link-external-color: #5c9200;
+
+  /* === Headings === */
+  --h1-color: #0d0d0d;
+  --h2-color: #1a1a1a;
+  --h3-color: #262626;
+  --h4-color: #333333;
+  --h5-color: #404040;
+  --h6-color: #4d4d4d;
+  --bold-color: #0d0d0d;
+  --italic-color: #333333;
+
+  /* === Code === */
+  --code-background: #f2f4ef;
+  --code-normal: #3f6600;
+  --code-comment: #8f8f8f;
+  --code-function: #5c9200;
+  --code-important: #c96a00;
+  --code-keyword: #5c9200;
+  --code-operator: #333333;
+  --code-property: #3f6600;
+  --code-punctuation: #5f5f5f;
+  --code-string: #6b6600;
+  --code-tag: #5c9200;
+  --code-value: #3f6600;
+
+  /* === Blockquote === */
+  --blockquote-border-color: #5c9200;
+
+  /* === Tags === */
+  --tag-color: #5c9200;
+  --tag-background: rgba(92, 146, 0, 0.1);
+  --tag-background-hover: rgba(92, 146, 0, 0.18);
+
+  /* === Titlebar / ribbon / statusbar === */
+  --titlebar-background: #f2f4ef;
+  --titlebar-background-focused: #f2f4ef;
+  --titlebar-text-color: #333333;
+  --titlebar-text-color-focused: #0d0d0d;
+  --ribbon-background: #f2f4ef;
+  --ribbon-background-collapsed: #f2f4ef;
+  --status-bar-background: #f2f4ef;
+  --status-bar-text-color: #5f5f5f;
+
+  /* === Header nav / sidebar === */
+  --nav-item-color: #404040;
+  --nav-item-color-hover: #0d0d0d;
+  --nav-item-color-active: #ffffff;
+  --nav-item-background-active: #5c9200;
+  --nav-item-background-hover: rgba(92, 146, 0, 0.1);
+  --nav-collapse-icon-color: #8f8f8f;
+
+  /* === Scrollbar === */
+  --scrollbar-thumb-bg: #d4d8cc;
+  --scrollbar-active-thumb-bg: #5c9200;
+  --scrollbar-bg: transparent;
+
+  /* === Checkbox === */
+  --checkbox-color: #5c9200;
+  --checkbox-color-hover: #4a7800;
+  --checkbox-border-color: #b5b5b5;
+  --checkbox-border-color-hover: #5c9200;
+  --checkbox-marker-color: #ffffff;
+
+  /* === Table === */
+  --table-header-background: #f2f4ef;
+  --table-header-background-hover: #e6e9e1;
+  --table-row-background-hover: rgba(92, 146, 0, 0.05);
+  --table-row-alt-background: #f7f9f5;
+  --table-border-color: #dcdfd6;
+
+  /* === Modal / popover === */
+  --modal-background: #ffffff;
+  --modal-border-color: #dcdfd6;
+  --popover-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  /* === Graph view === */
+  --graph-line: #c7cbc0;
+  --graph-node: #5c9200;
+  --graph-node-unresolved: #b5b5b5;
+  --graph-node-tag: #c96a00;
+  --graph-node-attachment: #8f8f8f;
+  --graph-text: #333333;
+
+  /* === Misc / cursor / caret === */
+  --caret-color: #5c9200;
+  --divider-color: #dcdfd6;
+  --embed-border-left: 3px solid #5c9200;
+  --icon-color: #5f5f5f;
+  --icon-color-hover: #5c9200;
+  --icon-color-active: #5c9200;
+}
+
+/* === Structural / technical touches (light) === */
+
+/* Subtle grid background, same tech-diagram feel, tuned for a white canvas */
+.theme-light .workspace-leaf-content[data-type="markdown"] .cm-scroller,
+.theme-light .markdown-preview-view {
+  background-image:
+    linear-gradient(rgba(92, 146, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 146, 0, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.theme-light .markdown-preview-view h1,
+.theme-light .markdown-preview-view h2,
+.theme-light .cm-header-1,
+.theme-light .cm-header-2 {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  letter-spacing: -0.01em;
+}
+
+.theme-light .markdown-preview-view h1 {
+  border-bottom: 2px solid var(--text-accent);
+  padding-bottom: 0.3em;
+}
+
+.theme-light .markdown-preview-view h2 {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 0.2em;
+}
+
+.theme-light .nav-file-title.is-active,
+.theme-light .nav-folder-title.is-active {
+  box-shadow: 0 0 8px rgba(92, 146, 0, 0.25);
+}
+
+.theme-light .workspace-tab-header.is-active {
+  border-bottom: 2px solid var(--text-accent);
+}
+
+.theme-light pre.HyperMD-codeblock,
+.theme-light .markdown-preview-view pre {
+  border-left: 3px solid var(--text-accent);
+  background: var(--code-background);
+}
+
+.theme-light .mod-cta {
+  background-color: var(--interactive-accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.theme-light .mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.theme-light input[type="checkbox"]:checked {
+  background-color: var(--text-accent);
+  border-color: var(--text-accent);
+  box-shadow: 0 0 6px rgba(92, 146, 0, 0.35);
+}
+
+.theme-light .tag {
+  border: 1px solid rgba(92, 146, 0, 0.3);
+  border-radius: 3px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.theme-light .callout {
+  border-left: 3px solid var(--text-accent);
+  background: rgba(92, 146, 0, 0.05);
+}
+
+.theme-light .dataview.table-view-table {
+  border: 1px solid var(--background-modifier-border);
+}
+
+.theme-light .dataview.table-view-table th {
+  color: var(--text-accent);
+  text-transform: uppercase;
+  font-size: 0.75em;
+  letter-spacing: 0.05em;
+}

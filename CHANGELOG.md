@@ -2,6 +2,11 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.9.0] — 2026-09-14
+### Added
+- **Light-mode variant of the Nemoclaw theme** (fixes #2) — added a full `.theme-light` block to `.obsidian/themes/Nemoclaw/theme.css` (all CSS variables + structural touches mirrored from the existing `.theme-dark` block, same NVIDIA-green accent darkened for AA contrast on white surfaces). Switch via Settings → Appearance → Base color scheme → Light while Nemoclaw is active. Theme manifest bumped to 1.1.0.
+- **`Skills-Notes/Kanban-Usage.md`** (fixes #3) — new doc covering suggested default columns (Backlog/In Progress/Blocked/Done), how Kanban cards relate to `Projects/*.md` notes (link-don't-duplicate pattern), and cross-platform behavior notes for the bundled `obsidian-kanban` plugin. Linked from `MOC.md`.
+
 ## [1.8.0] — 2026-09-14
 ### Added
 - **OpenClaw badge** in README, alongside the existing Hermes badge.

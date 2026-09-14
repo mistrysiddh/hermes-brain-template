@@ -23,6 +23,7 @@ vault has more than a few dozen notes).
 - [[Daily/Chat-Correlation]] — live pattern/profile breakdown (Dataview)
 - [[Memory-Review/TEMPLATE]] — promotion criteria (durable / non-sensitive / verified / actionable)
 - [[Skills-Notes/Dataview-Query-Library]] — copy-paste Dataview queries for this vault
+- [[Skills-Notes/Kanban-Usage]] — suggested columns, card/project-note relationship, cross-platform notes
 
 ## Team & skills
 - [[Skills-Notes/README]] — how to document installed skills for this vault
