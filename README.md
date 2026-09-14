@@ -37,7 +37,9 @@ Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md
 - **`Projects/`** — one note per active project, with a `Project.md` template and Kanban board support.
 - **`Templates/`** — Project, Daily-Review, and Research-Note templates, wired into Obsidian's core Templates plugin.
 - **`Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
-- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus the Tokyo Night theme.
+- **`User-Profile.md`** — a single note documenting who *you* are from the agent's perspective: identity, communication preferences, technical environment, standing facts, boundaries — plus a section the agent itself writes and maintains, "What the agent has noticed about you."
+- **`Dashboard.md`** — one landing note with everything live: token usage, vault health (stale-archiver + Memory-Review backlog checks), vault integrity audit, agent performance snapshot, active projects, recent sessions, installed skills.
+- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus two bundled themes — **Tokyo Night** and **Nemoclaw** (a custom NVIDIA-inspired black/green theme, now the default).
 
 This repo ships as a **template only** — no personal data, chat history, or
 API keys are included. See [SETUP.md](SETUP.md) for the full breakdown of
@@ -125,5 +127,7 @@ MIT — see [LICENSE](LICENSE). Use, fork, and adapt freely.
 ## Contributing
 
 Issues and PRs welcome — especially more platform-specific install fixes,
-additional Obsidian plugin recipes, or extra automation scripts. Discussions
-are enabled if you'd rather ask a question first.
+additional Obsidian plugin recipes, or extra automation scripts.
+[Discussions](https://github.com/mistrysiddh/hermes-brain-template/discussions)
+are enabled if you'd rather ask a question first — start with the
+[welcome post](https://github.com/mistrysiddh/hermes-brain-template/discussions/1).
