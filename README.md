@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
 [![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
+[![Works with OpenClaw](https://img.shields.io/badge/Works%20with-OpenClaw-FF6B35.svg)](https://claude-code.nousresearch.com/docs)
 [![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](CHANGELOG.md)
 
