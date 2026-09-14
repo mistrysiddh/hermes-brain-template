@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
 [![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
+[![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](CHANGELOG.md)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
@@ -62,6 +63,22 @@ what was intentionally left out.
 
 ## Quick start
 
+### Option A0 — just try it first (zero commitment)
+
+Not ready to install anything yet? Copy the template into a scratch temp
+directory and open it in Obsidian without touching your real config or
+registering anything with Hermes:
+
+```bash
+./try.sh        # Linux/macOS
+```
+```powershell
+.\try.ps1        # Windows
+```
+
+Delete the scratch copy any time. Run Option A or B below when you're
+ready to keep it for real.
+
 ### Option A — paste into Hermes (easiest)
 
 If you already run a Hermes agent, skip cloning/scripting entirely: open
@@ -116,6 +133,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
 | **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
 | Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
+| Cleanly remove a vault installation | `.\uninstall.ps1` | `./uninstall.sh` |
 
 ## Requirements
 

@@ -2,6 +2,18 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [Unreleased]
+### Added
+- **`try.sh` / `try.ps1`** — copy the template into a scratch temp directory and open it in Obsidian with zero commitment: no Hermes CLI registration, no cron setup, doesn't touch your real Obsidian config. Delete the copy any time.
+- **`uninstall.sh` / `uninstall.ps1`** — cleanly remove a vault installation: unsets `env.HERMES_VAULT_PATH` if it points at the target vault, warns about any Hermes cron job that may still reference it, and optionally deletes the vault directory after a typed confirmation.
+- **CI: Personal Data Guard** (`.github/workflows/personal-data-guard.yml`) — new workflow that fails a push/PR if it touches disallowed personal-content paths (`Daily/`, `Memory-Review/`, `Research/`, `.smart-env/`, plugin `data.json` files) outside the template's own allowed exceptions (`Memory-Review/TEMPLATE.md`, `Daily/README.md`, `Research/README.md`). Automates what `CONTRIBUTING.md` previously only asked contributors to self-check.
+- **CI: `consolidate_memory.py` content-correctness tests** (`Scripts/ci/test_consolidate_memory.py`) — 6 tests asserting on actual output content (not just "did a file get written"): exact-duplicate dedup, fuzzy near-duplicate dedup, secret-string scrubbing, false-positive check on normal facts, decided-candidate exclusion (regression test for the v1.1.0 hash-prefix bug), and state-file JSON validity.
+- **CI: extended runtime smoke-test** — `generate_skill_links.py` now also runs against the fixture vault in the `runtime-smoke-test` job (alongside the existing `vault_audit.py`, `agent_performance.py`, `hourly_archive.py` coverage). `pull_supermemory.py` and `trend_digest.py` are intentionally excluded — the former needs a real/mocked network API + key, the latter needs `sentence-transformers`, a heavy ML dependency not worth adding to this lint job.
+- **CI badge** in README, linking to the Lint Scripts Actions workflow.
+
+### Changed
+- `CONTRIBUTING.md` — notes that the Personal Data Guard CI job now automatically enforces the "never commit real vault content" rule, not just an honor-system reminder.
+
 ## [1.6.0] — 2026-09-11
 ### Added
 - **User-Profile.md** — new template note documenting the human user's identity, communication preferences, technical environment, standing facts, current focus, interests, and boundaries for the agent. Includes a distinctive "What the agent has noticed about you" section, written by the agent (not the user) based on real interaction patterns — a mirror, not a form.

@@ -99,3 +99,25 @@ jobs:
           set -e
           python3 Scripts/hourly_archive.py
           echo "hourly_archive.py: OK, exited cleanly"
+      - name: Run generate_skill_links.py against fixture
+        run: |
+          set -e
+          python3 Scripts/generate_skill_links.py /tmp/hermes-brain-fixture
+          test -f /tmp/hermes-brain-fixture/Skills-Notes/Skill-to-Chat-Links.md
+          echo "generate_skill_links.py: OK, report generated"
+      # pull_supermemory.py and trend_digest.py are intentionally NOT
+      # smoke-tested here: pull_supermemory.py requires a real/mocked
+      # Supermemory API + key (network I/O, not just file I/O like the
+      # scripts above), and trend_digest.py requires sentence-transformers
+      # (a heavy ML dependency not worth adding to this lint job). Both
+      # remain candidates for their own dedicated CI job if that becomes
+      # worthwhile — see issue tracker.
+
+  consolidate-memory-content-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run consolidate_memory.py content-correctness tests
+        run: |
+          set -e
+          python3 Scripts/ci/test_consolidate_memory.py

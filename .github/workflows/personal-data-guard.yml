@@ -1,0 +1,64 @@
+name: Personal Data Guard
+
+# Separate from lint.yml because this needs to trigger on paths lint.yml
+# deliberately ignores (Daily/, Memory-Review/, Research/) — this template
+# repo must never carry real vault content into a PR/push, even though most
+# other CI jobs have no reason to run when only those folders change.
+on:
+  push:
+    paths:
+      - "Daily/**"
+      - "Memory-Review/**"
+      - "Research/**"
+      - ".smart-env/**"
+      - ".obsidian/plugins/**/data.json"
+      - "graphify-out/**"
+  pull_request:
+    paths:
+      - "Daily/**"
+      - "Memory-Review/**"
+      - "Research/**"
+      - ".smart-env/**"
+      - ".obsidian/plugins/**/data.json"
+      - "graphify-out/**"
+
+jobs:
+  personal-data-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if disallowed personal-content paths are staged
+        run: |
+          set -e
+          # Paths that must never enter this template repo (real vault content),
+          # mirroring the .gitignore exceptions this template intentionally
+          # allows (e.g. Memory-Review/TEMPLATE.md, Research/README.md).
+          BASE_REF="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE_REF" ] || [ "$BASE_REF" = "0000000000000000000000000000000000000000" ]; then
+            # First push to a new branch, or push event with no prior commit
+            # to diff against — compare against the empty tree instead.
+            BASE_REF=$(git hash-object -t tree /dev/null)
+          fi
+          CHANGED=$(git diff --name-only "$BASE_REF" HEAD -- \
+            'Daily/*' \
+            'Memory-Review/*' \
+            'Research/*' \
+            '.smart-env/*' \
+            '.obsidian/plugins/*/data.json' \
+            'graphify-out/*' \
+            | grep -v -E '^Daily/(README\.md|manifest\.jsonl)$' \
+            | grep -v -E '^Memory-Review/TEMPLATE\.md$' \
+            | grep -v -E '^Research/README\.md$' \
+            || true)
+          if [ -n "$CHANGED" ]; then
+            echo "::error::Disallowed personal-content paths were added/changed in this PR:"
+            echo "$CHANGED"
+            echo ""
+            echo "This template repo must never contain real vault content — see CONTRIBUTING.md."
+            echo "If this is a false positive (e.g. a genuinely new template scaffolding file"
+            echo "under Research/ or Memory-Review/), add it to the allow-list in this workflow."
+            exit 1
+          fi
+          echo "No disallowed personal-content paths found."
