@@ -59,3 +59,43 @@ jobs:
             }
           }
           if ($failed) { exit 1 }
+
+  runtime-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build fixture vault
+        run: |
+          set -e
+          mkdir -p /tmp/hermes-brain-fixture
+          python3 Scripts/ci/build_fixture_vault.py /tmp/hermes-brain-fixture
+      - name: Install fake hermes CLI on PATH
+        run: |
+          set -e
+          mkdir -p /tmp/fakebin
+          cp Scripts/ci/fake_hermes.sh /tmp/fakebin/hermes
+          chmod +x /tmp/fakebin/hermes
+          echo "/tmp/fakebin" >> "$GITHUB_PATH"
+      - name: Run vault_audit.py against fixture
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 Scripts/vault_audit.py
+          test -f /tmp/hermes-brain-fixture/Skills-Notes/Vault-Audit-Report.md
+          echo "vault_audit.py: OK, report generated"
+      - name: Run agent_performance.py against fixture
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 Scripts/agent_performance.py
+          test -f /tmp/hermes-brain-fixture/Skills-Notes/Agent-Performance.md
+          echo "agent_performance.py: OK, report generated"
+      - name: Run hourly_archive.py against fixture (no-new-sessions path)
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 Scripts/hourly_archive.py
+          echo "hourly_archive.py: OK, exited cleanly"
