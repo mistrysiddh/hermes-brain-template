@@ -104,6 +104,38 @@ if ($LASTEXITCODE -eq 0) {
 & git remote set-url --push $RemoteName "DISABLED-see-update.ps1"
 
 # ---------------------------------------------------------------------------
+# 2.5. Protect user-facing scaffold files from future merge conflicts.
+#
+# Files like User-Profile.md ship in the template as a blank fill-in-the-blank
+# note, but the moment you fill it in it becomes personal content -- same
+# category as Daily/ or Memory-Review/*. Unlike those folders, this file has
+# to be delivered by the template at least once (so new vaults get the blank
+# scaffold), which rules out .gitignore -- an ignored path can't be added by
+# a future merge either.
+#
+# Instead, register a local-only "ours" merge driver for these paths (see
+# issue #5): on the FIRST pull the file doesn't exist locally yet, so it's
+# added cleanly from the template as normal. On every pull AFTER that, if
+# you've edited it (you always will, once you fill it in) and the template
+# also changes its copy, git resolves the conflict by silently keeping your
+# local version instead of stopping with conflict markers. This is local
+# vault config only (.git/info/attributes, never synced anywhere) so it
+# doesn't touch the template repo itself.
+# ---------------------------------------------------------------------------
+$PersonalScaffoldFiles = @("User-Profile.md")
+& git config merge.ours.driver true
+New-Item -ItemType Directory -Force -Path ".git/info" | Out-Null
+foreach ($f in $PersonalScaffoldFiles) {
+  $attrLine = "$f merge=ours"
+  $attrPath = ".git/info/attributes"
+  $existing = if (Test-Path $attrPath) { Get-Content $attrPath -Raw } else { "" }
+  if ($existing -notmatch [regex]::Escape($attrLine)) {
+    Add-Content -Path $attrPath -Value $attrLine
+    Write-Info "Protected '$f' from future template merge conflicts (keeps your local edits)."
+  }
+}
+
+# ---------------------------------------------------------------------------
 # 3. Fetch + merge.
 # ---------------------------------------------------------------------------
 Write-Host "Fetching template updates..." -ForegroundColor Cyan
@@ -121,6 +153,10 @@ if ($LASTEXITCODE -eq 0) {
   Write-Host ""
   Write-Info "Conflicting files:"
   & git diff --name-only --diff-filter=U | ForEach-Object { Write-Info "    $_" }
+  Write-Host ""
+  Write-Info "Tip: for files you've customized locally (e.g. .obsidian/themes/*/theme.css,"
+  Write-Info ".obsidian/appearance.json), 'git checkout --ours <file>' keeps your version;"
+  Write-Info "'git checkout --theirs <file>' takes the template's. See CONTRIBUTING.md."
   exit 1
 }
 

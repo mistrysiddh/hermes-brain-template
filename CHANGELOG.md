@@ -2,6 +2,14 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.8.0] — 2026-09-14
+### Added
+- **OpenClaw badge** in README, alongside the existing Hermes badge.
+
+### Fixed
+- **`update.sh` / `update.ps1` merge conflicts on `User-Profile.md`** (fixes #5) — a user who fills in `User-Profile.md` before or independently of a template update could hit a hard "both-added" git merge conflict on every future `update.sh` run, since the template also ships its own (blank) copy of the same filename. Both update scripts now register a local-only `merge=ours` git attribute for `User-Profile.md` on every run: the first pull still delivers the blank scaffold to new vaults as normal, but every pull after that silently keeps the user's local content on conflict instead of stopping with conflict markers. This is vault-local config (`.git/info/attributes`), never synced to the template repo itself.
+- Conflict-resolution tip added to both update scripts' failure output, and a new "Resolving update.sh/update.ps1 merge conflicts" section in `CONTRIBUTING.md`, covering the remaining conflict class (customized `.obsidian/appearance.json` / theme `theme.css`) that the merge driver doesn't cover.
+
 ## [1.7.1] — 2026-09-14
 ### Fixed
 - **Personal Data Guard workflow** — the v1.7.0 release's guard job failed on push because its allow-list was missing `Daily/Timeline.md`, `Daily/Chat-Correlation.md`, and `Daily/.gitkeep`, and its empty-tree fallback re-flagged every pre-existing template file as "new" whenever `github.event.before` was the null SHA. Completed the allow-list and changed the fallback to diff against the last commit instead of the empty tree.
