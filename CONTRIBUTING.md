@@ -39,3 +39,25 @@ Thanks for considering a contribution to this template.
 
 Use [Discussions](../../discussions) instead of an issue if you're not sure
 something is a bug versus a design choice.
+
+## Resolving `update.sh`/`update.ps1` merge conflicts
+
+Since v1.8.0, `User-Profile.md` is protected by a local `merge=ours` git
+attribute the update scripts set up automatically — once you've filled it
+in, future template changes to that file will never conflict; your local
+copy always wins silently. You shouldn't see conflicts on it anymore.
+
+For everything else you've customized locally (most commonly
+`.obsidian/appearance.json` or a bundled theme's `theme.css`, e.g. after
+adding your own wallpaper or color tweaks), a real 3-way merge conflict can
+still happen if the template changes the same lines. To resolve:
+
+```bash
+git checkout --ours  <file>   # keep your local version
+git checkout --theirs <file>  # take the template's version instead
+git add <file>
+git commit
+```
+
+Then re-run `update.sh`/`update.ps1` — if origin has advanced further since
+your last sync, a second pull applies cleanly.

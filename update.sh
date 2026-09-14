@@ -89,6 +89,35 @@ fi
 git remote set-url --push "$REMOTE_NAME" DISABLED-see-update.sh
 
 # ---------------------------------------------------------------------------
+# 2.5. Protect user-facing scaffold files from future merge conflicts.
+#
+# Files like User-Profile.md ship in the template as a blank fill-in-the-blank
+# note, but the moment you fill it in it becomes personal content -- same
+# category as Daily/ or Memory-Review/*. Unlike those folders, this file has
+# to be delivered by the template at least once (so new vaults get the blank
+# scaffold), which rules out .gitignore -- an ignored path can't be added by
+# a future merge either.
+#
+# Instead, register a local-only "ours" merge driver for these paths (see
+# issue #5): on the FIRST pull the file doesn't exist locally yet, so it's
+# added cleanly from the template as normal. On every pull AFTER that, if
+# you've edited it (you always will, once you fill it in) and the template
+# also changes its copy, git resolves the conflict by silently keeping your
+# local version instead of stopping with conflict markers. This is local
+# vault config only (.git/info/attributes, never synced anywhere) so it
+# doesn't touch the template repo itself.
+# ---------------------------------------------------------------------------
+PERSONAL_SCAFFOLD_FILES=("User-Profile.md")
+git config merge.ours.driver true
+mkdir -p .git/info
+for f in "${PERSONAL_SCAFFOLD_FILES[@]}"; do
+  if ! grep -qxF "$f merge=ours" .git/info/attributes 2>/dev/null; then
+    printf '%s merge=ours\n' "$f" >> .git/info/attributes
+    info "Protected '$f' from future template merge conflicts (keeps your local edits)."
+  fi
+done
+
+# ---------------------------------------------------------------------------
 # 3. Fetch + merge.
 # ---------------------------------------------------------------------------
 bold "Fetching template updates..."
@@ -106,6 +135,10 @@ else
   echo
   info "Conflicting files:"
   git diff --name-only --diff-filter=U | sed 's/^/    /'
+  echo
+  info "Tip: for files you've customized locally (e.g. .obsidian/themes/*/theme.css,"
+  info ".obsidian/appearance.json), 'git checkout --ours <file>' keeps your version;"
+  info "'git checkout --theirs <file>' takes the template's. See CONTRIBUTING.md."
   exit 1
 fi
 
