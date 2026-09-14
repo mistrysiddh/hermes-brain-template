@@ -17,3 +17,4 @@ Once sessions start landing here, [[Timeline]] gives a live, sortable
 Dataview table across every date folder — no more clicking through
 `YYYY/MM/DD/` one at a time. [[Chat-Correlation]] breaks archived chats down
 by source pattern and (optionally) by agent profile.
+
