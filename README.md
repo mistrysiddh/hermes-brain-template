@@ -22,6 +22,21 @@ other notes.
 - **It's just markdown.** Open it in Obsidian, `grep` it, put it in git, read it in Notepad — no proprietary format, no export step.
 - **Set up once, in one paste.** A single prompt into your Hermes chat installs the vault *and* wires up hourly archiving — see below.
 
+## Why this instead of [alternative]?
+
+| | Hermes Brain | Raw chat logs | Vector-DB memory (e.g. Mem0) | Generic Obsidian PKM |
+|---|---|---|---|---|
+| **Human review before "memory"** | ✅ staged in `Memory-Review/`, nothing auto-promotes | ❌ nothing structured | ❌ auto-embedded, opaque | N/A — no agent pipeline |
+| **Readable without special tooling** | ✅ plain markdown | ✅ but unstructured | ❌ needs the vendor's UI/API | ✅ |
+| **Portable / no vendor lock-in** | ✅ your files, your git repo | ✅ | ❌ tied to the service | ✅ |
+| **Built-in agent-usage analytics** | ✅ token usage, vault audit, agent performance — all in `Dashboard.md` | ❌ | Varies | ❌ |
+| **Zero setup for a Hermes agent specifically** | ✅ one-paste install prompt | N/A | ❌ separate integration work | ❌ generic, no agent wiring |
+
+Use a vector-DB memory service if you want the agent to auto-recall
+semantically similar things with zero human-in-the-loop. Use this
+template if you want to **see and approve** what your agent remembers,
+in a format you already own.
+
 ## What's inside
 
 ```
@@ -131,3 +146,4 @@ additional Obsidian plugin recipes, or extra automation scripts.
 [Discussions](https://github.com/mistrysiddh/hermes-brain-template/discussions)
 are enabled if you'd rather ask a question first — start with the
 [welcome post](https://github.com/mistrysiddh/hermes-brain-template/discussions/1).
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community guidelines.
