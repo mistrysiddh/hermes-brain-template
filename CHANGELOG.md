@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.7.1] — 2026-09-14
+### Fixed
+- **Personal Data Guard workflow** — the v1.7.0 release's guard job failed on push because its allow-list was missing `Daily/Timeline.md`, `Daily/Chat-Correlation.md`, and `Daily/.gitkeep`, and its empty-tree fallback re-flagged every pre-existing template file as "new" whenever `github.event.before` was the null SHA. Completed the allow-list and changed the fallback to diff against the last commit instead of the empty tree.
+
 ## [1.7.0] — 2026-09-14
 ### Added
 - **`try.sh` / `try.ps1`** — copy the template into a scratch temp directory and open it in Obsidian with zero commitment: no Hermes CLI registration, no cron setup, doesn't touch your real Obsidian config. Delete the copy any time.
