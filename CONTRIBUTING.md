@@ -17,7 +17,9 @@ Thanks for considering a contribution to this template.
   `Memory-Review` entries, populated `Research/` notes, `.smart-env/` caches,
   or any `.obsidian/plugins/*/data.json`. These are git-ignored on purpose;
   if your local vault has diverged and picked any of these up, check
-  `git status` before committing.
+  `git status` before committing. A CI job (**Personal Data Guard**) also
+  checks this automatically on every push/PR touching those paths and will
+  fail the build if it finds anything disallowed.
 - API keys, tokens, or credentials of any kind, even example/placeholder
   ones that look real enough to be reused by mistake.
 
