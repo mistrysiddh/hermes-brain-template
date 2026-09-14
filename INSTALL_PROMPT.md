@@ -51,10 +51,14 @@ organized as Daily/YYYY/MM/DD/<session>.md, matching the structure documented
 in that vault's Daily/README.md. The script also exports a JSONL copy to
 extract token usage (prompt + completion tokens) and appends daily totals to
 Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
-location if it's set, otherwise ask me for the vault path first. Before
-creating it, check with `cronjob_manage(action='list')` that no other job is
-already archiving into the same Daily/ folder — only one archiving job should
-ever write there, to avoid manifest.jsonl race conditions.
+location if it's set, otherwise ask me for the vault path first.
+
+IMPORTANT — idempotency: before creating anything, call
+`cronjob_manage(action='list')` and check for a job already named
+"hermes-brain-archive-hourly" (or any other job whose command targets this
+same vault's Daily/ folder). If one already exists, do NOT create a
+duplicate — just tell me it's already set up and leave it alone. Only
+create the job if no matching one exists.
 ```
 
 If you'd rather set the cron job up yourself directly, the underlying pattern
@@ -76,6 +80,10 @@ python3 Scripts/vault_audit.py
 inside the vault (using env.HERMES_VAULT_PATH). This checks for broken
 wikilinks, stale Memory-Review entries (>30 days), duplicate sessions,
 and orphaned files, writing a report to Skills-Notes/Vault-Audit-Report.md.
+
+Idempotency: first call `cronjob_manage(action='list')` and check whether a
+job named "hermes-brain-vault-audit-weekly" already exists. If it does,
+don't create another — just confirm it's already set up.
 ```
 
 **Agent performance (weekly, Monday 3 AM):**
@@ -86,6 +94,10 @@ python3 Scripts/agent_performance.py
 inside the vault. This analyzes session archives and skill usage to
 produce Skills-Notes/Agent-Performance.md with skill frequency, tool
 usage, daily trends, and top sessions by tokens.
+
+Idempotency: first call `cronjob_manage(action='list')` and check whether a
+job named "hermes-brain-agent-perf-weekly" already exists. If it does,
+don't create another — just confirm it's already set up.
 ```
 
 ## 3. Upgrade prompt (pull the latest template into an existing vault)
@@ -145,21 +157,25 @@ PART 1 — Install
    (`hermes config get env.HERMES_VAULT_PATH`).
 
 PART 2 — Hourly archiving cron job
-6. Check with `cronjob_manage(action='list')` that no other job is already
-   archiving into this vault's Daily/ folder — only one archiving job should
-   ever write there, to avoid manifest.jsonl race conditions.
-7. If clear, create a cron job named "hermes-brain-archive-hourly" that runs
-   every hour (cron expression: 0 * * * *) and exports my Hermes chat
-   sessions from the last hour as redacted markdown into
+6. Check with `cronjob_manage(action='list')` for a job already named
+   "hermes-brain-archive-hourly" (or any job whose command targets this
+   vault's Daily/ folder). If one already exists, skip creating it — just
+   tell me it's already set up.
+7. If none exists, create a cron job named "hermes-brain-archive-hourly"
+   that runs every hour (cron expression: 0 * * * *) and exports my Hermes
+   chat sessions from the last hour as redacted markdown into
    <vault>/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
    in the vault's Daily/README.md. The script also exports a JSONL copy to
    extract token usage (prompt + completion tokens) and appends daily totals to
    Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
    location.
-8. **Optional: Vault audit + Agent performance cron jobs**
-   - Create "hermes-brain-vault-audit-weekly" (Sunday 2 AM): runs `python3 Scripts/vault_audit.py` → writes `Skills-Notes/Vault-Audit-Report.md`
-   - Create "hermes-brain-agent-perf-weekly" (Monday 3 AM): runs `python3 Scripts/agent_performance.py` → writes `Skills-Notes/Agent-Performance.md`
-9. Tell me the final vault path and confirm all cron jobs were created.
+8. **Optional: Vault audit + Agent performance cron jobs** — same
+   idempotency check first (list, look for a matching name), only create if
+   missing:
+   - "hermes-brain-vault-audit-weekly" (Sunday 2 AM): runs `python3 Scripts/vault_audit.py` → writes `Skills-Notes/Vault-Audit-Report.md`
+   - "hermes-brain-agent-perf-weekly" (Monday 3 AM): runs `python3 Scripts/agent_performance.py` → writes `Skills-Notes/Agent-Performance.md`
+9. Tell me the final vault path and confirm, for each cron job, whether it
+   was newly created or already existed.
 ```
 
 This is just prompts 1 and 2 combined — use it if you know you want both up
