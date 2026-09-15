@@ -2,6 +2,11 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.10.0] — 2026-09-14
+### Added
+- **Activity heatmap** on `Dashboard.md` — a GitHub-style, day-wise calendar heatmap (18 weeks × 7 days) showing token usage intensity per day, reusing the existing `Skills-Notes/Token-Usage.log` data (no new script or cron job needed). Color intensity scales toward the active theme's accent color via 4 steps, so it matches whichever theme (Nemoclaw, Tokyo Night, etc.) is active. Hover any cell for the exact date, tokens, and session count. Built with plain colored `<div>` cells (not SVG) to avoid the Dataview parser fragility that broke the earlier token-trend graph in v1.5.1–v1.5.3.
+- **`Scripts/seed_sample_data.py`** — opt-in sample/demo data generator (not shipped pre-populated, addresses the "empty vault on first open" problem from issue discussion around #9 without the staleness risk of committing fake data by default). Run it yourself to populate `Daily/`, `Memory-Review/`, `Projects/`, and `Skills-Notes/Token-Usage.log` with realistic-looking fake sessions/candidates/a project note, so a freshly installed vault's Dashboard and graph view show a populated state instead of empty. Every generated file/entry is tagged `sample: true` (or `[sample]` in the token log) for easy removal later.
+
 ## [1.9.1] — 2026-09-14
 ### Changed
 - **`INSTALL_PROMPT.md` — all 4 cron-job creation prompts now check before creating.** Previously the wording only asked the agent to check for a *conflicting* archiving job before creating the hourly archiver; it didn't explicitly tell it to skip creation if a job with the *same name* already existed for any of the 4 cron prompts (hourly archive, weekly vault audit, weekly agent performance, and the combined master install+cron prompt). Each now explicitly instructs: call `cronjob_manage(action='list')` first, and if a job with that name (or targeting the same vault Daily/ folder) already exists, don't create a duplicate — just report that it's already set up.

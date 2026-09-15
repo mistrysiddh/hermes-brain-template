@@ -143,6 +143,97 @@ if (!tokenLog) {
 
 _Updates live each time this note opens — reads from Skills-Notes/Token-Usage.log which is maintained by hourly_archive.py._
 
+## Activity heatmap
+
+```dataviewjs
+const tokenLog = app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
+if (!tokenLog) {
+  dv.paragraph("ℹ️ No activity data yet — will appear after your first hourly archive run.");
+} else {
+  const content = await app.vault.read(tokenLog);
+  const lines = content.split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#") && !l.startsWith("---") && !l.startsWith("<!--"));
+
+  // Parse into a date -> {tokens, sessions} map, summing if a date appears
+  // more than once (e.g. a [sample] line alongside a real one).
+  const byDate = {};
+  for (const line of lines) {
+    const match = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)\s*tokens?\s*\((\d+)\s*session/);
+    if (match) {
+      const [, date, tokens, sessions] = match;
+      const t = parseInt(tokens);
+      const s = parseInt(sessions);
+      if (!byDate[date]) byDate[date] = { tokens: 0, sessions: 0 };
+      byDate[date].tokens += t;
+      byDate[date].sessions += s;
+    }
+  }
+
+  const dates = Object.keys(byDate);
+  if (dates.length === 0) {
+    dv.paragraph("ℹ️ No activity data yet — will appear after your first hourly archive run.");
+  } else {
+    // Build a GitHub-style calendar grid: 18 weeks back from today,
+    // columns = weeks (oldest to newest), rows = Sun..Sat.
+    const WEEKS = 18;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // Find the most recent Saturday (end of the last column) and walk back
+    // WEEKS full weeks from there, starting each column on a Sunday.
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+    const start = new Date(endOfWeek);
+    start.setDate(endOfWeek.getDate() - (WEEKS * 7 - 1));
+
+    const maxTokens = Math.max(...dates.map(d => byDate[d].tokens), 1);
+
+    function colorFor(tokens) {
+      if (tokens === 0) return "var(--background-modifier-border)";
+      const ratio = tokens / maxTokens;
+      // 4-step intensity toward the theme accent color.
+      if (ratio > 0.75) return "var(--text-accent)";
+      if (ratio > 0.45) return "color-mix(in srgb, var(--text-accent) 70%, var(--background-modifier-border))";
+      if (ratio > 0.15) return "color-mix(in srgb, var(--text-accent) 40%, var(--background-modifier-border))";
+      return "color-mix(in srgb, var(--text-accent) 18%, var(--background-modifier-border))";
+    }
+
+    const container = dv.el("div", "", { attr: { style: "display: flex; gap: 3px; overflow-x: auto; padding: 4px 0;" } });
+    const dayLabels = dv.el("div", "", { attr: { style: "display: flex; flex-direction: column; gap: 3px; margin-right: 4px; font-size: 0.65em; color: var(--text-faint);" } });
+    ["", "Mon", "", "Wed", "", "Fri", ""].forEach(label => {
+      const cell = dayLabels.createEl("div", { text: label });
+      cell.style.height = "11px";
+      cell.style.lineHeight = "11px";
+    });
+    container.prepend(dayLabels);
+
+    let totalActiveDays = 0;
+    let cursor = new Date(start);
+    for (let w = 0; w < WEEKS; w++) {
+      const col = dv.el("div", "", { attr: { style: "display: flex; flex-direction: column; gap: 3px;" } });
+      for (let d = 0; d < 7; d++) {
+        const dateStr = cursor.toISOString().split("T")[0];
+        const entry = byDate[dateStr] || { tokens: 0, sessions: 0 };
+        if (entry.tokens > 0) totalActiveDays++;
+        const isFuture = cursor > today;
+        const cell = col.createEl("div");
+        cell.style.width = "11px";
+        cell.style.height = "11px";
+        cell.style.borderRadius = "2px";
+        cell.style.background = isFuture ? "transparent" : colorFor(entry.tokens);
+        cell.title = isFuture ? "" : `${dateStr}: ${entry.tokens.toLocaleString()} tokens, ${entry.sessions} session${entry.sessions !== 1 ? "s" : ""}`;
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      container.appendChild(col);
+    }
+
+    dv.paragraph(`📅 **${totalActiveDays} active day${totalActiveDays !== 1 ? "s" : ""}** in the last ${WEEKS} weeks. Hover a cell for the exact date/tokens/sessions.`);
+  }
+}
+```
+
+_Same data as Token usage above, shown as a calendar — darker green = more tokens that day. `color-mix()` requires a recent Obsidian/Chromium version; if cells look uncolored, update Obsidian._
+
 ## Vault audit
 
 ```dataviewjs

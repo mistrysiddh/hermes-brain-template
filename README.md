@@ -135,6 +135,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
 | Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
 | Cleanly remove a vault installation | `.\uninstall.ps1` | `./uninstall.sh` |
+| Seed sample/demo data (preview only, opt-in) | `python Scripts\seed_sample_data.py .` | `python3 Scripts/seed_sample_data.py .` |
 
 ## Requirements
 
