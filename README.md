@@ -176,9 +176,13 @@ welcome on any of these — see Contributing below.
       `Team-Profiles-Index.md`'s own single-agent disclaimer. _(Fixed in
       v1.14.0 — now phrased as "your agent(s)," with the 4-name table
       relabeled as an example/starter template, not an assumed fact.)_
-- [ ] `consolidate_memory.py` and `Memory-Review/TEMPLATE.md` hardcode
+- [x] `consolidate_memory.py` and `Memory-Review/TEMPLATE.md` hardcode
       Supermemory-specific filenames as required fact sources, even though
-      Supermemory integration is meant to be optional.
+      Supermemory integration is meant to be optional. _(Fixed in v1.15.0
+      — the script already degraded gracefully when the files were
+      missing, but now says so explicitly instead of silently writing an
+      empty candidates file; docstring reworded to make clear Supermemory
+      is one optional source, not the only one.)_
 - [ ] `Skills-Notes/README.md` has a stale specific skill count that goes
       wrong the moment a user installs or removes a skill.
 
