@@ -8,18 +8,25 @@ Daily -> Memory-Review -> native-memory pipeline described in
 Projects/Hermes-Agent-Vault-Setup.md and Memory-Review/TEMPLATE.md.
 
 What it does (mechanical only — NEVER touches Hermes's real MEMORY.md/USER.md):
-  1. Parses raw fact sources:
-       - Memory-Review/Supermemory-All-Memory-Entries.md  (bullet list, grouped by ## date)
-       - Memory-Review/Supermemory-Explicit-Memories.md   (markdown table)
+  1. Parses raw fact sources — currently Supermemory exports ONLY, and both are
+     fully OPTIONAL (the script runs cleanly and just produces zero candidates
+     if neither exists — it never errors or assumes Supermemory is installed):
+       - Memory-Review/Supermemory-All-Memory-Entries.md  (bullet list, grouped by ## date, if present)
+       - Memory-Review/Supermemory-Explicit-Memories.md   (markdown table, if present)
+     If you don't use Supermemory, this script currently has nothing to parse —
+     pulling candidates out of Daily/ sessions or Research/ notes directly is
+     still a manual step (see Memory-Review/TEMPLATE.md's "Where candidates
+     come from"). Automating that is tracked as a future roadmap item; PRs
+     welcome.
   2. Re-reads the previous Memory-Review/Promotion-Candidates.md (if any) to see
-     which candidates Sid already checked off (decided) — those are archived to
+     which candidates you already checked off (decided) — those are archived to
      Memory-Review/Consolidation-Log.md and never shown again.
   3. Strips out anything that looks like a secret/credential (regex) into
      Memory-Review/Excluded-Sensitive.md — these are NEVER proposed for promotion.
   4. Dedupes near-identical facts (difflib ratio) against each other and against
      already-decided facts.
   5. Flags candidates that have sat undecided for 60+ days as "stale — reconsider"
-     (a decay signal, not an auto-delete — Sid still decides).
+     (a decay signal, not an auto-delete — you still decide).
   6. Rewrites Memory-Review/Promotion-Candidates.md: one checkbox per still-open
      candidate, grouped by source date, ready for a human approval pass before
      anything is manually copied into native MEMORY.md/USER.md.
@@ -135,6 +142,14 @@ def main():
     excluded_path = os.path.join(mr_dir, "Excluded-Sensitive.md")
     log_path = os.path.join(mr_dir, "Consolidation-Log.md")
     state_path = os.path.join(mr_dir, ".consolidate_state.json")
+
+    has_supermemory = os.path.exists(all_entries_path) or os.path.exists(explicit_path)
+    if not has_supermemory:
+        print("[consolidate_memory] No Supermemory export files found in Memory-Review/ — "
+              "that's fine, they're optional. This run will produce 0 candidates from this "
+              "source. Add facts to Memory-Review/Promotion-Candidates.md by hand, or pull "
+              "them from Daily/ sessions and Research/ notes per Memory-Review/TEMPLATE.md, "
+              "until Supermemory (or another automated source) is wired up.")
 
     raw = parse_bullet_entries(read(all_entries_path)) + parse_table_entries(read(explicit_path))
 

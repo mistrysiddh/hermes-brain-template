@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.15.0] — 2026-09-16
+### Fixed
+- **Supermemory presented as required, not optional** (roadmap item #3) — `Scripts/consolidate_memory.py` already handled missing Supermemory export files gracefully (its `read()` helper returns `""` for a nonexistent path, so it never errored), but gave no signal to a non-Supermemory user that the pipeline was silently producing zero candidates every run. Added an explicit stdout message when neither `Supermemory-All-Memory-Entries.md` nor `Supermemory-Explicit-Memories.md` exists, pointing at the manual/`Daily`-sourced alternative documented in `Memory-Review/TEMPLATE.md`. Reworded the script's docstring to describe Supermemory as one optional fact source, not the only one, and noted that automating non-Supermemory sources is a future roadmap item. All 6 existing `Scripts/ci/test_consolidate_memory.py` tests still pass; verified a clean 0-candidate run against a fresh vault with no Supermemory files (exit code 0, new message printed, valid `Promotion-Candidates.md` written).
+
 ## [1.14.0] — 2026-09-16
 ### Fixed
 - **Hardcoded "4-agent team" assumption** (roadmap item #2) — `Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, and `Skills-Notes/Team-Profiles-Index.md` all stated "the Hermes agent team (Codex, Ledger, Vox, Argus)" as a fact, contradicting `Team-Profiles-Index.md`'s own note that single-agent setups should delete it down to one row. Reworded all 5 files to say "your agent(s)" and relabeled the 4-name table in `Team-Profiles-Index.md` as an example/starter template rather than an assumed roster. `Memory-Review/TEMPLATE.md` similarly reworded to make agent attribution and Supermemory sourcing both explicitly optional. Verified via `Scripts/vault_audit.py`: 0 broken links.
