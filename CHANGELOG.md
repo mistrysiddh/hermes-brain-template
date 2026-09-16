@@ -2,6 +2,12 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.12.0] — 2026-09-16
+### Added
+- **`User-Profile.md` — creative pass.** Added a TL;DR callout at the top, "talk to me like this / not like that" dialogue examples, ASCII trait sliders (directness/formality/risk tolerance), a new **Availability & reaching you** section (working hours, response-time expectations, notification channel), a new **Decision authority** section (unilateral action vs sign-off, optional/deletable for solo users), a scannable **vibe-check table** (mood → signal → what to do) replacing prose bullets, an **"if I go quiet" playbook**, a **running jokes & call signs** section, and a **review cadence** note in the Update log.
+- **README badge** — new `User Profile: documented` badge linking to `User-Profile.md`, alongside the existing License/Obsidian/Hermes/OpenClaw/CI/Changelog badges.
+- **README "Known issues / Roadmap" section** — checkbox list surfacing 4 known bugs (missing `Projects/Hermes-Agent-Vault-Setup.md` hub note referenced by 6 files, hardcoded 4-agent-team assumption in 5 files, Supermemory-only memory pipeline assumptions, a stale skill-count number) and 4 features under consideration (skill-usage breakdown, delta-since-last-visit banner, recent Memory-Review promotions log, storage/file-count stats) — tracked in the open instead of buried in commit history.
+
 ## [1.11.0] — 2026-09-16
 ### Added
 - **`Dashboard-Beta.md`** — opt-in, website-style card redesign of `Dashboard.md`. Same underlying data sources, same level of detail, nothing trimmed — just restyled as a card grid with a KPI strip up top instead of a plain vertical stack. Enable via Settings → Appearance → CSS snippets → toggle `dashboard-beta`. New sections beyond a straight restyle of the original:

@@ -6,6 +6,7 @@
 [![Works with OpenClaw](https://img.shields.io/badge/Works%20with-OpenClaw-FF6B35.svg)](https://claude-code.nousresearch.com/docs)
 [![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](CHANGELOG.md)
+[![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](User-Profile.md)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
@@ -158,6 +159,35 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 ## License
 
 MIT — see [LICENSE](LICENSE). Use, fork, and adapt freely.
+
+## Known issues / Roadmap
+
+Tracked here so they're visible instead of buried in commit history. PRs
+welcome on any of these — see Contributing below.
+
+**Bugs to fix:**
+- [ ] `Projects/Hermes-Agent-Vault-Setup.md` is referenced as the "master
+      hub note" by 6 files (`Welcome.md`, `Projects/README.md`,
+      `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`,
+      `Memory-Review/TEMPLATE.md`) but the file doesn't exist yet — new
+      users hit 6 dead links on first open.
+- [ ] Several files hardcode a "4-agent team" (Codex/Ledger/Vox/Argus)
+      assumption as if every install has a multi-agent team, contradicting
+      `Team-Profiles-Index.md`'s own single-agent disclaimer.
+- [ ] `consolidate_memory.py` and `Memory-Review/TEMPLATE.md` hardcode
+      Supermemory-specific filenames as required fact sources, even though
+      Supermemory integration is meant to be optional.
+- [ ] `Skills-Notes/README.md` has a stale specific skill count that goes
+      wrong the moment a user installs or removes a skill.
+
+**Features under consideration:**
+- [ ] Skill-usage breakdown on the Dashboard ("Top 5 most-used skills this
+      month," sourced from `Skill-to-Chat-Links.md`).
+- [ ] "What changed since you last opened this" delta banner on the
+      Dashboard, tracked via the note's own frontmatter.
+- [ ] Recent Memory-Review promotions log — a small feed of what got
+      promoted to permanent memory recently.
+- [ ] Storage/file-count stats on the Dashboard via `app.vault.getFiles()`.
 
 ## Contributing
 
