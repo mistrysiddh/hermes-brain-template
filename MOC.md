@@ -14,6 +14,7 @@ vault has more than a few dozen notes).
 ## Start here
 - [[Welcome]] — orientation
 - [[Dashboard]] — live at-a-glance view: active projects, open memory candidates, recent sessions, installed skills
+- [[Dashboard-Beta]] — experimental website-style card layout of the same dashboard (KPI strip, activity heatmap, session calendar, weather, quick actions) — opt-in, enable the `dashboard-beta` CSS snippet
 - [[Projects/README]] — active project index
 
 ## Memory pipeline

@@ -2,6 +2,18 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.11.0] — 2026-09-16
+### Added
+- **`Dashboard-Beta.md`** — opt-in, website-style card redesign of `Dashboard.md`. Same underlying data sources, same level of detail, nothing trimmed — just restyled as a card grid with a KPI strip up top instead of a plain vertical stack. Enable via Settings → Appearance → CSS snippets → toggle `dashboard-beta`. New sections beyond a straight restyle of the original:
+  - **Welcome header** — live clock, time-of-day mood-based greeting, and an editable brand title/mantra (click-to-edit, `localStorage`-only — never written to any file, never committed).
+  - **Today's focus** — click-to-edit personal focus note, `localStorage`-only.
+  - **Quick actions** — buttons that run real Obsidian commands (new Daily Review, open Memory-Review, open Vault Audit report, open Daily Timeline).
+  - **Session calendar** — a month-grid with dots marking days that have archived `Daily/` sessions; click a day to open it.
+  - **Weather** — optional OpenWeatherMap widget. Requires pasting your own free API key into a settings popup on first use; the key lives only in that Obsidian window's `localStorage`, never in a file, never in git.
+  - **On this day** — surfaces `Daily/` sessions from the same month/day in past years; renders nothing at all when there's no match.
+  - Ideas adapted from the **Atlas** and **Komorebi** dashboards in [InlitX/Obsidian-Dashboard-Gallery](https://github.com/InlitX/Obsidian-Dashboard-Gallery) (MIT) — kept the concepts, dropped what didn't fit an agent-memory vault (e.g. Komorebi's weather widget now needs an explicit city+key instead of a hardcoded default; personalization stays `localStorage`-only, never file-based).
+  - Card-grid CSS ships as `.obsidian/snippets/dashboard-beta.css`, enabled by default in `.obsidian/appearance.json`.
+
 ## [1.10.0] — 2026-09-14
 ### Added
 - **Activity heatmap** on `Dashboard.md` — a GitHub-style, day-wise calendar heatmap (18 weeks × 7 days) showing token usage intensity per day, reusing the existing `Skills-Notes/Token-Usage.log` data (no new script or cron job needed). Color intensity scales toward the active theme's accent color via 4 steps, so it matches whichever theme (Nemoclaw, Tokyo Night, etc.) is active. Hover any cell for the exact date, tokens, and session count. Built with plain colored `<div>` cells (not SVG) to avoid the Dataview parser fragility that broke the earlier token-trend graph in v1.5.1–v1.5.3.
