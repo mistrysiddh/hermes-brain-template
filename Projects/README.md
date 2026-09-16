@@ -8,7 +8,10 @@ One note per active project/repo. Each project note should cover:
 - Next actions
 - Sources used
 
-This vault is scoped for the Hermes agent team (Codex, Ledger, Vox, Argus) — keep it to research/agent-memory work, not the whole personal vault.
+This vault is scoped for your Hermes agent's research/agent-memory work —
+whether that's one agent or a small team (see
+[[../Skills-Notes/Team-Profiles-Index|Team-Profiles-Index]] if you run
+more than one) — not the whole personal vault.
 
 ## Active projects
 - [[Hermes-Agent-Vault-Setup]] — this vault's own setup: structure, archiving cron, memory pipeline, open decisions.

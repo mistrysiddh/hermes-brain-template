@@ -8,13 +8,12 @@ tags: [team, reference]
 # Team Profiles Index
 
 One entry per Hermes agent profile collaborating in this vault: what it
-specializes in, and when to hand off to it. [[../Welcome|Welcome.md]] and
-[[../Memory-Review/TEMPLATE|Memory-Review/TEMPLATE]] already assume the
-four profiles below (Codex, Ledger, Vox, Argus) — this file is the missing
-piece that actually documents them, so fill in the "Specializes in" /
-"Hand off when" columns for your real setup (the specializations below are
-a starting guess from the names alone — confirm or replace them). If you
-run a single-profile setup, delete this down to one row.
+specializes in, and when to hand off to it. The table below ships with 4
+example rows (Codex, Ledger, Vox, Argus) as a starting template — rename,
+replace, or add to them for your real setup, or delete down to a single
+row if you run one agent, not a team. [[../Welcome|Welcome.md]] and
+[[../Memory-Review/TEMPLATE|Memory-Review/TEMPLATE]] both treat this file
+as optional/customizable, not a fixed roster.
 
 | Profile | Specializes in | Hand off when |
 |---|---|---|

@@ -7,7 +7,10 @@ tags: [hub, welcome]
 
 # Welcome — Hermes Agent Vault
 
-This is the shared Obsidian memory layer for the Hermes agent team (Codex, Ledger, Vox, Argus, and this profile).
+This is the shared Obsidian memory layer for your Hermes agent(s) —
+whether that's a single agent or a small team collaborating in this vault
+(see [[Skills-Notes/Team-Profiles-Index|Team-Profiles-Index]] to name and
+document them, or delete that file down to one row if it's just you).
 
 Start here: [[Projects/Hermes-Agent-Vault-Setup]] — the master hub note explaining the folder structure, the memory pipeline (Daily → Memory-Review → native memory), and current status/decisions. For topic-based browsing instead of folder-by-folder, see [[MOC]]. For a live at-a-glance view of what's active right now, see [[Dashboard]].
 
