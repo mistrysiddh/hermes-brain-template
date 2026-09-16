@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.14.0] — 2026-09-16
+### Fixed
+- **Hardcoded "4-agent team" assumption** (roadmap item #2) — `Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, and `Skills-Notes/Team-Profiles-Index.md` all stated "the Hermes agent team (Codex, Ledger, Vox, Argus)" as a fact, contradicting `Team-Profiles-Index.md`'s own note that single-agent setups should delete it down to one row. Reworded all 5 files to say "your agent(s)" and relabeled the 4-name table in `Team-Profiles-Index.md` as an example/starter template rather than an assumed roster. `Memory-Review/TEMPLATE.md` similarly reworded to make agent attribution and Supermemory sourcing both explicitly optional. Verified via `Scripts/vault_audit.py`: 0 broken links.
+
 ## [1.13.0] — 2026-09-16
 ### Fixed
 - **Missing "master hub note"** (roadmap item #1) — `Projects/Hermes-Agent-Vault-Setup.md` was referenced by 6 files (`Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`, `Memory-Review/TEMPLATE.md`) as the vault's master hub note, but never actually existed — every new user hit 6 dead links on first open. Wrote the actual file: covers folder structure, the memory pipeline, and status/decisions scaffolding, following the same frontmatter format as `Templates/Project.md`. Kept deliberately agent-count-agnostic (doesn't hardcode a "4-agent team" assumption) so it doesn't reintroduce roadmap item #2. Linked from `MOC.md`. Verified via `Scripts/vault_audit.py`: 0 broken links (down from all 6 references broken).

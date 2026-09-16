@@ -171,9 +171,11 @@ welcome on any of these — see Contributing below.
       `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`,
       `Memory-Review/TEMPLATE.md`) but the file doesn't exist yet — new
       users hit 6 dead links on first open. _(Fixed in v1.13.0.)_
-- [ ] Several files hardcode a "4-agent team" (Codex/Ledger/Vox/Argus)
+- [x] Several files hardcode a "4-agent team" (Codex/Ledger/Vox/Argus)
       assumption as if every install has a multi-agent team, contradicting
-      `Team-Profiles-Index.md`'s own single-agent disclaimer.
+      `Team-Profiles-Index.md`'s own single-agent disclaimer. _(Fixed in
+      v1.14.0 — now phrased as "your agent(s)," with the 4-name table
+      relabeled as an example/starter template, not an assumed fact.)_
 - [ ] `consolidate_memory.py` and `Memory-Review/TEMPLATE.md` hardcode
       Supermemory-specific filenames as required fact sources, even though
       Supermemory integration is meant to be optional.

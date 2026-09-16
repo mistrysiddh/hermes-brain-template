@@ -6,7 +6,11 @@ Add one note per skill area actually used by the team, e.g. `arxiv.md`, `blogwat
 
 ## Index files here
 - [[Installed-Skills-Index]] — all 154 installed Hermes skills (name + description).
-- [[Team-Profiles-Index]] — the four agent profiles (Codex, Ledger, Vox, Argus) collaborating in this vault, what each specializes in, and when to hand off to them.
+- [[Team-Profiles-Index]] — a template for documenting agent profiles if
+  more than one agent collaborates in this vault (what each specializes
+  in, when to hand off). Defaults to a 4-example starter row (Codex,
+  Ledger, Vox, Argus) — rename/replace/delete down to one row for a
+  single-agent setup.
 - [[Skill-to-Chat-Links]] — which archived chat sessions actually invoked which skill, auto-generated from `Daily/`.
 
 ## Cross-links
