@@ -166,11 +166,11 @@ Tracked here so they're visible instead of buried in commit history. PRs
 welcome on any of these — see Contributing below.
 
 **Bugs to fix:**
-- [ ] `Projects/Hermes-Agent-Vault-Setup.md` is referenced as the "master
+- [x] `Projects/Hermes-Agent-Vault-Setup.md` is referenced as the "master
       hub note" by 6 files (`Welcome.md`, `Projects/README.md`,
       `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`,
       `Memory-Review/TEMPLATE.md`) but the file doesn't exist yet — new
-      users hit 6 dead links on first open.
+      users hit 6 dead links on first open. _(Fixed in v1.13.0.)_
 - [ ] Several files hardcode a "4-agent team" (Codex/Ledger/Vox/Argus)
       assumption as if every install has a multi-agent team, contradicting
       `Team-Profiles-Index.md`'s own single-agent disclaimer.

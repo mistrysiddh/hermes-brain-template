@@ -15,6 +15,7 @@ vault has more than a few dozen notes).
 - [[Welcome]] — orientation
 - [[Dashboard]] — live at-a-glance view: active projects, open memory candidates, recent sessions, installed skills
 - [[Dashboard-Beta]] — experimental website-style card layout of the same dashboard (KPI strip, activity heatmap, session calendar, weather, quick actions) — opt-in, enable the `dashboard-beta` CSS snippet
+- [[Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: this vault's own folder structure, memory pipeline, and current status
 - [[Projects/README]] — active project index
 
 ## Memory pipeline
