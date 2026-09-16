@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.13.0] — 2026-09-16
+### Fixed
+- **Missing "master hub note"** (roadmap item #1) — `Projects/Hermes-Agent-Vault-Setup.md` was referenced by 6 files (`Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`, `Memory-Review/TEMPLATE.md`) as the vault's master hub note, but never actually existed — every new user hit 6 dead links on first open. Wrote the actual file: covers folder structure, the memory pipeline, and status/decisions scaffolding, following the same frontmatter format as `Templates/Project.md`. Kept deliberately agent-count-agnostic (doesn't hardcode a "4-agent team" assumption) so it doesn't reintroduce roadmap item #2. Linked from `MOC.md`. Verified via `Scripts/vault_audit.py`: 0 broken links (down from all 6 references broken).
+
 ## [1.12.0] — 2026-09-16
 ### Added
 - **`User-Profile.md` — creative pass.** Added a TL;DR callout at the top, "talk to me like this / not like that" dialogue examples, ASCII trait sliders (directness/formality/risk tolerance), a new **Availability & reaching you** section (working hours, response-time expectations, notification channel), a new **Decision authority** section (unilateral action vs sign-off, optional/deletable for solo users), a scannable **vibe-check table** (mood → signal → what to do) replacing prose bullets, an **"if I go quiet" playbook**, a **running jokes & call signs** section, and a **review cadence** note in the Update log.
