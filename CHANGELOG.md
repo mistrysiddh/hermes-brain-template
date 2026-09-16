@@ -2,6 +2,10 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.16.0] — 2026-09-16
+### Fixed
+- **Stale hardcoded skill count** (roadmap item #4, last of the 4 known bugs) — `Skills-Notes/README.md` said "all 154 installed Hermes skills," a number copied from one real vault's install that goes wrong the moment any user installs or removes a skill. Reworded to "your installed Hermes skills" with no baked-in count, and pointed at `hermes skills list` for regenerating the index. Verified via `Scripts/vault_audit.py`: 0 broken links.
+
 ## [1.15.0] — 2026-09-16
 ### Fixed
 - **Supermemory presented as required, not optional** (roadmap item #3) — `Scripts/consolidate_memory.py` already handled missing Supermemory export files gracefully (its `read()` helper returns `""` for a nonexistent path, so it never errored), but gave no signal to a non-Supermemory user that the pipeline was silently producing zero candidates every run. Added an explicit stdout message when neither `Supermemory-All-Memory-Entries.md` nor `Supermemory-Explicit-Memories.md` exists, pointing at the manual/`Daily`-sourced alternative documented in `Memory-Review/TEMPLATE.md`. Reworded the script's docstring to describe Supermemory as one optional fact source, not the only one, and noted that automating non-Supermemory sources is a future roadmap item. All 6 existing `Scripts/ci/test_consolidate_memory.py` tests still pass; verified a clean 0-candidate run against a fresh vault with no Supermemory files (exit code 0, new message printed, valid `Promotion-Candidates.md` written).

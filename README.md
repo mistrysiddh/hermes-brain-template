@@ -183,8 +183,10 @@ welcome on any of these — see Contributing below.
       missing, but now says so explicitly instead of silently writing an
       empty candidates file; docstring reworded to make clear Supermemory
       is one optional source, not the only one.)_
-- [ ] `Skills-Notes/README.md` has a stale specific skill count that goes
-      wrong the moment a user installs or removes a skill.
+- [x] `Skills-Notes/README.md` has a stale specific skill count that goes
+      wrong the moment a user installs or removes a skill. _(Fixed in
+      v1.16.0 — reworded to "your installed Hermes skills," no baked-in
+      number.)_
 
 **Features under consideration:**
 - [ ] Skill-usage breakdown on the Dashboard ("Top 5 most-used skills this
