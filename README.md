@@ -189,13 +189,21 @@ welcome on any of these — see Contributing below.
       number.)_
 
 **Features under consideration:**
-- [ ] Skill-usage breakdown on the Dashboard ("Top 5 most-used skills this
-      month," sourced from `Skill-to-Chat-Links.md`).
-- [ ] "What changed since you last opened this" delta banner on the
-      Dashboard, tracked via the note's own frontmatter.
-- [ ] Recent Memory-Review promotions log — a small feed of what got
-      promoted to permanent memory recently.
-- [ ] Storage/file-count stats on the Dashboard via `app.vault.getFiles()`.
+- [x] Skill-usage breakdown on the Dashboard ("Top 5 most-used skills this
+      month," sourced from `Skill-to-Chat-Links.md`). _(Added in v1.17.0
+      as "Top skills used.")_
+- [x] "What changed since you last opened this" delta banner on the
+      Dashboard, tracked via the note's own frontmatter. _(Added in
+      v1.17.0 as "What's changed since your last visit.")_
+- [x] Recent Memory-Review promotions log — a small feed of what got
+      promoted to permanent memory recently. _(Added in v1.17.0 as
+      "Recently promoted," sourced from Consolidation-Log.md.)_
+- [x] Storage/file-count stats on the Dashboard via `app.vault.getFiles()`.
+      _(Added in v1.17.0 as "Storage & file counts.")_
+
+All 8 original roadmap items are now done — new ideas welcome via
+[Discussions](https://github.com/mistrysiddh/hermes-brain-template/discussions)
+or an issue.
 
 ## Contributing
 
