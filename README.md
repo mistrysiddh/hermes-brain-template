@@ -132,6 +132,9 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | Trend digest — Ollama backend | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
 | Trend digest — sentence-transformers backend | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
 | **Hourly session archiving + token tracking** | `python Scripts\hourly_archive.py` | `python3 Scripts/hourly_archive.py` |
+| **Instant session archiving (manual trigger)** | `python Scripts\archive_now.py` | `python3 Scripts/archive_now.py` |
+| **Session enrichment (add summaries)** | `python Scripts\enrich_session.py` | `python3 Scripts/enrich_session.py` |
+| **Semantic search index (build/update/serve)** | `python Scripts\semantic_search.py` | `python3 Scripts/semantic_search.py` |
 | **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
 | **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
 | Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
