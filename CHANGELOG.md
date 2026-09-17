@@ -2,6 +2,23 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.20.0] — 2026-09-17
+### Added
+- **Automated session tagging & topic tracking** — `Scripts/session_tagger.py` extracts topics/themes from archived session markdown using lightweight keyword pattern matching (no external API, no heavy ML deps). Runs automatically as part of `hourly_archive.py` after sessions are moved into `YYYY/MM/DD/` directories. Maintains:
+  - Per-session `tags` array in `Daily/manifest.jsonl`
+  - Global tag cloud with counts in `Skills-Notes/Tag-Cloud.log`
+  - Daily tag trends in `Skills-Notes/Tag-Trends.log`
+- **Dashboard "Tag cloud & trends" widget** — renders the tag cloud as styled pills (size/opacity scaled by frequency) with hover effects, plus a 14-day trend history from `Tag-Trends.log`. Degrades gracefully when source files don't exist yet.
+- **Cross-platform script table updated** — added row for `session_tagger.py`.
+
+### Verified
+- `session_tagger.py` syntax checks clean (`python -m py_compile`).
+- Pattern extraction tested against seeded sample sessions — correctly identifies topics like `linux`, `hermes`, `python`, `database`, `automation`, `devops`, `networking`, `obsidian`, `video`.
+- Tag cloud and trends logs written and formatted correctly.
+- All 13 `dataviewjs` blocks in `Dashboard.md` pass `node --check`; markdown fences balanced.
+- `hourly_archive.py` still byte-compiles cleanly after integration.
+- `Scripts/vault_audit.py` reports 0 broken links.
+
 ## [1.19.0] — 2026-09-17
 ### Added
 - **Semantic search layer** — `Scripts/semantic_search.py` builds a local vector search index over the vault's session and knowledge files using `sentence-transformers/all-MiniLM-L6-v2` (22 MB, CPU-only, no external API). Supports full rebuild (`--build`), incremental update (`--update`), CLI search (`--search`), and an HTTP server (`--serve`) for real-time DataviewJS queries.

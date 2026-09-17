@@ -227,12 +227,26 @@ def main():
                 }
 
         # 6. Rewrite manifest, sorted by exported_at.
-        records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
-        with open(MANIFEST, "w", encoding="utf-8") as f:
-            for rec in records:
-                f.write(json.dumps(rec) + "\n")
+                records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
+                with open(MANIFEST, "w", encoding="utf-8") as f:
+                    for rec in records:
+                        f.write(json.dumps(rec) + "\n")
 
-        print(f"Manifest now has {len(records)} session(s) indexed.")
+                print(f"Manifest now has {len(records)} session(s) indexed.")
+
+                # 7. Run session tagger to extract topics and update tag cloud
+                try:
+                    import subprocess
+                    result = subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "session_tagger.py")], 
+                                          capture_output=True, text=True, timeout=60)
+                    if result.stdout:
+                        print(result.stdout.strip())
+                    if result.stderr:
+                        print(f"Tagger warning: {result.stderr.strip()}")
+                except subprocess.TimeoutExpired:
+                    print("Warning: session_tagger.py timed out")
+                except Exception as e:
+                    print(f"Warning: session_tagger.py failed: {e}")
     finally:
         release_lock()
 
