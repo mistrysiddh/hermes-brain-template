@@ -91,7 +91,7 @@ function Process-File {
     try {
         $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
     } catch {
-        Write-Host "  Failed to read $FilePath: $_"
+        Write-Host "  Failed to read ${FilePath}: $_"
         return $false
     }
     
@@ -115,10 +115,10 @@ function Process-File {
     
     try {
         Set-Content -Path $FilePath -Value $newContent -Encoding UTF8
-        Write-Host "  Enriched $FilePath"
+        Write-Host "  Enriched ${FilePath}"
         return $true
     } catch {
-        Write-Host "  Failed to write $FilePath: $_"
+        Write-Host "  Failed to write ${FilePath}: $_"
         return $false
     }
 }
@@ -133,7 +133,7 @@ function Main {
     
     $searchPath = $Path
     if (-not (Test-Path $searchPath -PathType Container)) {
-        Write-Error "Search path '$searchPath' does not exist or is not a directory."
+        Write-Error "Search path '${searchPath}' does not exist or is not a directory."
         exit 1
     }
     
@@ -148,7 +148,7 @@ function Main {
     }
     
     Write-Host ""
-    Write-Host "Processed $totalCount $Extension files, enriched $enrichedCount."
+    Write-Host "Processed ${totalCount} ${Extension} files, enriched ${enrichedCount}."
 }
 
 Main
