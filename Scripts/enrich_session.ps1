@@ -64,7 +64,7 @@ function Set-Frontmatter {
     param([hashtable]$FmDict, [string]$Body)
     $lines = @('---')
     foreach ($key in $FmDict.Keys) {
-        $lines += "$key`: $($FmDict[$key])"
+        $lines += "${key}: $($FmDict[$key])"
     }
     $lines += '---'
     $lines += $Body
