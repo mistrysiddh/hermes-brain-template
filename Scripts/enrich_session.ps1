@@ -8,6 +8,7 @@
 # more glanceable and to provide seed data for future memory pipeline steps.
 #
 # Only standard library is used — no external dependencies.
+# CI: lint script syntax check
 
 param(
     [Parameter(Mandatory=$false)]
