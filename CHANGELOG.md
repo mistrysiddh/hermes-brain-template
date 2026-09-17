@@ -2,6 +2,20 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.18.0] — 2026-09-17
+### Added
+- **Manifest concurrency lock + instant archive trigger** — `Scripts/hourly_archive.py` (and `.ps1`) now acquire an exclusive lock file (`.hourly_archive.lock`) to prevent concurrent execution with itself or the new manual trigger. Added `Scripts/archive_now.py` (and `.ps1`) for on-demand, instant exports (default: last 5 minutes) that share the same lock so they never race the hourly cron. Both scripts export redacted markdown + JSONL, update `manifest.jsonl`, and append to `Token-Usage.log`.
+- **Optional session enrichment** — `Scripts/enrich_session.py` (and `.ps1`) adds a simple `summary:` frontmatter (first non-empty line, capped at 200 chars) to session markdown files that lack one, making sessions more glanceable without opening each file.
+- **Documentation updates** — `Daily/README.md` explains the two archiving paths (hourly cron vs instant manual) and the enrichment step. `INSTALL_PROMPT.md` Notes section now mentions the optional instant archive and enrichment scripts.
+
+### Verified
+- All scripts (`hourly_archive.py`, `archive_now.py`, `enrich_session.py`) and their PowerShell twins parse cleanly (`python -m py_compile`, PowerShell parser).
+- Throwaway-vault test: ran `archive_now.py --since 5m` on a seeded fixture, verified new sessions landed in correct `Daily/YYYY/MM/DD/` folder, `manifest.jsonl` updated, token usage logged, and no duplicate entries on re‑run.
+- Enrichment test: ran `enrich_session.py` on the same fixture, confirmed summary frontmatter added only to files missing it, and existing frontmatter left untouched.
+- Lock‑file test: launched two instances of `hourly_archive.py` in parallel — second exited with “Another instance … is already running — exiting.” Same for `archive_now.py` vs `hourly_archive.py`.
+- `Scripts/vault_audit.py` reports 0 broken links.
+- Markdown fences in `Dashboard.md` and `README.md` remain balanced.
+
 ## [1.17.0] — 2026-09-16
 ### Added
 - **4 new Dashboard.md sections** — the last 4 roadmap items, all shipped together:

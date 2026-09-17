@@ -186,11 +186,8 @@ cron job after seeing the vault installed first.
 
 ## Notes
 
-- Both prompts are safe to paste as-is — nothing in them touches secrets or
-  runs destructive commands. Hermes will still ask for your input at the
-  decision points above (vault location, embedding backend, whether you want
-  the cron job).
-- If you already ran `install.sh`/`install.ps1` by hand, skip straight to
-  prompt 2 for the cron job, or prompt 3 if you just want to pull updates.
-- Only run **one** archiving cron job per vault — see the Security notes in
-  the main [README.md](README.md).
+- Both prompts are safe to paste as-is — nothing in them touches secrets or runs destructive commands. Hermes will still ask for your input at the decision points above (vault location, embedding backend, whether you want the cron job).
+- If you already ran `install.sh`/`install.ps1` by hand, skip straight to prompt 2 for the cron job, or prompt 3 if you just want to pull updates.
+- Only run **one** archiving cron job per vault — see the Security notes in the main [README.md](README.md).
+- **Optional instant archive**: After installing, you also have `Scripts/archive_now.py` (or `.ps1`) available for manual, on-demand exports (e.g., after a long chat session). It exports sessions from a configurable time window (default: last 5 minutes) and uses the same lock file as the hourly cron to avoid conflicts. See `Daily/README.md` for details.
+- **Optional session enrichment**: After archiving (hourly or instant), you can run `Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one, making sessions more glanceable.
