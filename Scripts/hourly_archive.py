@@ -31,6 +31,7 @@ LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")
 
 CREATED_RE = re.compile(r'created_at:\s*"(\d{4})-(\d{2})-(\d{2})')
 
+
 def acquire_lock():
     """Acquire an exclusive lock to prevent concurrent execution."""
     try:
@@ -45,6 +46,7 @@ def acquire_lock():
         print(f"Failed to acquire lock: {e}")
         return False
 
+
 def release_lock():
     """Release the lock by removing the lock file."""
     try:
@@ -54,11 +56,13 @@ def release_lock():
     except Exception as e:
         print(f"Warning: Failed to release lock: {e}")
 
+
 def find_hermes():
     for cand in ("hermes", shutil.which("hermes")):
         if cand and shutil.which(cand):
             return cand
     return "hermes"
+
 
 def extract_tokens_from_jsonl(jsonl_path):
     """Parse JSONL export and sum prompt+completion tokens per session."""
@@ -89,6 +93,7 @@ def extract_tokens_from_jsonl(jsonl_path):
                     pass
     return total, sessions
 
+
 def update_token_log(daily_total, session_count):
     """Append today's token total to the running log."""
     today = datetime.now().strftime("%Y-%m-%d")
@@ -113,6 +118,7 @@ def update_token_log(daily_total, session_count):
     print(f"Token usage today: {daily_total} tokens ({session_count} session(s))")
     print(f"Running total: {running_total:,} tokens")
     return running_total
+
 
 def main():
     # 0. Acquire exclusive lock to prevent concurrent execution
@@ -227,28 +233,31 @@ def main():
                 }
 
         # 6. Rewrite manifest, sorted by exported_at.
-                records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
-                with open(MANIFEST, "w", encoding="utf-8") as f:
-                    for rec in records:
-                        f.write(json.dumps(rec) + "\n")
+        records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
+        with open(MANIFEST, "w", encoding="utf-8") as f:
+            for rec in records:
+                f.write(json.dumps(rec) + "\n")
 
-                print(f"Manifest now has {len(records)} session(s) indexed.")
+        print(f"Manifest now has {len(records)} session(s) indexed.")
 
-                # 7. Run session tagger to extract topics and update tag cloud
-                try:
-                    import subprocess
-                    result = subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "session_tagger.py")], 
-                                          capture_output=True, text=True, timeout=60)
-                    if result.stdout:
-                        print(result.stdout.strip())
-                    if result.stderr:
-                        print(f"Tagger warning: {result.stderr.strip()}")
-                except subprocess.TimeoutExpired:
-                    print("Warning: session_tagger.py timed out")
-                except Exception as e:
-                    print(f"Warning: session_tagger.py failed: {e}")
+        # 7. Run session tagger to extract topics and update tag cloud
+        try:
+            result = subprocess.run(
+                [sys.executable, os.path.join(os.path.dirname(__file__), "session_tagger.py")],
+                capture_output=True, text=True, timeout=60
+            )
+            if result.stdout:
+                print(result.stdout.strip())
+            if result.stderr:
+                print(f"Tagger warning: {result.stderr.strip()}")
+        except subprocess.TimeoutExpired:
+            print("Warning: session_tagger.py timed out")
+        except Exception as e:
+            print(f"Warning: session_tagger.py failed: {e}")
+
     finally:
         release_lock()
+
 
 if __name__ == "__main__":
     main()
