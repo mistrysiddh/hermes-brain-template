@@ -29,7 +29,7 @@ MANIFEST = os.path.join(DAILY, "manifest.jsonl")
 TOKEN_LOG = os.path.join(VAULT, "Skills-Notes", "Token-Usage.log")
 LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")
 
-CREATED_RE = re.compile(r'created_at:\\s*\"(\\d{4})-(\\d{2})-(\\d{2})')
+CREATED_RE = re.compile(r'created_at:\s*"(\d{4})-(\d{2})-(\d{2})')
 
 def acquire_lock():
     """Acquire an exclusive lock to prevent concurrent execution."""
@@ -92,7 +92,7 @@ def extract_tokens_from_jsonl(jsonl_path):
 def update_token_log(daily_total, session_count):
     """Append today's token total to the running log."""
     today = datetime.now().strftime("%Y-%m-%d")
-    line = f"{today}: {daily_total} tokens ({session_count} session(s))\\n"
+    line = f"{today}: {daily_total} tokens ({session_count} session(s))\n"
     os.makedirs(os.path.dirname(TOKEN_LOG), exist_ok=True)
     with open(TOKEN_LOG, "a", encoding="utf-8") as f:
         f.write(line)
@@ -202,7 +202,7 @@ def main():
                 continue
             y, mo, d = m.groups()
 
-            sid_m = re.search(r'session_id:\\s*\"([^\"]+)\"', head)
+            sid_m = re.search(r'session_id:\s*"([^"]+)"', head)
             session_id = sid_m.group(1) if sid_m else None
 
             destdir = os.path.join(DAILY, y, mo, d)
@@ -215,8 +215,8 @@ def main():
                 shutil.move(fpath, destpath)
 
             if session_id:
-                title_m = re.search(r'title:\\s*\"([^\"]*)\"', head)
-                msgcount_m = re.search(r\"message_count:\\s*(\\d+)\", head)
+                title_m = re.search(r'title:\s*"([^"]*)"', head)
+                msgcount_m = re.search(r"message_count:\s*(\d+)", head)
                 existing[session_id] = {
                     "session_id": session_id,
                     "title": title_m.group(1) if title_m else "",
@@ -230,7 +230,7 @@ def main():
         records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
         with open(MANIFEST, "w", encoding="utf-8") as f:
             for rec in records:
-                f.write(json.dumps(rec) + "\\n")
+                f.write(json.dumps(rec) + "\n")
 
         print(f"Manifest now has {len(records)} session(s) indexed.")
     finally:
