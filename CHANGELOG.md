@@ -2,6 +2,18 @@
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
 
+## [1.19.0] — 2026-09-17
+### Added
+- **Semantic search layer** — `Scripts/semantic_search.py` builds a local vector search index over the vault's session and knowledge files using `sentence-transformers/all-MiniLM-L6-v2` (22 MB, CPU-only, no external API). Supports full rebuild (`--build`), incremental update (`--update`), CLI search (`--search`), and an HTTP server (`--serve`) for real-time DataviewJS queries.
+- **Dashboard "Semantic search" widget** — natural-language search box on `Dashboard.md` that queries the local endpoint (or falls back gracefully with clear instructions). Click results to open matching notes.
+- **Cross-platform script table updated** — added rows for `semantic_search.py`, `archive_now.py`, `enrich_session.py`.
+
+### Verified
+- `semantic_search.py` syntax checks clean (`python -m py_compile`).
+- Index builds incrementally (only re-embeds new/changed files via SHA256 hash tracking).
+- Dashboard widget renders without errors; debounced input with loading state and clickable result links.
+- All existing Dashboard DataviewJS blocks still pass `node --check`; markdown fences balanced.
+
 ## [1.18.0] — 2026-09-17
 ### Added
 - **Manifest concurrency lock + instant archive trigger** — `Scripts/hourly_archive.py` (and `.ps1`) now acquire an exclusive lock file (`.hourly_archive.lock`) to prevent concurrent execution with itself or the new manual trigger. Added `Scripts/archive_now.py` (and `.ps1`) for on-demand, instant exports (default: last 5 minutes) that share the same lock so they never race the hourly cron. Both scripts export redacted markdown + JSONL, update `manifest.jsonl`, and append to `Token-Usage.log`.
