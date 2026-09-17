@@ -135,6 +135,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | **Instant session archiving (manual trigger)** | `python Scripts\archive_now.py` | `python3 Scripts/archive_now.py` |
 | **Session enrichment (add summaries)** | `python Scripts\enrich_session.py` | `python3 Scripts/enrich_session.py` |
 | **Semantic search index (build/update/serve)** | `python Scripts\semantic_search.py` | `python3 Scripts/semantic_search.py` |
+| **Session tagging & topic tracking** | `python Scripts\session_tagger.py` | `python3 Scripts/session_tagger.py` |
 | **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
 | **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
 | Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |

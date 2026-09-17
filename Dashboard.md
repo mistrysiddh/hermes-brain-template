@@ -582,6 +582,92 @@ function renderResults(results) {
 
 _Built with `sentence-transformers/all-MiniLM-L6-v2` (22 MB, runs entirely on your CPU). No data ever leaves your machine. Run `python Scripts/semantic_search.py --build` to create the index, then `python Scripts/semantic_search.py --serve` to power this widget. Re-run `--update` after new sessions are archived to keep it fresh._
 
+## Tag cloud & trends
+
+```dataviewjs
+// Tag cloud & trends — reads from Skills-Notes/Tag-Cloud.log and
+// Skills-Notes/Tag-Trends.log (maintained by session_tagger.py).
+// Requires: run `python Scripts/session_tagger.py` after archiving,
+// or let hourly_archive.py invoke it automatically.
+
+const tagCloudLog = app.vault.getAbstractFileByPath("Skills-Notes/Tag-Cloud.log");
+const tagTrendsLog = app.vault.getAbstractFileByPath("Skills-Notes/Tag-Trends.log");
+
+if (!tagCloudLog) {
+  dv.paragraph("ℹ️ Tag cloud not found — will appear after `session_tagger.py` runs (triggered automatically by hourly_archive.py). Run `python Scripts/session_tagger.py` manually to populate now.");
+} else {
+  const cloudContent = await app.vault.read(tagCloudLog);
+  const cloudLines = cloudContent.split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#"));
+
+  if (cloudLines.length === 0) {
+    dv.paragraph("ℹ️ Tag cloud log exists but is empty — will populate as sessions are tagged.");
+  } else {
+    // Parse tag: count
+    const tags = [];
+    for (const line of cloudLines) {
+      const parts = line.split(": ");
+      if (parts.length === 2) {
+        const count = parseInt(parts[1]);
+        if (!isNaN(count)) {
+          tags.push({ tag: parts[0], count });
+        }
+      }
+    }
+
+    if (tags.length === 0) {
+      dv.paragraph("⚠️ Tag cloud log found but no valid entries parsed yet.");
+    } else {
+      // Sort by count descending (should already be sorted)
+      tags.sort((a, b) => b.count - a.count);
+
+      // Render tag cloud as styled pills
+      const container = dv.el("div", "", { attr: { style: "display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;" } });
+      const maxCount = tags[0].count;
+      for (const { tag, count } of tags.slice(0, 30)) {
+        const ratio = count / maxCount;
+        // Size: 0.8em to 1.4em, Opacity: 0.5 to 1.0
+        const size = 0.8 + ratio * 0.6;
+        const opacity = 0.5 + ratio * 0.5;
+        const pill = container.createEl("span", {
+          text: `${tag} (${count})`,
+          attr: {
+            style: `font-size: ${size}em; opacity: ${opacity}; padding: 2px 8px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); border-radius: 999px; cursor: default; transition: opacity 0.15s, transform 0.15s;`
+          }
+        });
+        pill.addEventListener("mouseenter", () => { pill.style.opacity = "1"; pill.style.transform = "scale(1.05)"; });
+        pill.addEventListener("mouseleave", () => { pill.style.opacity = opacity; pill.style.transform = "scale(1)"; });
+      }
+
+      dv.paragraph(`🏷️ **${tags.length} unique tag${tags.length !== 1 ? "s" : ""}** tracked. Top tags shown above (click tags in notes to filter via Dataview).`);
+
+      // Show recent trends if available
+      if (tagTrendsLog) {
+        const trendsContent = await app.vault.read(tagTrendsLog);
+        const trendLines = trendsContent.split("\n")
+          .map(l => l.trim())
+          .filter(l => l && !l.startsWith("#"))
+          .slice(-14); // last 14 days
+
+        if (trendLines.length > 0) {
+          let output = "\n📈 **Recent tag trends (last " + trendLines.length + " days):**\n";
+          for (const line of trendLines) {
+            const parts = line.split(": ");
+            if (parts.length === 2) {
+              output += `- **${parts[0]}**: ${parts[1]}\n`;
+            }
+          }
+          dv.paragraph(output);
+        }
+      }
+    }
+  }
+}
+```
+
+_Same data powers the tag cloud above — tags are extracted automatically from session content by `session_tagger.py` (keyword-based, no external API). Run `python Scripts/session_tagger.py` manually to backfill older sessions, or let `hourly_archive.py` handle it on each hourly run._
+
 ---
 
 **Tip:** install the community plugin **Homepage** and point it at this
