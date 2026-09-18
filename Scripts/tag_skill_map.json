@@ -1,0 +1,42 @@
+{
+  "hermes": [
+    "hermes-brain-vault",
+    "hermes-plugin-discovery",
+    "hermes-desktop-plugin-dev",
+    "inspecting-hermes-desktop-dom"
+  ],
+  "linux": [
+    "virtualbox-vm-setup"
+  ],
+  "llm": [
+    "claude-code",
+    "codex",
+    "opencode"
+  ],
+  "automation": [
+    "automated-information-briefings",
+    "ai-ml-research-briefing",
+    "ntfy-notifications"
+  ],
+  "obsidian": [
+    "obsidian"
+  ],
+  "video": [],
+  "ai-agents": [
+    "agentic-architecture",
+    "multi-agent-groupchat-collaboration"
+  ],
+  "database": [],
+  "devops": [],
+  "javascript": [],
+  "cybersecurity": [],
+  "productivity": [
+    "weekly-review-planning",
+    "meeting-action-items"
+  ],
+  "python": [],
+  "networking": [],
+  "self-hosting": [
+    "virtualbox-vm-setup"
+  ]
+}
