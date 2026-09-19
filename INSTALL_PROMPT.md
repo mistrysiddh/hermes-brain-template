@@ -20,8 +20,8 @@ Clone https://github.com/mistrysiddh/hermes-brain-template into a new
 2. Clone the repo into that location (or download+extract if git isn't
    available).
 3. Run the platform-appropriate installer from inside it:
-   - Linux/macOS: chmod +x install.sh && ./install.sh
-   - Windows: powershell -ExecutionPolicy Bypass -File .\install.ps1
+   - Linux/macOS: chmod +x Scripts/Installers/install.sh && ./Scripts/Installers/install.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
 4. Let the installer's own prompts run (embedding backend choice, Obsidian
    detection, HERMES_VAULT_PATH registration) — relay its questions to me
    and pass my answers through if you're driving it non-interactively.
@@ -148,8 +148,8 @@ PART 1 — Install
 2. Clone https://github.com/mistrysiddh/hermes-brain-template into that
    location (or download+extract if git isn't available).
 3. Run the platform-appropriate installer from inside it:
-   - Linux/macOS: chmod +x install.sh && ./install.sh
-   - Windows: powershell -ExecutionPolicy Bypass -File .\install.ps1
+   - Linux/macOS: chmod +x Scripts/Installers/install.sh && ./Scripts/Installers/install.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
 4. Let the installer's own prompts run (embedding backend choice, Obsidian
    detection, HERMES_VAULT_PATH registration) — relay its questions to me
    and pass my answers through if you're driving it non-interactively.

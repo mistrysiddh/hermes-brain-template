@@ -8,6 +8,8 @@ cssclasses: [dashboard-wide]
 
 # Dashboard (Beta — card layout)
 
+> **To activate:** Enable the `dashboard-beta` CSS snippet in **Settings → Appearance → CSS snippets** (toggle "dashboard-beta"). Requires Dataview plugin.
+
 Experimental redesign of [[Dashboard]] as a website-style card dashboard: a
 KPI strip up top, styled cards below, badges instead of inline emoji-text.
 Same underlying data AND same level of detail as the original — nothing

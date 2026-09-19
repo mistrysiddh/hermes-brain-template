@@ -16,7 +16,7 @@ Research/**
 Skills-Notes/Skill-to-Chat-Links.md
 
 .smart-env/
-graphify-out/
+cache/graphify/
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/plugins/*/data.json
@@ -29,8 +29,6 @@ scratch_analysis.txt
 .obsidian/graph.json
 __pycache__/
 *.pyc
-
-
 
 
 # Ignore Smart Environment folder

@@ -18,13 +18,13 @@ whether to wire up the Hermes CLI) and does the rest.
 
 **Linux / macOS:**
 ```bash
-chmod +x install.sh
-./install.sh
+chmod +x Scripts/Installers/install.sh
+./Scripts/Installers/install.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
 ```
 
 Both scripts:
@@ -59,6 +59,9 @@ their own paths relative to `Scripts/`.
 - If Obsidian says a plugin is missing/disabled, go to Settings → Community
   Plugins and toggle it on manually — first-run enable state isn't always
   picked up automatically after a fresh copy.
+- **Minimum plugin versions** are documented in `.obsidian/plugin-versions.json`.
+  The installer (`install.sh`/`install.ps1`) will warn if your installed
+  versions are older than these minimums.
 
 ## 3. Generate your own Local REST API key
 The template ships **without** any API key (the original had a leaked one —
@@ -112,6 +115,36 @@ the box — pass a vault path / query / top-N as arguments (or
 ./Scripts/trend_digest.sh . "docker security" 10
 ```
 
+## 6b. (Optional) Semantic search layer
+`Scripts/semantic_search.py` builds a local vector search index over the vault's
+session and knowledge files using `sentence-transformers/all-MiniLM-L6-v2`
+(22 MB, CPU-only, no external API). Supports incremental updates, CLI search,
+and an HTTP server for real-time DataviewJS queries.
+
+```bash
+# Install deps first
+pip install sentence-transformers numpy
+
+# Build the index (full rebuild)
+python Scripts/semantic_search.py --build
+
+# Incremental update (run periodically)
+python Scripts/semantic_search.py --update
+
+# Test a search query
+python Scripts/semantic_search.py --search "prompt optimization" --top 5
+
+# Run HTTP server for Dashboard widget (default port 8765)
+python Scripts/semantic_search.py --serve
+
+# Or on a custom port
+python Scripts/semantic_search.py --serve --port 9999
+```
+
+The Dashboard's semantic search widget will query `http://localhost:8765/search?q=...`
+when the server is running. If the server isn't available, it falls back gracefully
+with clear instructions.
+
 ## 7. (Optional) Hourly session archiving + token tracking
 
 `Scripts/hourly_archive.py` is the core automation that:
@@ -156,12 +189,12 @@ python Scripts/agent_performance.py
 ```
 
 ## 8. (Optional) Pulling in later template updates
-`install.sh`/`install.ps1` do a one-shot copy — there's no `.git` in the
+`Scripts/Installers/install.sh`/`Scripts/Installers/install.ps1` do a one-shot copy — there's no `.git` in the
 destination, so there was previously no safe way to pull in template
 changes (a new script, an updated bundled plugin, a fixed bug) without
 risking an overwrite of anything you'd hand-edited.
 
-`update.sh` / `update.ps1` fix this: run one from inside your installed
+`Scripts/Installers/update.sh` / `Scripts/Installers/update.ps1` fix this: run one from inside your installed
 vault (not the template) and it turns the vault into a local git repo
 tracking the template as a read-only remote, then fetches and merges.
 git's own 3-way merge surfaces a conflict on any file you changed
@@ -169,10 +202,10 @@ yourself instead of silently clobbering it — resolve those like any git
 merge conflict, then commit.
 
 ```bash
-./update.sh                 # Linux/macOS — first run sets everything up
+./Scripts/Installers/update.sh                 # Linux/macOS — first run sets everything up
 ```
 ```powershell
-.\update.ps1                 # Windows
+.\\Scripts\\Installers\\update.ps1                 # Windows
 ```
 
 Your personal content (`Daily/`, `Memory-Review/*`, `Projects/*` beyond
@@ -187,7 +220,7 @@ for your vault's content to leave the machine.
 ## What's NOT included (by design)
 - Any chat history, session archives, or Supermemory exports
 - Any API keys, tokens, or `.obsidian/plugins/*/data.json` settings
-- Generated caches (`.smart-env/`, `graphify-out/`, `Skills-Notes/Token-Usage.log`, `Skills-Notes/Vault-Audit-Report.md`, `Skills-Notes/Agent-Performance.md`)
+- Generated caches (`.smart-env/`, `cache/graphify/`, `Skills-Notes/Token-Usage.log`, `Skills-Notes/Vault-Audit-Report.md`, `Skills-Notes/Agent-Performance.md`)
 - Anyone's personal file paths — everything here is relative/portable
 
 If you find a leftover personal path or credential anywhere in this template,

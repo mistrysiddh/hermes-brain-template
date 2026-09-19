@@ -44,7 +44,7 @@ copy without touching your personal content.
 - **`Skills-Notes/`** — reference docs about the agent's own tooling:
   installed skills, team/agent profiles (if more than one agent uses this
   vault), token usage, vault health.
-- **`Dashboard.md`** / **`Dashboard-Beta.md`** — live at-a-glance views of
+- **`Dashboard.md`** / **`Canvases/Dashboard-Beta.md`** — live at-a-glance views of
   the above (active projects, open memory candidates, recent sessions,
   installed skills, token usage, vault health).
 

@@ -6,6 +6,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 TEMPLATE_ROOT="$SCRIPT_DIR"
 
+# Parse command line arguments
+TEST_MODE=false
+for arg in "$@"; do
+    case $arg in
+        --test)
+            TEST_MODE=true
+            shift
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--test] [--help]"
+            echo "  --test    Run self-test after installation (validates scripts, manifest, dashboard)"
+            echo "  --help    Show this help"
+            exit 0
+            ;;
+    esac
+done
+
 bold()  { printf '\033[1m%s\033[0m\n' "$1"; }
 info()  { printf '  %s\n' "$1"; }
 warn()  { printf '  \033[33m! %s\033[0m\n' "$1"; }
@@ -51,7 +68,7 @@ else
   ok "Copied."
 fi
 
-chmod +x "$DEST/Scripts/"*.sh 2>/dev/null || true
+chmod +x "$DEST/Scripts/"/*.sh 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
 # 3. Ask about the trend-digest embedding backend
@@ -145,6 +162,95 @@ if [ "${RUNCONS,,}" = "y" ]; then
     "$PY" "$DEST/Scripts/consolidate_memory.py" "$DEST" || warn "consolidate_memory.py reported an issue — check output above."
   else
     warn "No python3/python found — skipping."
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 7. Self-test (if --test flag provided)
+# ---------------------------------------------------------------------------
+if [ "$TEST_MODE" = true ]; then
+  echo
+  bold "Running self-test..."
+  
+  # Test 1: Validate hourly_archive.py syntax
+  PY=$(command -v python3 || command -v python || true)
+  if [ -n "$PY" ]; then
+    info "Test 1: Python script syntax validation..."
+    "$PY" -m py_compile "$DEST/Scripts/hourly_archive.py" "$DEST/Scripts/consolidate_memory.py" "$DEST/Scripts/skill_forecast.py" "$DEST/Scripts/session_tagger.py" 2>/dev/null \
+      && ok "All Python scripts compile cleanly" \
+      || warn "Some Python scripts have syntax errors"
+    
+    # Test 2: Validate manifest.jsonl structure (if exists)
+    info "Test 2: Manifest structure validation..."
+    if [ -f "$DEST/Daily/manifest.jsonl" ]; then
+      "$PY" -c "
+import json, sys
+errors = 0
+with open('$DEST/Daily/manifest.jsonl') as f:
+    for i, line in enumerate(f, 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rec = json.loads(line)
+            if 'session_id' not in rec:
+                print(f'Line {i}: missing session_id')
+                errors += 1
+            if 'path' not in rec:
+                print(f'Line {i}: missing path')
+                errors += 1
+        except json.JSONDecodeError as e:
+            print(f'Line {i}: JSON decode error: {e}')
+            errors += 1
+if errors == 0:
+    print('Manifest structure OK')
+else:
+    print(f'Manifest has {errors} errors')
+    sys.exit(1)
+" 2>/dev/null && ok "Manifest.jsonl structure valid" || warn "Manifest.jsonl has issues or is empty"
+    else
+      # Test with empty manifest - just verify the file can be created
+      touch "$DEST/Daily/manifest.jsonl"
+      ok "Manifest file created (empty)"
+    fi
+    
+    # Test 3: Check Dashboard.md exists
+    info "Test 3: Dashboard file validation..."
+    if [ -f "$DEST/Dashboard.md" ]; then
+      ok "Dashboard.md exists"
+    else
+      warn "Dashboard.md not found"
+    fi
+    
+    # Test 4: Verify required directories exist
+    info "Test 4: Required directories..."
+    for dir in "Daily" "Memory-Review" "Projects" "Research" "Skills-Notes" "Scripts" "Templates" "Canvases" "assets"; do
+      if [ -d "$DEST/$dir" ]; then
+        ok "  $dir/"
+      else
+        warn "  $dir/ missing"
+      fi
+    done
+    
+    # Test 5: Verify key files
+    info "Test 5: Key files..."
+    for file in "Welcome.md" "MOC.md" "README.md" "SETUP.md" "Dashboard.md" "Dashboard-Beta.md"; do
+      if [ -f "$DEST/$file" ]; then
+        ok "  $file"
+      else
+        warn "  $file missing"
+      fi
+    done
+    
+    echo
+    bold "Self-test complete."
+  else
+    warn "No Python found — limited self-test only"
+    # Basic checks without Python
+    if [ -f "$DEST/Dashboard.md" ]; then ok "Dashboard.md exists"; else warn "Dashboard.md missing"; fi
+    for dir in "Daily" "Memory-Review" "Projects" "Research" "Skills-Notes" "Scripts" "Templates" "Canvases"; do
+      [ -d "$DEST/$dir" ] && ok "  $dir/" || warn "  $dir/ missing"
+    done
   fi
 fi
 

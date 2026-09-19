@@ -16,6 +16,8 @@ One glance at everything live in this vault. Requires the **Dataview**
 plugin (already enabled) to render; without it these show as raw code
 blocks instead of tables/lists.
 
+> **Note:** An experimental card-style dashboard is available at `Canvases/Dashboard-Beta.md` (requires the `dashboard-beta` CSS snippet enabled in Settings → Appearance → CSS snippets).
+
 ## What's changed since your last visit
 
 ```dataviewjs
