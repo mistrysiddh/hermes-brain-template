@@ -145,6 +145,29 @@ The Dashboard's semantic search widget will query `http://localhost:8765/search?
 when the server is running. If the server isn't available, it falls back gracefully
 with clear instructions.
 
+## 6c. (Optional) Enhanced skill forecasting
+`Scripts/skill_forecast.py` analyzes vault activity trends and installed skills
+to suggest which skills to learn/install next. Now with CLI configurability,
+recency-weighted trends, skill gap analysis, and complementary skill suggestions.
+
+```bash
+# Basic run (last 14 days, top 10 suggestions)
+python Scripts/skill_forecast.py
+
+# Custom lookback window and suggestion count
+python Scripts/skill_forecast.py --days 30 --top 15
+
+# Debug mode with colorized output
+python Scripts/skill_forecast.py --debug --no-color
+
+# Show suggestions without logging
+python Scripts/skill_forecast.py --no-log
+```
+
+The script reads from `Tag-Trends.log`, `Installed-Skills-Index.md`, and
+`Skill-to-Chat-Links.md`. It uses an external `tag_skill_map.json` (editable
+in `Scripts/`) for tag-to-skill mappings with sensible defaults built in.
+
 ## 7. (Optional) Hourly session archiving + token tracking
 
 `Scripts/hourly_archive.py` is the core automation that:

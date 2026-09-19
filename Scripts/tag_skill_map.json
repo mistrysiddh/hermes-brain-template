@@ -38,5 +38,20 @@
   "networking": [],
   "self-hosting": [
     "virtualbox-vm-setup"
+  ],
+  "docker": [
+    "virtualbox-vm-setup"
+  ],
+  "kubernetes": [],
+  "mlops": [
+    "ai-ml-research-briefing"
+  ],
+  "agentic": [
+    "agentic-architecture",
+    "multi-agent-groupchat-collaboration"
+  ],
+  "gemini": [],
+  "cybersecurity": [
+    "virtualbox-vm-setup"
   ]
 }

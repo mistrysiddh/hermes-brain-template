@@ -15,21 +15,34 @@ Research/**
 # archive, not template content.
 Skills-Notes/Skill-to-Chat-Links.md
 
+# Generated logs and reports
+Skills-Notes/*.log
+Skills-Notes/*-Report.md
+Skills-Notes/*-Performance.md
+
+# Smart environment (local ML models, event logs, smart blocks state)
 .smart-env/
+!/.smart-env/README.md
+!/.smart-env/smart_env.json
+
+# Cache directories
 cache/graphify/
+
+# Obsidian runtime state
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/plugins/*/data.json
+.obsidian/app.json
+.obsidian/graph.json
 
+# Python cache
+__pycache__/
+*.pyc
+
+# Scratch workspace
 scratch/
 scratch_analysis.txt
 *.log
 
-.obsidian/app.json
-.obsidian/graph.json
-__pycache__/
-*.pyc
-
-
-# Ignore Smart Environment folder
-.smart-env
+# Graphify cache (generated analysis output)
+graphify-out/

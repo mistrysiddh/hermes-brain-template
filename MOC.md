@@ -18,6 +18,12 @@ vault has more than a few dozen notes).
 - [[Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: this vault's own folder structure, memory pipeline, and current status
 - [[Projects/README]] — active project index
 
+## Specialized MOCs (deep-dive indexes)
+- [[Skills-Notes/Technology-Stack-MOC|Technology Stack MOC]] — Linux, Docker, Kubernetes, self-hosting, automation
+- [[Skills-Notes/Cybersecurity-MOC|Cybersecurity Framework MOC]] — Hardening, threat modeling, privacy tooling, monitoring
+- [[Skills-Notes/AI-ML-MOC|AI/ML Workflows MOC]] — LLM integration, agentic patterns, MLOps, research automation
+- [[Skills-Notes/Agentic-Architecture-MOC|Agentic Architecture MOC]] — Multi-agent orchestration, delegation, verification
+
 ## Memory pipeline
 - [[Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] — visual map of Daily → Memory-Review → native memory
 - [[Daily/README]] — raw chat archive conventions
