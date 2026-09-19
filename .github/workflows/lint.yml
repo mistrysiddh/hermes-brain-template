@@ -4,13 +4,13 @@ on:
   push:
     paths:
       - "Scripts/**"
-      - "install.sh"
-      - "install.ps1"
+      - "Scripts/Installers/install.sh"
+      - "Scripts/Installers/install.ps1"
   pull_request:
     paths:
       - "Scripts/**"
-      - "install.sh"
-      - "install.ps1"
+      - "Scripts/Installers/install.sh"
+      - "Scripts/Installers/install.ps1"
 
 jobs:
   bash-syntax:
@@ -45,11 +45,12 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $files = @("install.ps1") + (Get-ChildItem -Path Scripts -Filter *.ps1 | ForEach-Object { $_.FullName })
+          $files = @("Scripts/Installers/install.ps1") + (Get-ChildItem -Path Scripts -Filter *.ps1 | ForEach-Object { $_.FullName })
           $failed = $false
           foreach ($f in $files) {
+            $nullTokens = $null
             $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$errors) | Out-Null
+            [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$nullTokens, [ref]$errors) | Out-Null
             if ($errors.Count -gt 0) {
               Write-Host "FAILED: $f"
               $errors | ForEach-Object { Write-Host "  $($_.Message)" }

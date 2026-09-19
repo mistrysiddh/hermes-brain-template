@@ -1,1 +1,16 @@
 graphify-out/graph.json merge=graphify
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files and ensure consistent line endings.
+# *.txt text eol=lf
+# *.c text
+# *.h text
+# Ensure all scripts have normalized line endings in the repo.
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.md text
+*.json text
+*.yml text
+*.yaml text
