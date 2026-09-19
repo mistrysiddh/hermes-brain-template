@@ -105,9 +105,11 @@ _Full list, live: [[Dashboard#Active projects|Dashboard → Active projects]]_
 Background that helps the agent make better judgment calls — not
 required, but useful for tone and prioritization.
 
-- **Domains you're deep in:**
-- **What you're trying to learn / get better at:**
-- **Recurring topics you come back to:**
+- **Domains you're deep in:** _(e.g. Linux systems, cybersecurity, Docker, AI/ML workflows, self-hosting)_
+- **What you're trying to learn / get better at:** _(e.g. Kubernetes, advanced threat modeling, MLOps pipelines, Rust)_
+- **Recurring topics you come back to:** _(e.g. automation patterns, privacy-first tooling, agentic architectures)_
+- **Current technical focus areas:** _(e.g. "Exploring Gemini API integration for prompt optimization", "Setting up agentic-os repo with multi-agent workflows", "Building local LLM inference on HermesPi")_
+- **Skill development goals:** _(e.g. "Publish 3 new Hermes skills this quarter", "Master DataviewJS for custom dashboards", "Automate weekly review pipeline")_
 
 ## Boundaries & do-not-do
 

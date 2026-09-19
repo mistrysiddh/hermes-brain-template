@@ -15,22 +15,32 @@
 # diff/merge in the first place.
 set -euo pipefail
 
-VAULT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-TEMPLATE_URL="${1:-https://github.com/mistrysiddh/hermes-brain-template.git}"
-TEMPLATE_BRANCH="${2:-main}"
+VAULT_ROOT="${1:-.}"
+TEMPLATE_URL="${2:-https://github.com/mistrysiddh/hermes-brain-template.git}"
+TEMPLATE_BRANCH="${3:-main}"
 REMOTE_NAME="template"
 
 # Parse command line arguments
 DRY_RUN=false
+# Skip positional arguments (VAULT_ROOT, TEMPLATE_URL, TEMPLATE_BRANCH) when parsing flags
+POSITIONAL_ARGS=3
+ARG_INDEX=0
 for arg in "$@"; do
+    ARG_INDEX=$((ARG_INDEX + 1))
+    if [ $ARG_INDEX -le $POSITIONAL_ARGS ]; then
+        continue
+    fi
     case $arg in
         --dry-run|-n)
             DRY_RUN=true
             ;;
         --help|-h)
-            echo "Usage: $0 [--dry-run] [TEMPLATE_URL] [TEMPLATE_BRANCH]"
-            echo "  --dry-run, -n    Show what would be merged without making changes"
-            echo "  --help, -h       Show this help"
+            echo "Usage: $0 [VAULT_ROOT] [TEMPLATE_URL] [TEMPLATE_BRANCH] [--dry-run] [--help]"
+            echo "  VAULT_ROOT         Path to the vault to update (default: current directory)"
+            echo "  TEMPLATE_URL       Template git URL (default: https://github.com/mistrysiddh/hermes-brain-template.git)"
+            echo "  TEMPLATE_BRANCH    Template branch (default: main)"
+            echo "  --dry-run, -n      Show what would be merged without making changes"
+            echo "  --help, -h         Show this help"
             exit 0
             ;;
         --*)

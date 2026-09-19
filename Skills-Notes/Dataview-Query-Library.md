@@ -153,6 +153,181 @@ WHERE contains(file.tags, "#project") OR contains(file.tags, "#research")
 SORT file.name ASC
 ```
 
+## ✨ NEW: Skill Usage Analytics
+
+### Skill usage frequency over time (last 30 days)
+
+Shows how often each skill appears in session notes, weighted by recency.
+
+```dataviewjs
+const thirtyDaysAgo = date(today) - dur(30 days);
+const skillUsage = {};
+
+// Scan Daily notes for skill mentions
+const dailyNotes = dv.pages('"Daily"')
+  .where(p => p.file.mtime >= thirtyDaysAgo);
+
+for (const note of dailyNotes) {
+  // Check for skills mentioned in the note
+  const skillMatches = note.file.content.match(/(?:^|\s)(hermes-\w+|virtualbox|vmware|claude|codex|opencode|obsidian|dataview|smart-connections|kanban|local-rest-api)(?=\s|$)/gi);
+  
+  if (skillMatches) {
+    for (const match of skillMatches) {
+      const skill = match.toLowerCase().trim();
+      const daysOld = (date(today) - note.file.mtime).days;
+      const weight = Math.max(1, 30 - daysOld); // Linear decay: newer = higher weight
+      
+      if (!skillUsage[skill]) skillUsage[skill] = 0;
+      skillUsage[skill] += weight;
+    }
+  }
+}
+
+// Convert to array and sort by usage
+const skillArray = Object.entries(skillUsage)
+  .map(([skill, count]) => ({ skill, count }))
+  .sort((a, b) => b.count - a.count);
+
+if (skillArray.length === 0) {
+  dv.paragraph("No skill usage found in the last 30 days. Run session_tagger.py to tag sessions.");
+} else {
+  dv.table(["Skill", "Usage Score (30d)"], 
+    skillArray.slice(0, 15).map(s => [s.skill, Math.round(s.count)]));
+}
+```
+
+### Skill-to-project cross-referencing
+
+Shows which skills are associated with which projects.
+
+```dataviewjs
+const projectSkills = {};
+
+// Scan project notes for skills
+const projectNotes = dv.pages('"Projects"')
+  .where(p => p.file.type === "project");
+
+for (const note of projectNotes) {
+  const projectName = note.file.link;
+  const skillMatches = note.file.content.match(/(?:^|\s)(hermes-\w+|virtualbox|vmware|claude|codex|opencode|obsidian|dataview|smart-connections|kanban|local-rest-api)(?=\s|$)/gi);
+  
+  if (skillMatches) {
+    for (const match of skillMatches) {
+      const skill = match.toLowerCase().trim();
+      if (!projectSkills[skill]) projectSkills[skill] = [];
+      if (!projectSkills[skill].includes(projectName)) {
+        projectSkills[skill].push(projectName);
+      }
+    }
+  }
+}
+
+if (Object.keys(projectSkills).length === 0) {
+  dv.paragraph("No skill-project connections found. Tag skills in your project notes.");
+} else {
+  dv.table(["Skill", "Associated Projects"], 
+    Object.entries(projectSkills)
+      .map(([skill, projects]) => [skill, projects.join(", ")])
+      .sort((a, b) => a[0].localeCompare(b[0])));
+}
+```
+
+### Project completion velocity
+
+Tracks project progress over time (requires status field in project notes).
+
+```dataview
+TABLE 
+  file.link AS "Project",
+  status AS "Status",
+  dateformat(created, "yyyy-MM-dd") AS "Started",
+  dateformat(file.mtime, "yyyy-MM-dd") AS "Last Updated",
+  round((date(today) - date(created)).days) AS "Days Active"
+FROM "Projects"
+WHERE type = "project"
+SORT file.mtime DESC
+```
+
+### Memory retention/recall analytics
+
+Shows how often old notes are being revisited (indicates active knowledge).
+
+```dataviewjs
+const ninetyDaysAgo = date(today) - dur(90 days);
+const oldNotes = dv.pages('""')
+  .where(p => p.file.mtime <= ninetyDaysAgo 
+           && p.file.folder !== ".obsidian"
+           && p.file.folder !== ".git"
+           && p.file.folder !== "cache"
+           && p.file.folder !== ".smart-env"
+           && p.file.folder !== "assets"
+           && p.file.extension === "md")
+  .sort(p => p.file.mtime, false); // Oldest first
+
+const recentlyViewed = dv.pages('""')
+  .where(p => p.file.mtime >= date(today) - dur(7 days)
+           && p.file.folder !== ".obsidian"
+           && p.file.folder !== ".git"
+           && p.file.folder !== "cache"
+           && p.file.folder !== ".smart-env"
+           && p.file.folder !== "assets"
+           && p.file.extension === "md");
+
+const revisitedOldNotes = oldNotes.filter(note => 
+  recentlyViewed.some(recent => recent.file.path === note.file.path));
+
+if (oldNotes.length === 0) {
+  dv.paragraph("No notes older than 90 days found.");
+} else {
+  const retentionRate = (revisitedOldNotes.length / oldNotes.length * 100).toFixed(1);
+  dv.paragraph(`**Memory Retention Rate**: ${revisitedOldNotes.length}/${oldNotes.length} notes (${retentionRate}%) revisited in the last 7 days`);
+  
+  if (revisitedOldNotes.length > 0) {
+    dv.table(["Note", "Last Modified", "Days Since"], 
+      revisitedOldNotes.slice(0, 10).map(n => [
+        n.file.link,
+        dateformat(n.file.mtime, "yyyy-MM-dd"),
+        Math.floor((date(today) - date(n.file.mtime)).days)
+      ]));
+  }
+}
+```
+
+## Recent improvements (last 7 days)
+
+Shows what's been recently added or modified.
+
+```dataview
+TABLE 
+  file.link AS "Note",
+  file.folder AS "Folder",
+  file.mtime AS "Modified"
+FROM ""
+WHERE file.mtime >= date(today) - dur(7 days)
+  AND file.name != "Dataview-Query-Library"
+  AND file.folder != ".obsidian"
+  AND file.folder != ".git"
+  AND file.folder != ".smart-env"
+  AND file.folder != "cache"
+  AND file.folder != "assets"
+SORT file.mtime DESC
+LIMIT 10
+```
+
+## Skill development tracking
+
+Tracks progress on skills you're currently learning.
+
+```dataview
+TABLE
+  file.link AS "Skill",
+  status AS "Status",
+  created AS "Started"
+FROM "Skills-Notes"
+WHERE contains(file.tags, "#learning")
+SORT file.mtime DESC
+```
+
 ---
 
 See also: [[Daily/Timeline]] and [[Daily/Chat-Correlation]] for the two
