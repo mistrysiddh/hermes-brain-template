@@ -14,12 +14,12 @@ vault has more than a few dozen notes).
 ## Start here
 - [[Welcome]] — orientation
 - [[Dashboard]] — live at-a-glance view: active projects, open memory candidates, recent sessions, installed skills
-- [[Dashboard-Beta]] — experimental website-style card layout of the same dashboard (KPI strip, activity heatmap, session calendar, weather, quick actions) — opt-in, enable the `dashboard-beta` CSS snippet
+- [[Canvases/Dashboard-Beta|Dashboard-Beta]] — experimental website-style card layout of the same dashboard (KPI strip, activity heatmap, session calendar, weather, quick actions) — opt-in, enable the `dashboard-beta` CSS snippet
 - [[Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: this vault's own folder structure, memory pipeline, and current status
 - [[Projects/README]] — active project index
 
 ## Memory pipeline
-- [[Memory-Pipeline.canvas|Memory-Pipeline]] — visual map of Daily → Memory-Review → native memory
+- [[Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] — visual map of Daily → Memory-Review → native memory
 - [[Daily/README]] — raw chat archive conventions
 - [[Daily/Timeline]] — live chronological browse (Dataview)
 - [[Daily/Chat-Correlation]] — live pattern/profile breakdown (Dataview)

@@ -12,7 +12,7 @@ on:
       - "Research/**"
       - ".smart-env/**"
       - ".obsidian/plugins/**/data.json"
-      - "graphify-out/**"
+      - "cache/graphify/**"
   pull_request:
     paths:
       - "Daily/**"
@@ -20,7 +20,7 @@ on:
       - "Research/**"
       - ".smart-env/**"
       - ".obsidian/plugins/**/data.json"
-      - "graphify-out/**"
+      - "cache/graphify/**"
 
 jobs:
   personal-data-guard:
@@ -56,7 +56,7 @@ jobs:
             'Research/*' \
             '.smart-env/*' \
             '.obsidian/plugins/*/data.json' \
-            'graphify-out/*' \
+            'cache/graphify/*' \
             | grep -v -E '^Daily/(README\.md|Timeline\.md|Chat-Correlation\.md|manifest\.jsonl|\.gitkeep)$' \
             | grep -v -E '^Memory-Review/TEMPLATE\.md$' \
             | grep -v -E '^Research/README\.md$' \
@@ -65,7 +65,7 @@ jobs:
             echo "::error::Disallowed personal-content paths were added/changed in this PR:"
             echo "$CHANGED"
             echo ""
-            echo "This template repo must never contain real vault content — see CONTRIBUTING.md."
+            echo "This template repo must never contain real vault content — see docs/CONTRIBUTING.md."
             echo "If this is a false positive (e.g. a genuinely new template scaffolding file"
             echo "under Research/ or Memory-Review/), add it to the allow-list in this workflow."
             exit 1

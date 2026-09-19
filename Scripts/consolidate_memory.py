@@ -21,8 +21,9 @@ What it does (mechanical only — NEVER touches Hermes's real MEMORY.md/USER.md)
   2. Re-reads the previous Memory-Review/Promotion-Candidates.md (if any) to see
      which candidates you already checked off (decided) — those are archived to
      Memory-Review/Consolidation-Log.md and never shown again.
-  3. Strips out anything that looks like a secret/credential (regex) into
-     Memory-Review/Excluded-Sensitive.md — these are NEVER proposed for promotion.
+  3. Strips out anything that looks like a secret/credential (regex + detect-secrets
+     if available) into Memory-Review/Excluded-Sensitive.md — these are NEVER
+     proposed for promotion.
   4. Dedupes near-identical facts (difflib ratio) against each other and against
      already-decided facts.
   5. Flags candidates that have sat undecided for 60+ days as "stale — reconsider"
@@ -32,7 +33,7 @@ What it does (mechanical only — NEVER touches Hermes's real MEMORY.md/USER.md)
      anything is manually copied into native MEMORY.md/USER.md.
 
 Usage:
-    python consolidate_memory.py <vault_root>
+    python consolidate_memory.py <vault_root> [--scan-secrets]
 
 Exit code 0 always (this is a reporting/staging tool, not a gate); prints a short
 summary to stdout for cron delivery.
@@ -43,7 +44,16 @@ import re
 import json
 import hashlib
 import difflib
+import argparse
 from datetime import datetime, timezone
+
+# Optional: detect-secrets for more comprehensive secret detection
+try:
+    from detect_secrets import SecretsCollection
+    from detect_secrets.settings import default_settings
+    HAS_DETECT_SECRETS = True
+except ImportError:
+    HAS_DETECT_SECRETS = False
 
 STALE_DAYS = 60
 
@@ -73,14 +83,44 @@ def read(path):
 
 
 def fact_hash(text):
-    norm = re.sub(r"_\(session `[^`]+`\)_", "", text)
+    norm = re.sub(r"_\(session `[^`]+`\)_\`", "", text)
     norm = re.sub(r"\s+", " ", norm).strip().lower()
     norm = re.sub(r"[^a-z0-9 ]", "", norm)
     return hashlib.sha1(norm.encode("utf-8")).hexdigest(), norm
 
 
-def is_secret(text):
+def is_secret_regex(text):
+    """Legacy regex-based secret detection."""
     return any(p.search(text) for p in SECRET_PATTERNS)
+
+
+def is_secret_detect_secrets(text):
+    """Use detect-secrets library for comprehensive secret detection."""
+    if not HAS_DETECT_SECRETS:
+        return False
+    try:
+        secrets = SecretsCollection()
+        # Create a temporary file-like object for scanning
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tmp:
+            tmp.write(text)
+            tmp_path = tmp.name
+        try:
+            secrets.scan_file(tmp_path)
+            return len(secrets.data) > 0
+        finally:
+            os.unlink(tmp_path)
+    except Exception:
+        return False
+
+
+def is_secret(text, use_detect_secrets=False):
+    """Combined secret detection using regex and optionally detect-secrets."""
+    if is_secret_regex(text):
+        return True
+    if use_detect_secrets and is_secret_detect_secrets(text):
+        return True
+    return False
 
 
 def is_likely_transient(text):
@@ -129,10 +169,13 @@ def parse_decided_from_candidates(md_text):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("usage: consolidate_memory.py <vault_root>")
-        sys.exit(1)
-    vault = sys.argv[1]
+    parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
+    parser.add_argument("vault_root", help="Path to the vault root directory")
+    parser.add_argument("--scan-secrets", action="store_true",
+                        help="Enable detect-secrets scanning in addition to regex patterns")
+    args = parser.parse_args()
+
+    vault = args.vault_root
     mr_dir = os.path.join(vault, "Memory-Review")
     os.makedirs(mr_dir, exist_ok=True)
 
@@ -187,10 +230,6 @@ def main():
             f.write("\n")
 
     # Bucket incoming facts: secret / transient-flag / normal, dedupe by hash.
-    # decided_hashes is keyed by the 8-char tag shown in Promotion-Candidates.md
-    # (that tag is the candidate's public identity), so compare on h[:8] here too -
-    # comparing the full 40-char hash against those 8-char keys never matched,
-    # which meant already-decided candidates kept reappearing on every run.
     decided_prefixes = set(state["decided_hashes"].keys())
     seen_hashes = set()  # full-hash dedupe within this run
     excluded_secrets = []
@@ -201,7 +240,7 @@ def main():
     for e in raw:
         text = e["text"]
         h, norm = fact_hash(text)
-        if is_secret(text):
+        if is_secret(text, use_detect_secrets=args.scan_secrets):
             excluded_secrets.append((e["date"], text))
             continue
         if h[:8] in decided_prefixes or h in seen_hashes:
@@ -281,8 +320,9 @@ def main():
         json.dump(state, f, indent=2)
 
     total_open = sum(len(v) for v in grouped.values())
+    secret_method = "regex + detect-secrets" if (args.scan_secrets and HAS_DETECT_SECRETS) else "regex only"
     print(f"[consolidate_memory] archived {len(newly_archived)} decided candidate(s) to Consolidation-Log.md; "
-          f"{new_count} new, {dup_count} deduped, {len(excluded_secrets)} sensitive excluded, "
+          f"{new_count} new, {dup_count} deduped, {len(excluded_secrets)} sensitive excluded ({secret_method}), "
           f"{total_open} candidates now pending review in Promotion-Candidates.md")
 
 

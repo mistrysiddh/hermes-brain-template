@@ -1,11 +1,11 @@
 # Hermes Brain — Obsidian Vault Template for Hermes Agent (including OpenClaw)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](docs/LICENSE)
 [![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
 [![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
 [![Works with OpenClaw](https://img.shields.io/badge/Works%20with-OpenClaw-FF6B35.svg)](https://claude-code.nousresearch.com/docs)
 [![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
-[![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
 [![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](User-Profile.md)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
@@ -54,7 +54,7 @@ Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md
 - **`Skills-Notes/`** — index of installed Hermes skills, a team-profiles index, a generated `Skill-to-Chat-Links.md` (which sessions actually used which skill — `generate_skill_links.py`), plus a [[Skills-Notes/Dataview-Query-Library|Dataview Query Library]] of copy-paste queries for this vault.
 - **`Projects/`** — one note per active project, with a `Project.md` template and Kanban board support.
 - **`Templates/`** — Project, Daily-Review, and Research-Note templates, wired into Obsidian's core Templates plugin.
-- **`Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
+- **`Canvases/Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
 - **`User-Profile.md`** — a single note documenting who *you* are from the agent's perspective: identity, communication preferences, technical environment, standing facts, boundaries — plus a section the agent itself writes and maintains, "What the agent has noticed about you."
 - **`Dashboard.md`** — one landing note with everything live: token usage, vault health (stale-archiver + Memory-Review backlog checks), vault integrity audit, agent performance snapshot, active projects, recent sessions, installed skills.
 - Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus two bundled themes — **Tokyo Night** and **Nemoclaw** (a custom NVIDIA-inspired black/green theme, now the default).
@@ -72,10 +72,10 @@ directory and open it in Obsidian without touching your real config or
 registering anything with Hermes:
 
 ```bash
-./try.sh        # Linux/macOS
+./Scripts/Installers/try.sh        # Linux/macOS
 ```
 ```powershell
-.\try.ps1        # Windows
+.\\Scripts\\Installers\\try.ps1        # Windows
 ```
 
 Delete the scratch copy any time. Run Option A or B below when you're
@@ -103,15 +103,15 @@ Real transcript from an actual run:
 ```bash
 git clone https://github.com/mistrysiddh/hermes-brain-template.git
 cd hermes-brain-template
-chmod +x install.sh
-./install.sh
+chmod +x Scripts/Installers/install.sh
+./Scripts/Installers/install.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
 git clone https://github.com/mistrysiddh/hermes-brain-template.git
 cd hermes-brain-template
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
 ```
 
 The installer asks a few questions — where to put the vault, which local
@@ -139,8 +139,12 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | **Future skill forecast** | `python Scripts\skill_forecast.py` | `python3 Scripts/skill_forecast.py` |
 | **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
 | **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
-| Pull template updates into an installed vault | `.\update.ps1` | `./update.sh` |
-| Cleanly remove a vault installation | `.\uninstall.ps1` | `./uninstall.sh` |
+| Pull template updates into an installed vault | `.\\update.ps1` | `./update.sh` |
+| Cleanly remove a vault installation | `.\\uninstall.ps1` | `./uninstall.sh` |
+| **Zero-commitment trial run (scratch vault)** | `.\\try.ps1` | `./try.sh` |
+| **Install / set up vault + cron** | `.\Scripts\Installers\install.ps1` | `./Scripts/Installers/install.sh` |
+| **Uninstall / clean up vault** | `.\Scripts\Installers\uninstall.ps1` | `./Scripts/Installers/uninstall.sh` |
+| **Update template in existing vault** | `.\Scripts\Installers\update.ps1` | `./Scripts/Installers/update.sh` |
 | Seed sample/demo data (preview only, opt-in) | `python Scripts\seed_sample_data.py .` | `python3 Scripts/seed_sample_data.py .` |
 
 ## Requirements
@@ -163,7 +167,7 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Use, fork, and adapt freely.
+MIT — see [LICENSE](docs/LICENSE). Use, fork, and adapt freely.
 
 ## Known issues / Roadmap
 
@@ -217,4 +221,4 @@ additional Obsidian plugin recipes, or extra automation scripts.
 [Discussions](https://github.com/mistrysiddh/hermes-brain-template/discussions)
 are enabled if you'd rather ask a question first — start with the
 [welcome post](https://github.com/mistrysiddh/hermes-brain-template/discussions/1).
-See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community guidelines.
+See [CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md) for community guidelines.

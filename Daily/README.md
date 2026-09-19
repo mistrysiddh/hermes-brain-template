@@ -24,7 +24,7 @@ This is the raw material for the memory pipeline: review sessions here for
 durable facts, stage candidates in [[../Memory-Review/TEMPLATE|Memory-Review]],
 then promote to Hermes's native MEMORY.md/USER.md. See
 [[../Projects/README]] for project context and the pipeline overview, and
-[[../Memory-Pipeline.canvas|Memory-Pipeline]] for a visual map.
+[[../Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] for a visual map.
 
 ## Browse chronologically
 

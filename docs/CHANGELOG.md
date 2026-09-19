@@ -266,6 +266,6 @@ All notable changes to the Hermes Brain vault template. Versions correspond to [
 
 ### Added
 
-- Initial template release: Obsidian vault structure (Daily/, Memory-Review/, Projects/, Research/, Skills-Notes/), Kanban plugin, 3 note templates (Project, Daily-Review, Research-Note), Dataview query library, `Memory-Pipeline.canvas` visual map.
+- Initial template release: Obsidian vault structure (Daily/, Memory-Review/, Projects/, Research/, Skills-Notes/), Kanban plugin, 3 note templates (Project, Daily-Review, Research-Note), Dataview query library, `Canvases/Memory-Pipeline.canvas` visual map.
 - Cross-platform installers (`install.sh` / `install.ps1`), `INSTALL_PROMPT.md` for one-paste setup via a Hermes agent.
 - CI (bash/python/powershell syntax checks), wiki, MIT license.

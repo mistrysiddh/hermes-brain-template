@@ -11,6 +11,7 @@ Checks:
 - Duplicate session exports (same session_id in manifest)
 - Missing/empty daily session files
 - Orphaned files (no incoming links)
+- Manifest consistency (missing files, incomplete entries)
 
 Run via cron: 0 2 * * 0  (weekly, Sunday 2 AM) or monthly as preferred.
 """
@@ -32,6 +33,7 @@ REPORT_PATH = os.path.join(VAULT, "Skills-Notes", "Vault-Audit-Report.md")
 WIKILINK_RE = re.compile(r'\[\[([^\]]+)\]\]')
 SESSION_ID_RE = re.compile(r'session_id:\s*"([^"]+)"')
 
+
 def load_manifest():
     """Load manifest.jsonl for session tracking."""
     manifest_path = os.path.join(VAULT, "Daily", "manifest.jsonl")
@@ -44,12 +46,52 @@ def load_manifest():
                     continue
                 try:
                     rec = json.loads(line)
-                    sid = rec.get("session_id")
-                    if sid:
-                        sessions[sid] = rec
                 except json.JSONDecodeError:
-                    pass
+                    continue
+                sid = rec.get("session_id")
+                if sid:
+                    sessions[sid] = rec
     return sessions
+
+
+def validate_manifest():
+    """Validate manifest.jsonl for consistency and completeness."""
+    issues = []
+    manifest_path = os.path.join(VAULT, "Daily", "manifest.jsonl")
+    if not os.path.exists(manifest_path):
+        issues.append({"type": "missing", "message": "manifest.jsonl does not exist"})
+        return issues
+
+    sessions = load_manifest()
+
+    # Check for missing files referenced in manifest
+    for sid, rec in sessions.items():
+        path = rec.get("path", "")
+        if path and not os.path.exists(os.path.join(VAULT, path)):
+            issues.append({
+                "type": "missing_file",
+                "session_id": sid,
+                "path": path,
+                "message": f"Manifest references non-existent file: {path}"
+            })
+
+    # Check for session_ids without required fields
+    for sid, rec in sessions.items():
+        if not rec.get("title"):
+            issues.append({
+                "type": "incomplete",
+                "session_id": sid,
+                "message": f"Session {sid} missing title"
+            })
+        if not rec.get("exported_at"):
+            issues.append({
+                "type": "incomplete",
+                "session_id": sid,
+                "message": f"Session {sid} missing exported_at timestamp"
+            })
+
+    return issues
+
 
 def find_broken_wikilinks():
     """Find all [[wikilinks]] that don't resolve to existing files."""
@@ -57,8 +99,8 @@ def find_broken_wikilinks():
     all_files = set()
     # Build index of all files (relative to vault root)
     for root, dirs, files in os.walk(VAULT):
-        # Skip .obsidian, .git, .smart-env, graphify-out
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('graphify-out',)]
+        # Skip .obsidian, .git, .smart-env, cache/graphify
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('cache/graphify',)]
         for f in files:
             if f.endswith('.md'):
                 full = os.path.join(root, f)
@@ -71,7 +113,7 @@ def find_broken_wikilinks():
                 all_files.add(f[:-3])
 
     for root, dirs, files in os.walk(VAULT):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('graphify-out',)]
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('cache/graphify',)]
         for f in files:
             if not f.endswith('.md'):
                 continue
@@ -92,6 +134,7 @@ def find_broken_wikilinks():
                         "line": content[:match.start()].count('\n') + 1
                     })
     return broken
+
 
 def find_stale_memory_review(days=30):
     """Find Memory-Review entries older than N days with incomplete tasks."""
@@ -124,6 +167,7 @@ def find_stale_memory_review(days=30):
                 })
     return stale
 
+
 def find_duplicate_sessions():
     """Find duplicate session_ids in manifest."""
     sessions = load_manifest()
@@ -140,13 +184,14 @@ def find_duplicate_sessions():
             seen[sid] = rec
     return duplicates
 
+
 def find_orphaned_files():
     """Find files with no incoming wikilinks (excluding known scaffolding)."""
     # Build reverse index
     incoming = {}
     all_md_files = []
     for root, dirs, files in os.walk(VAULT):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('graphify-out',)]
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('cache/graphify',)]
         for f in files:
             if f.endswith('.md'):
                 full = os.path.join(root, f)
@@ -156,7 +201,7 @@ def find_orphaned_files():
 
     # Count incoming links
     for root, dirs, files in os.walk(VAULT):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('graphify-out',)]
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('cache/graphify',)]
         for f in files:
             if not f.endswith('.md'):
                 continue
@@ -182,7 +227,7 @@ def find_orphaned_files():
         "Installed-Skills-Index.md", "Team-Profiles-Index.md",
         "Skill-to-Chat-Links.md", "Dataview-Query-Library.md",
     ]
-    
+
     orphans = []
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
@@ -192,7 +237,8 @@ def find_orphaned_files():
             orphans.append(f)
     return orphans
 
-def generate_report(broken_links, stale_reviews, duplicates, orphans):
+
+def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_issues):
     """Generate markdown report."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     lines = [
@@ -204,9 +250,10 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans):
         "",
         f"## Summary",
         f"- **Broken wikilinks**: {len(broken_links)}",
-        f"- **Stale Memory-Review entries (>{30} days)**: {len(stale_reviews)}",
+        f"- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}",
         f"- **Duplicate sessions in manifest**: {len(duplicates)}",
         f"- **Orphaned files (no incoming links)**: {len(orphans)}",
+        f"- **Manifest issues**: {len(manifest_issues)}",
         "",
         "---",
         ""
@@ -252,7 +299,20 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans):
             lines.append(f"\n... and {len(orphans) - 50} more.")
         lines.append("")
 
-    if not any([broken_links, stale_reviews, duplicates, orphans]):
+    if manifest_issues:
+        lines.append("## 📋 Manifest Consistency Issues")
+        lines.append("")
+        lines.append("| Type | Session ID | Details |")
+        lines.append("|------|------------|---------|")
+        for issue in manifest_issues[:50]:
+            sid = issue.get('session_id', 'N/A')
+            msg = issue.get('message', str(issue))
+            lines.append(f"| {issue['type']} | {sid} | {msg} |")
+        if len(manifest_issues) > 50:
+            lines.append(f"\n... and {len(manifest_issues) - 50} more.")
+        lines.append("")
+
+    if not any([broken_links, stale_reviews, duplicates, orphans, manifest_issues]):
         lines.append("## ✅ All Clean!")
         lines.append("")
         lines.append("No issues detected. Your vault is in excellent shape.")
@@ -266,7 +326,8 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans):
         f.write("\n".join(lines))
 
     print(f"Report written to {REPORT_PATH}")
-    print(f"Broken links: {len(broken_links)}, Stale reviews: {len(stale_reviews)}, Duplicates: {len(duplicates)}, Orphans: {len(orphans)}")
+    print(f"Broken links: {len(broken_links)}, Stale reviews: {len(stale_reviews)}, Duplicates: {len(duplicates)}, Orphans: {len(orphans)}, Manifest issues: {len(manifest_issues)}")
+
 
 def main():
     print("🔍 Starting vault integrity check...")
@@ -278,8 +339,11 @@ def main():
     print(f"  Duplicate sessions: {len(dups)}")
     orphans = find_orphaned_files()
     print(f"  Orphaned files: {len(orphans)}")
-    generate_report(broken, stale, dups, orphans)
+    manifest_issues = validate_manifest()
+    print(f"  Manifest issues: {len(manifest_issues)}")
+    generate_report(broken, stale, dups, orphans, manifest_issues)
     print("✅ Done.")
+
 
 if __name__ == "__main__":
     main()

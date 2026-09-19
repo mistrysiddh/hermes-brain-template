@@ -2,7 +2,23 @@
 <#
 .SYNOPSIS
   Interactive installer for the Hermes Brain vault template (native Windows/PowerShell).
+.PARAMETER Test
+  Run self-test after installation (validates scripts, manifest, dashboard).
+.PARAMETER Help
+  Show usage information.
 #>
+
+param(
+    [switch]$Test,
+    [switch]$Help
+)
+
+if ($Help) {
+    Write-Host "Usage: .\install.ps1 [-Test] [-Help]"
+    Write-Host "  -Test    Run self-test after installation (validates scripts, manifest, dashboard)"
+    Write-Host "  -Help    Show this help"
+    exit 0
+}
 
 $ErrorActionPreference = "Stop"
 $TemplateRoot = $PSScriptRoot
@@ -146,6 +162,80 @@ if ($runCons -match '^[Yy]') {
     & $py.Source (Join-Path $Dest "Scripts\consolidate_memory.py") "$Dest"
   } else {
     Write-Warn "No python/python3 found -- skipping."
+  }
+}
+
+# ---------------------------------------------------------------------------
+# 6. Self-test (if -Test flag provided)
+# ---------------------------------------------------------------------------
+if ($Test) {
+  Write-Host ""
+  Write-Host "Running self-test..." -ForegroundColor Cyan
+  
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  
+  if ($py) {
+    Write-Info "Test 1: Python script syntax validation..."
+    $result = & $py.Source -m py_compile (Join-Path $Dest "Scripts\hourly_archive.py"), (Join-Path $Dest "Scripts\consolidate_memory.py"), (Join-Path $Dest "Scripts\skill_forecast.py"), (Join-Path $Dest "Scripts\session_tagger.py") 2>$null
+    if ($LASTEXITCODE -eq 0) { Write-Ok "All Python scripts compile cleanly" } else { Write-Warn "Some Python scripts have syntax errors" }
+    
+    Write-Info "Test 2: Manifest structure validation..."
+    $manifestPath = Join-Path $Dest "Daily\manifest.jsonl"
+    if (Test-Path $manifestPath) {
+      $pythonCode = @"
+import json, sys
+errors = 0
+with open('$manifestPath') as f:
+    for i, line in enumerate(f, 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rec = json.loads(line)
+            if 'session_id' not in rec:
+                print(f'Line {i}: missing session_id')
+                errors += 1
+            if 'path' not in rec:
+                print(f'Line {i}: missing path')
+                errors += 1
+        except json.JSONDecodeError as e:
+            print(f'Line {i}: JSON decode error: {e}')
+            errors += 1
+if errors == 0:
+    print('Manifest structure OK')
+else:
+    print(f'Manifest has {errors} errors')
+    sys.exit(1)
+"@
+      $result = & $py.Source -c $pythonCode 2>$null
+      if ($LASTEXITCODE -eq 0) { Write-Ok "Manifest.jsonl structure valid" } else { Write-Warn "Manifest.jsonl has issues or is empty" }
+    } else {
+      New-Item -ItemType File -Path $manifestPath -Force | Out-Null
+      Write-Ok "Manifest file created (empty)"
+    }
+    
+    Write-Info "Test 3: Dashboard file validation..."
+    if (Test-Path (Join-Path $Dest "Dashboard.md")) { Write-Ok "Dashboard.md exists" } else { Write-Warn "Dashboard.md not found" }
+    
+    Write-Info "Test 4: Required directories..."
+    foreach ($dir in "Daily", "Memory-Review", "Projects", "Research", "Skills-Notes", "Scripts", "Templates", "Canvases", "assets") {
+      if (Test-Path (Join-Path $Dest $dir) -and (Get-Item (Join-Path $Dest $dir)).PSIsContainer) { Write-Ok "  $dir/" } else { Write-Warn "  $dir/ missing" }
+    }
+    
+    Write-Info "Test 5: Key files..."
+    foreach ($file in "Welcome.md", "MOC.md", "README.md", "SETUP.md", "Dashboard.md", "Dashboard-Beta.md") {
+      if (Test-Path (Join-Path $Dest $file)) { Write-Ok "  $file" } else { Write-Warn "  $file missing" }
+    }
+    
+    Write-Host ""
+    Write-Host "Self-test complete." -ForegroundColor Cyan
+  } else {
+    Write-Warn "No Python found -- limited self-test only"
+    if (Test-Path (Join-Path $Dest "Dashboard.md")) { Write-Ok "Dashboard.md exists" } else { Write-Warn "Dashboard.md missing" }
+    foreach ($dir in "Daily", "Memory-Review", "Projects", "Research", "Skills-Notes", "Scripts", "Templates", "Canvases") {
+      if (Test-Path (Join-Path $Dest $dir) -and (Get-Item (Join-Path $Dest $dir)).PSIsContainer) { Write-Ok "  $dir/" } else { Write-Warn "  $dir/ missing" }
+    }
   }
 }
 
