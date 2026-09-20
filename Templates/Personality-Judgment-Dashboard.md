@@ -12,7 +12,7 @@ TABLE
   top_hypothesis AS "Top Hypothesis",
   confidence AS "Confidence",
   file.mtime AS "Updated"
-FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+FROM "Daily" AND "Templates/Personality-Judgment-Analysis.md"
 WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
@@ -21,8 +21,8 @@ SORT file.mtime DESC
 
 ```dataviewjs
 const dv = app.plugins.plugins.dataview.api;
-const pages = dv.pages('"Templates/Personality-Judgment-Analysis.md"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md");
+const pages = dv.pages('"Daily"')
+  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.subject);
 
 const confidenceCounts = {
   High: 0,
@@ -38,7 +38,7 @@ for (const p of pages) {
   }
 }
 
-dv.table(["Confidence Level", "Count"], 
+dv.table(["Confidence Level", "Count"],
   Object.entries(confidenceCounts).filter(([_, count]) => count > 0)
     .map(([level, count]) => [level, count])
 );
@@ -52,7 +52,7 @@ TABLE
   context AS "Context",
   evidence_supporting AS "Supporting Evidence",
   confidence AS "Confidence"
-FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+FROM "Daily"
 WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.hypotheses AS hypothesis
 WHERE hypothesis
@@ -65,8 +65,8 @@ LIMIT 10
 ```dataview
 TIMELINE
   file.mtime AS "Date"
-  FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
-  WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
+  FROM "Daily"
+  WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md" AND subject
   GROUP BY dateformat(file.mtime, "yyyy-MM") AS "Month"
 ```
 
@@ -74,8 +74,8 @@ TIMELINE
 
 ```dataviewjs
 const dv = app.plugins.plugins.dataview.api;
-const pages = dv.pages('"Templates/Personality-Judgment-Analysis.md"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md");
+const pages = dv.pages('"Daily"')
+  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.topic_behavior);
 
 const topicCounts = {};
 
@@ -103,7 +103,7 @@ TABLE
   anomaly_dimension AS "Dimension",
   anomaly_observed AS "Observation",
   context AS "Context"
-FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+FROM "Daily"
 WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.anomalies AS anomaly
 WHERE anomaly
@@ -115,7 +115,7 @@ SORT file.mtime DESC
 ```dataview
 LIST
   file.recommendations AS "Recommendation"
-FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+FROM "Daily"
 WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.recommendations AS recommendation
 WHERE recommendation
