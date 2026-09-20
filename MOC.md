@@ -38,6 +38,10 @@ vault has more than a few dozen notes).
 - [[Skills-Notes/Installed-Skills-Index]] — catalog of skills installed for this vault
 - [[Skills-Notes/Team-Profiles-Index]] — per-teammate profile index
 
+## Analysis frameworks
+- [[Skills-Notes/Personality-Judgment-Framework]] — structured method for analyzing communication patterns and personality traits
+- [[Templates/Personality-Judgment-Analysis.md]] — template for conducting personality judgment analyses
+
 ## Active work
 - [[Research/README]] — in-progress investigations
 - [[Projects/README]] — active project index
