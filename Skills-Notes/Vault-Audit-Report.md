@@ -1,14 +1,15 @@
 # Vault Audit Report
-Generated: 2026-09-19 18:18:28
-Vault: .
+Generated: 2026-09-20 17:47:01
+Vault: C:\Users\mistr\OneDrive - Mistry Siddh\27. Hermes Agent Vault\Hermes-Brain-Template
 
 ---
 
 ## Summary
-- **Broken wikilinks**: 87
+- **Broken wikilinks**: 283
 - **Stale Memory-Review entries (>30 days)**: 0
 - **Duplicate sessions in manifest**: 0
-- **Orphaned files (no incoming links)**: 14
+- **Orphaned files (no incoming links)**: 23
+- **Manifest issues**: 1
 
 ---
 
@@ -16,77 +17,92 @@ Vault: .
 
 | File | Broken Link | Line |
 |------|-------------|------|
-| Dashboard-Beta.md | `[[Projects/Projects.base]]` | 612 |
-| Dashboard-Beta.md | `[[Memory-Review/TEMPLATE]]` | 635 |
-| Dashboard-Beta.md | `[[Daily/Timeline]]` | 666 |
-| Dashboard-Beta.md | `[[Skills-Notes/Token-Usage.log]]` | 692 |
-| Dashboard-Beta.md | `[[Skills-Notes/Vault-Audit-Report]]` | 692 |
-| Dashboard-Beta.md | `[[Skills-Notes/Agent-Performance]]` | 692 |
-| Dashboard-Beta.md | `[[Projects/Projects.base]]` | 692 |
-| Dashboard-Beta.md | `[[Memory-Review/TEMPLATE]]` | 692 |
-| Dashboard-Beta.md | `[[Daily/Timeline]]` | 692 |
-| Dashboard-Beta.md | `[[Skills-Notes/Installed-Skills-Index]]` | 692 |
-| Dashboard.md | `[[Projects/Projects.base]]` | 404 |
-| Dashboard.md | `[[Memory-Review/TEMPLATE]]` | 415 |
-| Dashboard.md | `[[Memory-Review/Consolidation-Log]]` | 447 |
-| Dashboard.md | `[[Daily/Timeline]]` | 459 |
-| Dashboard.md | `[[Skills-Notes/Installed-Skills-Index]]` | 471 |
-| Dashboard.md | `[[link]]` | 488 |
-| Dashboard.md | `[[link]]` | 489 |
-| Dashboard.md | `[[Skills-Notes/Skill-to-Chat-Links]]` | 523 |
-| Dashboard.md | `[[SETUP#What's NOT included (by design)]]` | 676 |
+| Dashboard.md | `[[Projects/Projects.base]]` | 406 |
+| Dashboard.md | `[[Memory-Review/TEMPLATE]]` | 417 |
+| Dashboard.md | `[[Memory-Review/Consolidation-Log]]` | 449 |
+| Dashboard.md | `[[Daily/Timeline]]` | 461 |
+| Dashboard.md | `[[Skills-Notes/Installed-Skills-Index]]` | 473 |
+| Dashboard.md | `[[link]]` | 490 |
+| Dashboard.md | `[[link]]` | 491 |
+| Dashboard.md | `[[Skills-Notes/Skill-to-Chat-Links]]` | 525 |
+| Dashboard.md | `[[SETUP#What's NOT included (by design)]]` | 678 |
+| MOC.md | `[[Canvases/Dashboard-Beta]]` | 17 |
 | MOC.md | `[[Projects/Hermes-Agent-Vault-Setup]]` | 18 |
 | MOC.md | `[[Projects/README]]` | 19 |
-| MOC.md | `[[Canvases/Memory-Pipeline.canvas]]` | 22 |
-| MOC.md | `[[Daily/README]]` | 23 |
-| MOC.md | `[[Daily/Timeline]]` | 24 |
-| MOC.md | `[[Daily/Chat-Correlation]]` | 25 |
-| MOC.md | `[[Memory-Review/TEMPLATE]]` | 26 |
-| MOC.md | `[[Skills-Notes/Dataview-Query-Library]]` | 27 |
-| MOC.md | `[[Skills-Notes/Kanban-Usage]]` | 28 |
-| MOC.md | `[[Skills-Notes/README]]` | 31 |
-| MOC.md | `[[Skills-Notes/Installed-Skills-Index]]` | 32 |
-| MOC.md | `[[Skills-Notes/Team-Profiles-Index]]` | 33 |
-| MOC.md | `[[Research/README]]` | 36 |
-| MOC.md | `[[Projects/README]]` | 37 |
-| MOC.md | `[[Templates/Project]]` | 38 |
-| MOC.md | `[[Templates/Daily-Review]]` | 38 |
-| MOC.md | `[[Templates/Research-Note]]` | 38 |
-| MOC.md | `[[../SETUP]]` | 42 |
+| MOC.md | `[[Skills-Notes/Technology-Stack-MOC]]` | 22 |
+| MOC.md | `[[Skills-Notes/Cybersecurity-MOC]]` | 23 |
+| MOC.md | `[[Skills-Notes/AI-ML-MOC]]` | 24 |
+| MOC.md | `[[Skills-Notes/Agentic-Architecture-MOC]]` | 25 |
+| MOC.md | `[[Canvases/Memory-Pipeline.canvas]]` | 28 |
+| MOC.md | `[[Daily/README]]` | 29 |
+| MOC.md | `[[Daily/Timeline]]` | 30 |
+| MOC.md | `[[Daily/Chat-Correlation]]` | 31 |
+| MOC.md | `[[Memory-Review/TEMPLATE]]` | 32 |
+| MOC.md | `[[Skills-Notes/Dataview-Query-Library]]` | 33 |
+| MOC.md | `[[Skills-Notes/Kanban-Usage]]` | 34 |
+| MOC.md | `[[Skills-Notes/README]]` | 37 |
+| MOC.md | `[[Skills-Notes/Installed-Skills-Index]]` | 38 |
+| MOC.md | `[[Skills-Notes/Team-Profiles-Index]]` | 39 |
+| MOC.md | `[[Skills-Notes/Personality-Judgment-Framework]]` | 42 |
+| MOC.md | `[[Templates/Personality-Judgment-Analysis.md]]` | 43 |
+| MOC.md | `[[Templates/Personality-Judgment-Dashboard.md]]` | 44 |
+| MOC.md | `[[Canvases/Personality-Judgment-Canvas.canvas]]` | 45 |
+| MOC.md | `[[Research/README]]` | 48 |
+| MOC.md | `[[Projects/README]]` | 49 |
+| MOC.md | `[[Templates/Project]]` | 50 |
+| MOC.md | `[[Templates/Daily-Review]]` | 50 |
+| MOC.md | `[[Templates/Research-Note]]` | 50 |
+| MOC.md | `[[../SETUP]]` | 54 |
 | README.md | `[[Daily/Timeline]]` | 51 |
 | README.md | `[[Daily/Chat-Correlation]]` | 51 |
 | README.md | `[[Skills-Notes/Dataview-Query-Library]]` | 54 |
-| SETUP.md | `[[Projects/Hermes-Agent-Vault-Setup]]` | 76 |
-| SETUP.md | `[[Memory-Review/TEMPLATE]]` | 87 |
+| SETUP.md | `[[Projects/Hermes-Agent-Vault-Setup]]` | 79 |
+| SETUP.md | `[[Memory-Review/TEMPLATE]]` | 90 |
 | User-Profile.md | `[[Skills-Notes/Team-Profiles-Index]]` | 14 |
 | User-Profile.md | `[[Projects]]` | 20 |
 | User-Profile.md | `[[Research]]` | 20 |
 | User-Profile.md | `[[Memory-Review/TEMPLATE]]` | 90 |
 | User-Profile.md | `[[Dashboard#Active projects]]` | 101 |
-| User-Profile.md | `[[Skills-Notes/Team-Profiles-Index]]` | 202 |
+| User-Profile.md | `[[Skills-Notes/Team-Profiles-Index]]` | 204 |
 | Welcome.md | `[[Skills-Notes/Team-Profiles-Index]]` | 12 |
 | Welcome.md | `[[Projects/Hermes-Agent-Vault-Setup]]` | 15 |
+| Welcome.md | `[[Projects/README]]` | 18 |
 
-... and 37 more.
+... and 233 more.
 
 ## 🏝️ Orphaned Files (no incoming wikilinks)
 
 *Consider linking these from relevant notes, or they may be safe to archive/delete.*
 
+- SECURITY.md
+- test_dataview.md
+- test_dataview_query.md
+- test_dataview_simple.md
 - cache\graphify\GRAPH_REPORT.md
 - cache\graphify\2026-09-08\GRAPH_REPORT.md
 - cache\graphify\2026-09-10\GRAPH_REPORT.md
 - cache\graphify\2026-09-11\GRAPH_REPORT.md
 - cache\graphify\2026-09-17\GRAPH_REPORT.md
 - cache\graphify\2026-09-18\GRAPH_REPORT.md
+- Canvases\Dashboard-Beta.md
+- Daily\2026\09\20\Test Analysis - Template Vault Test.md
 - docs\CHANGELOG.md
 - docs\CODE_OF_CONDUCT.md
 - docs\CONTRIBUTING.md
 - graphify-out\GRAPH_REPORT.md
+- graphify-out\2026-09-20\GRAPH_REPORT.md
 - Skills-Notes\Kanban-Usage.md
+- Skills-Notes\Personality-Judgment-Framework.md
 - Templates\Daily-Review.md
+- Templates\Personality-Judgment-Analysis.md
 - Templates\Project.md
 - Templates\Research-Note.md
+
+## 📋 Manifest Consistency Issues
+
+| Type | Session ID | Details |
+|------|------------|---------|
+| missing | N/A | manifest.jsonl does not exist |
 
 
 ---
