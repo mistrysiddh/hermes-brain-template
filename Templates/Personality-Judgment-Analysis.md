@@ -16,6 +16,17 @@ Use this template to conduct a structured personality judgment analysis followin
 4. Update confidence levels as new evidence arrives
 5. Consider linking to related analyses or MOCs as appropriate
 
+## 📊 Analysis Metadata (for dashboard tracking)
+- **subject**: [Subject ID/name]
+- **period**: [Analysis period]
+- **primary_style**: [Primary Style Observed]
+- **top_hypothesis**: [Brief title of highest confidence hypothesis]
+- **confidence**: [Confidence level of top hypothesis: High/Medium/Low/Very Low]
+- **hypotheses**: [List of hypothesis titles]
+- **anomalies**: [List of anomaly dimensions observed]
+- **recommendations**: [List of key recommendations]
+- **topic_behavior**: [List of topics analyzed in Topic Behavior section]
+
 ---
 
 ## 1. Subject Profile
