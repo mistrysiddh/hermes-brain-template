@@ -11,16 +11,15 @@ TABLE
   primary_style AS "Primary Style",
   top_hypothesis AS "Top Hypothesis",
   confidence AS "Confidence",
-  file.mtime AS "Updated"
-FROM "Daily" AND "Templates/Personality-Judgment-Analysis.md"
-WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
+  dateformat(file.mtime, "yyyy-MM-dd") AS "Updated"
+FROM "Daily"
+WHERE subject AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
 
 ## 📈 Confidence Distribution
 
 ```dataviewjs
-const dv = app.plugins.plugins.dataview.api;
 const pages = dv.pages('"Daily"')
   .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.subject);
 
@@ -49,12 +48,11 @@ dv.table(["Confidence Level", "Count"],
 ```dataview
 TABLE
   hypothesis AS "Hypothesis",
-  context AS "Context",
-  evidence_supporting AS "Supporting Evidence",
+  subject AS "Subject",
   confidence AS "Confidence"
 FROM "Daily"
-WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
-FLATTEN file.hypotheses AS hypothesis
+WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND hypotheses
+FLATTEN hypotheses AS hypothesis
 WHERE hypothesis
 SORT file.mtime DESC
 LIMIT 10
@@ -63,17 +61,20 @@ LIMIT 10
 ## 📅 Analysis Timeline
 
 ```dataview
-TIMELINE
-  file.mtime AS "Date"
-  FROM "Daily"
-  WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md" AND subject
-  GROUP BY dateformat(file.mtime, "yyyy-MM") AS "Month"
+TABLE WITHOUT ID
+  dateformat(file.mtime, "yyyy-MM-dd") AS "Date",
+  file.link AS "Analysis",
+  subject AS "Subject",
+  primary_style AS "Style",
+  confidence AS "Confidence"
+FROM "Daily"
+WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND subject
+SORT file.mtime DESC
 ```
 
 ## 🏷️ Topics Analyzed
 
 ```dataviewjs
-const dv = app.plugins.plugins.dataview.api;
 const pages = dv.pages('"Daily"')
   .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.topic_behavior);
 
@@ -81,7 +82,6 @@ const topicCounts = {};
 
 for (const p of pages) {
   if (p.topic_behavior) {
-    // Assuming topic_behavior is a list of topics analyzed
     const topics = Array.isArray(p.topic_behavior) ? p.topic_behavior : [p.topic_behavior];
     for (const topic of topics) {
       topicCounts[topic] = (topicCounts[topic] || 0) + 1;
@@ -100,12 +100,12 @@ dv.table(["Topic", "Analyses Count"], sortedTopics);
 
 ```dataview
 TABLE
-  anomaly_dimension AS "Dimension",
-  anomaly_observed AS "Observation",
-  context AS "Context"
+  anomaly AS "Anomaly",
+  subject AS "Subject",
+  file.link AS "Analysis"
 FROM "Daily"
-WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
-FLATTEN file.anomalies AS anomaly
+WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND anomalies
+FLATTEN anomalies AS anomaly
 WHERE anomaly
 SORT file.mtime DESC
 ```
@@ -114,10 +114,10 @@ SORT file.mtime DESC
 
 ```dataview
 LIST
-  file.recommendations AS "Recommendation"
+  recommendation
 FROM "Daily"
-WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
-FLATTEN file.recommendations AS recommendation
+WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND recommendations
+FLATTEN recommendations AS recommendation
 WHERE recommendation
 LIMIT 20
 ```

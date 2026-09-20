@@ -160,7 +160,7 @@ SORT file.name ASC
 Shows how often each skill appears in session notes, weighted by recency.
 
 ```dataviewjs
-const thirtyDaysAgo = date(today) - dur(30 days);
+const thirtyDaysAgo = dv.date('today') - dv.duration('30 days');
 const skillUsage = {};
 
 // Scan Daily notes for skill mentions
@@ -169,12 +169,12 @@ const dailyNotes = dv.pages('"Daily"')
 
 for (const note of dailyNotes) {
   // Check for skills mentioned in the note
-  const skillMatches = note.file.content.match(/(?:^|\s)(hermes-\w+|virtualbox|vmware|claude|codex|opencode|obsidian|dataview|smart-connections|kanban|local-rest-api)(?=\s|$)/gi);
+  const skillMatches = note.file.content?.match(/(?:^|\s)(hermes-\w+|virtualbox|vmware|claude|codex|opencode|obsidian|dataview|smart-connections|kanban|local-rest-api)(?=\s|$)/gi);
   
   if (skillMatches) {
     for (const match of skillMatches) {
       const skill = match.toLowerCase().trim();
-      const daysOld = (date(today) - note.file.mtime).days;
+      const daysOld = (dv.date('today') - note.file.mtime).days;
       const weight = Math.max(1, 30 - daysOld); // Linear decay: newer = higher weight
       
       if (!skillUsage[skill]) skillUsage[skill] = 0;
@@ -253,7 +253,7 @@ SORT file.mtime DESC
 Shows how often old notes are being revisited (indicates active knowledge).
 
 ```dataviewjs
-const ninetyDaysAgo = date(today) - dur(90 days);
+const ninetyDaysAgo = dv.date('today') - dv.duration('90 days');
 const oldNotes = dv.pages('""')
   .where(p => p.file.mtime <= ninetyDaysAgo 
            && p.file.folder !== ".obsidian"
@@ -265,7 +265,7 @@ const oldNotes = dv.pages('""')
   .sort(p => p.file.mtime, false); // Oldest first
 
 const recentlyViewed = dv.pages('""')
-  .where(p => p.file.mtime >= date(today) - dur(7 days)
+  .where(p => p.file.mtime >= dv.date('today') - dv.duration('7 days')
            && p.file.folder !== ".obsidian"
            && p.file.folder !== ".git"
            && p.file.folder !== "cache"
@@ -286,8 +286,8 @@ if (oldNotes.length === 0) {
     dv.table(["Note", "Last Modified", "Days Since"], 
       revisitedOldNotes.slice(0, 10).map(n => [
         n.file.link,
-        dateformat(n.file.mtime, "yyyy-MM-dd"),
-        Math.floor((date(today) - date(n.file.mtime)).days)
+        n.file.mtime.toFormat("yyyy-MM-dd"),
+        Math.floor((dv.date('today') - n.file.mtime).days)
       ]));
   }
 }
