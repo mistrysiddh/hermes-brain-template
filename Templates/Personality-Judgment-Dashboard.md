@@ -6,7 +6,6 @@ A dynamic Dataview-powered dashboard for tracking and visualizing personality ju
 
 ```dataview
 TABLE
-  file.link AS "Analysis",
   subject AS "Subject",
   period AS "Period",
   primary_style AS "Primary Style",
@@ -14,7 +13,7 @@ TABLE
   confidence AS "Confidence",
   file.mtime AS "Updated"
 FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
-WHERE contains(file.name, "Analysis") OR contains(file.name, "Judgment")
+WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
 
@@ -23,7 +22,7 @@ SORT file.mtime DESC
 ```dataviewjs
 const dv = app.plugins.plugins.dataview.api;
 const pages = dv.pages('"Templates/Personality-Judgment-Analysis.md"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md");
+  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md");
 
 const confidenceCounts = {
   High: 0,
@@ -54,6 +53,7 @@ TABLE
   evidence_supporting AS "Supporting Evidence",
   confidence AS "Confidence"
 FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.hypotheses AS hypothesis
 WHERE hypothesis
 SORT file.mtime DESC
@@ -66,7 +66,7 @@ LIMIT 10
 TIMELINE
   file.mtime AS "Date"
   FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
-  WHERE file.name !== "Personality-Judgment-Analysis.md"
+  WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
   GROUP BY dateformat(file.mtime, "yyyy-MM") AS "Month"
 ```
 
@@ -75,7 +75,7 @@ TIMELINE
 ```dataviewjs
 const dv = app.plugins.plugins.dataview.api;
 const pages = dv.pages('"Templates/Personality-Judgment-Analysis.md"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md");
+  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md");
 
 const topicCounts = {};
 
@@ -104,6 +104,7 @@ TABLE
   anomaly_observed AS "Observation",
   context AS "Context"
 FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.anomalies AS anomaly
 WHERE anomaly
 SORT file.mtime DESC
@@ -115,6 +116,7 @@ SORT file.mtime DESC
 LIST
   file.recommendations AS "Recommendation"
 FROM "Templates/Personality-Judgment-Analysis.md" AND "-Template"
+WHERE file.name !== "Personality-Judgment-Analysis.md" AND file.name !== "Personality-Judgment-Dashboard.md"
 FLATTEN file.recommendations AS recommendation
 WHERE recommendation
 LIMIT 20
