@@ -1,0 +1,324 @@
+{
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "personality-judgment-framework",
+      "type": "text",
+      "text": "# Personality Judgment Framework\n\nStructured method for analyzing communication patterns and personality traits",
+      "x": 100,
+      "y": 50,
+      "width": 300,
+      "height": 80,
+      "color": {
+        "background": "#4facfe",
+        "border": "#00f2fe",
+        "text": "#ffffff"
+      },
+      "fontSize": 18
+    },
+    {
+      "id": "analysis-chain",
+      "type": "text",
+      "text": "Core Analysis Chain:\nRaw message → Observable feature → Pattern → Context → Hypothesis → Confidence → Evidence",
+      "x": 100,
+      "y": 180,
+      "width": 400,
+      "height": 60,
+      "color": {
+        "background": "#43e97b",
+        "border": "#38f9d7",
+        "text": "#ffffff"
+      },
+      "fontSize": 14
+    },
+    {
+      "id": "subject-profile",
+      "type": "text",
+      "text": "1. Subject Profile\n• ID/name, period, platform\n• Message/conversation counts\n• Participants, data quality\n• Missing periods, context",
+      "x": 50,
+      "y": 300,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#ff9a9e",
+        "border": "#fecfef",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "communication-style",
+      "type": "text",
+      "text": "2. Communication Style\n• Formal/Casual/Friendly/Neutral\n• Assertive/Defensive/Sarcastic\n• Humorous/Emotional/Technical\n• Reserved styles",
+      "x": 300,
+      "y": 300,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#ff9a9e",
+        "border": "#fecfef",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "language-pattern",
+      "type": "text",
+      "text": "3. Language Pattern\n• Vocabulary: frequent/rare words\n• Slang, technical terms, fillers\n• Sentence style: short/med/long\n• Grammar: person, voice, hedging",
+      "x": 550,
+      "y": 300,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#ff9a9e",
+        "border": "#fecfef",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "repetition",
+      "type": "text",
+      "text": "4. Repetition\n• Event, complaint, explanation\n• Person, topic, justification\n• What need does repetition serve?",
+      "x": 800,
+      "y": 300,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#ff9a9e",
+        "border": "#fecfef",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "response-behavior",
+      "type": "text",
+      "text": "5. Response Behavior\n• Work/Technical/Casual\n• Conflict/Personal focus\n• Category distribution %",
+      "x": 50,
+      "y": 450,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#a8edea",
+        "border": "#fed6e3",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "conversation-dynamics",
+      "type": "text",
+      "text": "6. Conversation Dynamics\n• Initiation: who starts, how often\n• Topic control: introducer/changer/ender\n• Question behavior: asked/answered/ignored/redirected",
+      "x": 300,
+      "y": 450,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#a8edea",
+        "border": "#fed6e3",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "conflict-analysis",
+      "type": "text",
+      "text": "7. Conflict & Disagreement\n• Before/During/After phases\n• Defensiveness, explanation, counterargument\n• Topic shifting, silence, repetition\n• Apology, negotiation, escalation",
+      "x": 550,
+      "y": 450,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#a8edea",
+        "border": "#fed6e3",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "topic-behavior",
+      "type": "text",
+      "text": "8. Topic Behavior\n• Frequency, message count, avg length\n• Response time, emotional language\n• Initiation, avoidance/change, recurrence",
+      "x": 800,
+      "y": 450,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#a8edea",
+        "border": "#fed6e3",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "baseline-change",
+      "type": "text",
+      "text": "9. Baseline vs Change\n• Establish normal behavior\n• Detect deviations from baseline\n• Style shifts, topic anomalies\n• Timing alterations, volume changes",
+      "x": 50,
+      "y": 600,
+      "width": 250,
+      "height": 100,
+      "color": {
+        "background": "#ffecd2",
+        "border": "#fcb69f",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "anomaly-detection",
+      "type": "text",
+      "text": "10. Anomaly Detection\n• Monitor: tone, vocabulary, length\n• Response time, emoji, topic\n• Question frequency, initiation\n• Activity hours, formality, repetition",
+      "x": 350,
+      "y": 600,
+      "width": 250,
+      "height": 100,
+      "color": {
+        "background": "#ffecd2",
+        "border": "#fcb69f",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "context-node",
+      "type": "text",
+      "text": "11. Context Node\n• Temporal: time, day, events\n• Relational: who, history, power\n• Environmental: setting, stressors\n• Developmental: stage, skills, healing\n• Cultural: norms, expectations, scripts\n• Situational: goals, pressures, opportunities\n\n\"Same behavior, different meaning in different context\"",
+      "x": 650,
+      "y": 600,
+      "width": 250,
+      "height": 140,
+      "color": {
+        "background": "#ffecd2",
+        "border": "#fcb69f",
+        "text": "#ffffff"
+      },
+      "fontSize": 11
+    },
+    {
+      "id": "hypothesis-layer",
+      "type": "text",
+      "text": "12. Hypothesis Layer\nFor each pattern:\nObservation → Observable Feature → Pattern\n→ Context → Hypothesis → Confidence → Evidence\n\nConfidence: High/Medium/Low/Very Low\nWith justification and supporting/contradicting evidence",
+      "x": 50,
+      "y": 750,
+      "width": 700,
+      "height": 120,
+      "color": {
+        "background": "#bbdefb",
+        "border": "#90caf9",
+        "text": "#ffffff"
+      },
+      "fontSize": 12
+    },
+    {
+      "id": "template-link",
+      "type": "text",
+      "text": "📄 Use Template:\nTemplates/Personality-Judgment-Analysis.md\n\n📊 View Dashboard:\nTemplates/Personality-Judgment-Dashboard.md\n\n📖 Read Framework:\nSkills-Notes/Personality-Judgment-Framework.md",
+      "x": 800,
+      "y": 750,
+      "width": 200,
+      "height": 100,
+      "color": {
+        "background": "#c8e6c9",
+        "border": "#a5d6a7",
+        "text": "#2e7d32"
+      },
+      "fontSize": 14
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge1",
+      "fromNode": "personality-judgment-framework",
+      "toNode": "analysis-chain",
+      "label": ""
+    },
+    {
+      "id": "edge2",
+      "fromNode": "analysis-chain",
+      "toNode": "subject-profile",
+      "label": ""
+    },
+    {
+      "id": "edge3",
+      "fromNode": "analysis-chain",
+      "toNode": "communication-style",
+      "label": ""
+    },
+    {
+      "id": "edge4",
+      "fromNode": "analysis-chain",
+      "toNode": "language-pattern",
+      "label": ""
+    },
+    {
+      "id": "edge5",
+      "fromNode": "analysis-chain",
+      "toNode": "repetition",
+      "label": ""
+    },
+    {
+      "id": "edge6",
+      "fromNode": "analysis-chain",
+      "toNode": "response-behavior",
+      "label": ""
+    },
+    {
+      "id": "edge7",
+      "fromNode": "analysis-chain",
+      "toNode": "conversation-dynamics",
+      "label": ""
+    },
+    {
+      "id": "edge8",
+      "fromNode": "analysis-chain",
+      "toNode": "conflict-analysis",
+      "label": ""
+    },
+    {
+      "id": "edge9",
+      "fromNode": "analysis-chain",
+      "toNode": "topic-behavior",
+      "label": ""
+    },
+    {
+      "id": "edge10",
+      "fromNode": "analysis-chain",
+      "toNode": "baseline-change",
+      "label": ""
+    },
+    {
+      "id": "edge11",
+      "fromNode": "analysis-chain",
+      "toNode": "anomaly-detection",
+      "label": ""
+    },
+    {
+      "id": "edge12",
+      "fromNode": "analysis-chain",
+      "toNode": "context-node",
+      "label": ""
+    },
+    {
+      "id": "edge13",
+      "fromNode": "analysis-chain",
+      "toNode": "hypothesis-layer",
+      "label": ""
+    },
+    {
+      "id": "edge14",
+      "fromNode": "hypothesis-layer",
+      "toNode": "template-link",
+      "label": ""
+    }
+  ],
+  "groups": [],
+  "view": {
+    "center": {
+      "x": 500,
+      "y": 400
+    },
+    "zoom": 1.0
+  }
+}
