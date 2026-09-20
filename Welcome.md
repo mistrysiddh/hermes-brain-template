@@ -19,7 +19,7 @@ Start here: [[Projects/Hermes-Agent-Vault-Setup]] — the master hub note explai
 - `Daily/` — raw session archive, `YYYY/MM/DD/`, exported nightly by cron
 - `Research/` — active in-progress investigation notes
 - `Memory-Review/` — staging area for durable facts before promotion to Hermes native memory
-- `Skills-Notes/` — installed skills index + team profile index + **specialized MOCs** (Technology Stack, Cybersecurity, AI/ML, Agentic Architecture) + **Dataview Query Library** with skill analytics
+- `Skills-Notes/` — installed skills index + team profile index + **specialized MOCs** (Technology Stack, Cybersecurity, AI/ML, Agentic Architecture) + **Dataview Query Library** with skill analytics + **Personality Judgment Framework** (analysis framework, analysis template, dashboard, and canvas)
 - `Templates/` — reusable note templates (Project, Daily-Review, Research-Note)
 - `Canvases/` — visual maps (Memory Pipeline, experimental Dashboard-Beta)
 - `Scripts/` — automation (consolidation, forecasting, semantic search, audit, archiving)
@@ -28,6 +28,7 @@ Start here: [[Projects/Hermes-Agent-Vault-Setup]] — the master hub note explai
 
 ## ✨ New & Enhanced Features
 - **Specialized MOCs** — Deep-dive indexes for your core domains: [[Skills-Notes/Technology-Stack-MOC|Technology Stack]], [[Skills-Notes/Cybersecurity-MOC|Cybersecurity]], [[Skills-Notes/AI-ML-MOC|AI/ML Workflows]], [[Skills-Notes/Agentic-Architecture-MOC|Agentic Architecture]]
+- **Personality Judgment Framework** — Structured method for analyzing communication patterns and traits (framework, analysis template, dashboard, and canvas)
 - **Skill Usage Analytics** — Dataview queries for skill frequency, project cross-referencing, velocity, memory retention ([[Skills-Notes/Dataview-Query-Library#Skill-Usage-Analytics]])
 - **Enhanced Skill Forecasting** — CLI flags (`--days`, `--top`, `--debug`, `--no-log`), recency weighting, gap analysis, complementary skills (`Scripts/skill_forecast.py`)
 - **Semantic Search Layer** — Local vector search with HTTP server for Dashboard widget (`Scripts/semantic_search.py --serve`)
