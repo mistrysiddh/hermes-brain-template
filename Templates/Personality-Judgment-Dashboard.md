@@ -12,7 +12,7 @@ TABLE
   top_hypothesis AS "Top Hypothesis",
   confidence AS "Confidence",
   dateformat(file.mtime, "yyyy-MM-dd") AS "Updated"
-FROM "Daily"
+FROM #personality-judgment or "Daily"
 WHERE subject AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
@@ -20,7 +20,7 @@ SORT file.mtime DESC
 ## 📈 Confidence Distribution
 
 ```dataviewjs
-const pages = dv.pages('"Daily"')
+const pages = dv.pages('#personality-judgment or "Daily"')
   .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.subject);
 
 const confidenceCounts = {
@@ -50,7 +50,7 @@ TABLE
   hypothesis AS "Hypothesis",
   subject AS "Subject",
   confidence AS "Confidence"
-FROM "Daily"
+FROM #personality-judgment or "Daily"
 WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND hypotheses
 FLATTEN hypotheses AS hypothesis
 WHERE hypothesis
@@ -67,7 +67,7 @@ TABLE WITHOUT ID
   subject AS "Subject",
   primary_style AS "Style",
   confidence AS "Confidence"
-FROM "Daily"
+FROM #personality-judgment or "Daily"
 WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND subject
 SORT file.mtime DESC
 ```
@@ -75,7 +75,7 @@ SORT file.mtime DESC
 ## 🏷️ Topics Analyzed
 
 ```dataviewjs
-const pages = dv.pages('"Daily"')
+const pages = dv.pages('#personality-judgment or "Daily"')
   .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.topic_behavior);
 
 const topicCounts = {};
@@ -103,7 +103,7 @@ TABLE
   anomaly AS "Anomaly",
   subject AS "Subject",
   file.link AS "Analysis"
-FROM "Daily"
+FROM #personality-judgment or "Daily"
 WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND anomalies
 FLATTEN anomalies AS anomaly
 WHERE anomaly
@@ -115,7 +115,7 @@ SORT file.mtime DESC
 ```dataview
 LIST
   recommendation
-FROM "Daily"
+FROM #personality-judgment or "Daily"
 WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND recommendations
 FLATTEN recommendations AS recommendation
 WHERE recommendation

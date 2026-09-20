@@ -1,8 +1,17 @@
 ---
-type: template
+type: analysis
 status: active
 created: {{date}}
-tags: [template, analysis, personality-judgment]
+tags: [analysis, personality-judgment]
+subject: ""
+period: ""
+primary_style: ""
+top_hypothesis: ""
+confidence: ""
+hypotheses: []
+anomalies: []
+recommendations: []
+topic_behavior: []
 ---
 
 # Personality Judgment Analysis Template
@@ -17,15 +26,15 @@ Use this template to conduct a structured personality judgment analysis followin
 5. Consider linking to related analyses or MOCs as appropriate
 
 ## 📊 Analysis Metadata (for dashboard tracking)
-- **subject**: [Subject ID/name]
-- **period**: [Analysis period]
-- **primary_style**: [Primary Style Observed]
-- **top_hypothesis**: [Brief title of highest confidence hypothesis]
-- **confidence**: [Confidence level of top hypothesis: High/Medium/Low/Very Low]
-- **hypotheses**: [List of hypothesis titles]
-- **anomalies**: [List of anomaly dimensions observed]
-- **recommendations**: [List of key recommendations]
-- **topic_behavior**: [List of topics analyzed in Topic Behavior section]
+- **subject**:: [Subject ID/name]
+- **period**:: [Analysis period]
+- **primary_style**:: [Primary Style Observed]
+- **top_hypothesis**:: [Brief title of highest confidence hypothesis]
+- **confidence**:: [Confidence level of top hypothesis: High/Medium/Low/Very Low]
+- **hypotheses**:: [List of hypothesis titles]
+- **anomalies**:: [List of anomaly dimensions observed]
+- **recommendations**:: [List of key recommendations]
+- **topic_behavior**:: [List of topics analyzed in Topic Behavior section]
 
 ---
 
