@@ -41,6 +41,8 @@ vault has more than a few dozen notes).
 ## Analysis frameworks
 - [[Skills-Notes/Personality-Judgment-Framework]] — structured method for analyzing communication patterns and personality traits
 - [[Templates/Personality-Judgment-Analysis.md]] — template for conducting personality judgment analyses
+- [[Templates/Personality-Judgment-Dashboard.md]] — Dataview dashboard for tracking and visualizing analyses
+- [[Canvases/Personality-Judgment-Canvas.canvas]] — visual overview of the entire framework (open in Obsidian Canvas)
 
 ## Active work
 - [[Research/README]] — in-progress investigations
