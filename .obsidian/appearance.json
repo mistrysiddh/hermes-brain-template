@@ -1,0 +1,7 @@
+{
+  "theme": "obsidian",
+  "cssTheme": "Nemoclaw",
+  "enabledCssSnippets": [
+    "dashboard-beta"
+  ]
+}

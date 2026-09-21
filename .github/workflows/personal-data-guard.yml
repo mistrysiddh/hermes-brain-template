@@ -1,0 +1,83 @@
+name: Personal Data Guard
+
+# Separate from lint.yml because this needs to trigger on paths lint.yml
+# deliberately ignores (04-Archives/Daily/, 04-Archives/Memory-Review/, 03-Resources/Research/) —
+# this template repo must never carry real vault content into a PR/push, even though most
+# other CI jobs have no reason to run when only those folders change.
+on:
+  push:
+    paths:
+      - "04-Archives/Daily/**"
+      - "04-Archives/Memory-Review/**"
+      - "03-Resources/Research/**"
+      - "Daily/**"
+      - "Memory-Review/**"
+      - "Research/**"
+      - ".smart-env/**"
+      - ".obsidian/plugins/**/data.json"
+      - "cache/graphify/**"
+  pull_request:
+    paths:
+      - "04-Archives/Daily/**"
+      - "04-Archives/Memory-Review/**"
+      - "03-Resources/Research/**"
+      - "Daily/**"
+      - "Memory-Review/**"
+      - "Research/**"
+      - ".smart-env/**"
+      - ".obsidian/plugins/**/data.json"
+      - "cache/graphify/**"
+
+jobs:
+  personal-data-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if disallowed personal-content paths are staged
+        run: |
+          set -e
+          # Paths that must never enter this template repo (real vault content),
+          # mirroring the .gitignore exceptions this template intentionally
+          # allows (the handful of scaffolding files that legitimately live
+          # under Archives/Daily/, Memory-Review/, Research/ in the template itself).
+          BEFORE_SHA="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ] \
+             && git cat-file -e "$BEFORE_SHA" 2>/dev/null; then
+            BASE_REF="$BEFORE_SHA"
+          else
+            # No usable prior commit to diff against (first push to a new
+            # branch, or a push event whose "before" SHA isn't in this
+            # shallow checkout) — fall back to diffing the most recent
+            # commit only, NOT the empty tree.
+            BASE_REF="HEAD~1"
+            git cat-file -e "$BASE_REF" 2>/dev/null || BASE_REF="HEAD"
+          fi
+          CHANGED=$(git diff --name-only "$BASE_REF" HEAD -- \
+            '04-Archives/Daily/*' \
+            '04-Archives/Memory-Review/*' \
+            '03-Resources/Research/*' \
+            'Daily/*' \
+            'Memory-Review/*' \
+            'Research/*' \
+            '.smart-env/*' \
+            '.obsidian/plugins/*/data.json' \
+            'cache/graphify/*' \
+            | grep -v -E '^04-Archives/Daily/(README\.md|Timeline\.md|Chat-Correlation\.md|manifest\.jsonl|\.gitkeep)$' \
+            | grep -v -E '^04-Archives/Memory-Review/(README\.md|TEMPLATE\.md|HERMES-PREAMBLE\.md|Memory-Board\.kanban|Consolidation-Log\.md)$' \
+            | grep -v -E '^03-Resources/Research/(README\.md|Weekly-Synthesis-2026-W39\.md)$' \
+            | grep -v -E '^Daily/(README\.md|Timeline\.md|Chat-Correlation\.md|manifest\.jsonl|\.gitkeep)$' \
+            | grep -v -E '^Memory-Review/TEMPLATE\.md$' \
+            | grep -v -E '^Research/README\.md$' \
+            || true)
+          if [ -n "$CHANGED" ]; then
+            echo "::error::Disallowed personal-content paths were added/changed in this PR:"
+            echo "$CHANGED"
+            echo ""
+            echo "This template repo must never contain real vault content — see docs/CONTRIBUTING.md."
+            echo "If this is a false positive (e.g. a genuinely new template scaffolding file"
+            echo "under Research/ or Memory-Review/), add it to the allow-list in this workflow."
+            exit 1
+          fi
+          echo "No disallowed personal-content paths found."

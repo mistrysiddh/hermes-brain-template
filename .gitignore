@@ -1,0 +1,57 @@
+# Personal/generated content — never commit your own data back into the template
+04-Archives/Daily/**
+!04-Archives/Daily/.gitkeep
+!04-Archives/Daily/README.md
+!04-Archives/Daily/Timeline.md
+!04-Archives/Daily/Chat-Correlation.md
+
+04-Archives/Memory-Review/*
+!04-Archives/Memory-Review/README.md
+!04-Archives/Memory-Review/TEMPLATE.md
+!04-Archives/Memory-Review/Memory-Board.kanban
+!04-Archives/Memory-Review/HERMES-PREAMBLE.md
+
+03-Resources/Research/**
+!03-Resources/Research/README.md
+
+# Generated logs and reports
+04-Archives/Audit-Reports/*.log
+04-Archives/Audit-Reports/*-Report.md
+04-Archives/Audit-Reports/*-Performance.md
+02-Areas/Skills/Skill-to-Chat-Links.md
+
+# Backward-compatibility ignore rules
+Daily/**
+!Daily/.gitkeep
+!Daily/README.md
+Memory-Review/*
+!Memory-Review/TEMPLATE.md
+Research/**
+!Research/README.md
+Skills-Notes/*.log
+Skills-Notes/*-Report.md
+
+# Smart environment (local ML models, event logs, smart blocks state)
+.smart-env/
+!/.smart-env/README.md
+!/.smart-env/smart_env.json
+
+# Cache directories
+cache/
+graphify-out/
+
+# Obsidian runtime state
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/data.json
+.obsidian/app.json
+.obsidian/graph.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Scratch workspace
+scratch/
+scratch_analysis.txt
+*.log

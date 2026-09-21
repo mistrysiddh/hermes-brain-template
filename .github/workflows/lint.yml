@@ -1,0 +1,119 @@
+name: Lint Scripts
+
+on:
+  push:
+    paths:
+      - "_System/Scripts/**"
+      - ".github/workflows/lint.yml"
+  pull_request:
+    paths:
+      - "_System/Scripts/**"
+      - ".github/workflows/lint.yml"
+
+jobs:
+  bash-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check all bash scripts
+        run: |
+          set -e
+          shopt -s nullglob globstar
+          files=(_System/Scripts/**/*.sh)
+          if [ -f install.sh ]; then files+=(install.sh); fi
+          for f in "${files[@]}"; do
+            echo "Checking $f"
+            bash -n "$f"
+          done
+
+  python-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Byte-compile all Python scripts
+        run: |
+          set -e
+          shopt -s nullglob globstar
+          for f in _System/Scripts/**/*.py; do
+            echo "Checking $f"
+            python3 -m py_compile "$f"
+          done
+
+  powershell-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse-check all PowerShell scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = Get-ChildItem -Path _System/Scripts -Filter *.ps1 -Recurse | ForEach-Object { $_.FullName }
+          $failed = $false
+          foreach ($f in $files) {
+            $nullTokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$nullTokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              Write-Host "FAILED: $f"
+              $errors | ForEach-Object { Write-Host "  $($_.Message)" }
+              $failed = $true
+            } else {
+              Write-Host "OK: $f"
+            }
+          }
+          if ($failed) { exit 1 }
+
+  runtime-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build fixture vault
+        run: |
+          set -e
+          mkdir -p /tmp/hermes-brain-fixture
+          python3 _System/Scripts/ci/build_fixture_vault.py /tmp/hermes-brain-fixture
+      - name: Install fake hermes CLI on PATH
+        run: |
+          set -e
+          mkdir -p /tmp/fakebin
+          cp _System/Scripts/ci/fake_hermes.sh /tmp/fakebin/hermes
+          chmod +x /tmp/fakebin/hermes
+          echo "/tmp/fakebin" >> "$GITHUB_PATH"
+      - name: Run vault_audit.py against fixture
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 _System/Scripts/vault_audit.py
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Vault-Audit-Report.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Vault-Audit-Report.md
+          echo "vault_audit.py: OK, report generated"
+      - name: Run agent_performance.py against fixture
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 _System/Scripts/agent_performance.py
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Agent-Performance.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Agent-Performance.md
+          echo "agent_performance.py: OK, report generated"
+      - name: Run hourly_archive.py against fixture (no-new-sessions path)
+        env:
+          HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
+        run: |
+          set -e
+          python3 _System/Scripts/hourly_archive.py
+          echo "hourly_archive.py: OK, exited cleanly"
+      - name: Run generate_skill_links.py against fixture
+        run: |
+          set -e
+          python3 _System/Scripts/generate_skill_links.py /tmp/hermes-brain-fixture
+          test -f /tmp/hermes-brain-fixture/02-Areas/Skills/Skill-to-Chat-Links.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Skill-to-Chat-Links.md
+          echo "generate_skill_links.py: OK, report generated"
+
+  consolidate-memory-content-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run consolidate_memory.py content-correctness tests
+        run: |
+          set -e
+          python3 _System/Scripts/ci/test_consolidate_memory.py
