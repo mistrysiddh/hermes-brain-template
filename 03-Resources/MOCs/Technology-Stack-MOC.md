@@ -29,8 +29,8 @@ Central map of content for infrastructure, containerization, and self-hosting te
 - Volume management patterns
 
 ### Projects
-- [[../Projects/Local-AI-Stack.md|Local AI Inference Stack]] (Ollama, OpenWebUI, etc.)
-- [[../Projects/HermesPi-Setup.md|HermesPi Raspberry Pi Setup]]
+- [[01-Projects/Local-AI-Stack.md|Local AI Inference Stack]] (Ollama, OpenWebUI, etc.)
+- [[01-Projects/HermesPi-Setup.md|HermesPi Raspberry Pi Setup]]
 
 ## ☸️ Kubernetes (Learning)
 
@@ -55,9 +55,9 @@ Central map of content for infrastructure, containerization, and self-hosting te
 - **ntfy** — Push notifications
 
 ### Planned Services
-- [[../Projects/SearXNG-Instance.md|SearXNG Search]]
-- [[../Projects/Immich-Photos.md|Immich Photo Backup]]
-- [[../Projects/Paperless-NGX.md|Document Archive]]
+- [[01-Projects/SearXNG-Instance.md|SearXNG Search]]
+- [[01-Projects/Immich-Photos.md|Immich Photo Backup]]
+- [[01-Projects/Paperless-NGX.md|Document Archive]]
 
 ## 🔧 Automation & CI/CD
 

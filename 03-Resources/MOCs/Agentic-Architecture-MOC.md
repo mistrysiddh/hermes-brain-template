@@ -89,9 +89,9 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 - **Local Agent Swarm** — HermesPi + desktop agents collaboration
 
 ### Planned
-- [[../Projects/Self-Healing-Infrastructure.md|Self-Healing Agent Ops]]
-- [[../Projects/Autonomous-Research-Agents.md|Paper-to-Production Pipeline]]
-- [[../Projects/Agent-Marketplace.md|Skill/Agent Sharing Platform]]
+- [[01-Projects/Self-Healing-Infrastructure.md|Self-Healing Agent Ops]]
+- [[01-Projects/Autonomous-Research-Agents.md|Paper-to-Production Pipeline]]
+- [[01-Projects/Agent-Marketplace.md|Skill/Agent Sharing Platform]]
 
 ---
 

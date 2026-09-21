@@ -184,54 +184,124 @@ without losing your local customizations.
 - Run only **one** session-archiving cron job per vault — concurrent writers
   to `Daily/manifest.jsonl` will race and corrupt the index.
 
+## Vault Structure
+
+Here is the organized folder structure of the Hermes Brain template:
+
+```
+├── 01-Projects/
+│   ├── ADR/
+│   │   └── README.md
+│   ├── Hermes-Agent-Vault-Setup.md
+│   ├── Projects.base
+│   └── README.md
+├── 02-Areas/
+│   ├── README.md
+│   ├── Skills/
+│   │   ├── Installed-Skills-Index.md
+│   │   ├── Lessons-Learned/
+│   │   │   └── README.md
+│   │   └── Personality-Judgment-Framework.md
+│   ├── Team-Profiles-Index.md
+│   └── User-Profile.md
+├── 03-Resources/
+│   ├── README.md
+│   ├── Guides/
+│   │   ├── Dataview-Query-Library.md
+│   │   └── Kanban-Usage.md
+│   ├── MOCs/
+│   │   ├── AI-ML-MOC.md
+│   │   ├── Agentic-Architecture-MOC.md
+│   │   ├── Cybersecurity-MOC.md
+│   │   └── Technology-Stack-MOC.md
+│   └── Research/
+│       └── README.md
+├── 04-Archives/
+│   ├── README.md
+│   ├── Daily/
+│   │   ├── .gitkeep
+│   │   ├── Chat-Correlation.md
+│   │   ├── README.md
+│   │   └── Timeline.md
+│   ├── Memory-Review/
+│   │   ├── HERMES-PREAMBLE.md
+│   │   ├── Memory-Board.kanban
+│   │   └── TEMPLATE.md
+│   └── README.md
+├── _System/
+│   ├── README.md
+│   ├── Canvases/
+│   │   ├── Dashboard-Beta.md
+│   │   ├── Memory-Pipeline.canvas
+│   │   └── Personality-Judgment-Canvas.canvas
+│   ├── Scripts/
+│   │   ├── Installers/
+│   │   │   ├── install.ps1
+│   │   │   ├── install.sh
+│   │   │   ├── try.ps1
+│   │   │   ├── try.sh
+│   │   │   ├── uninstall.ps1
+│   │   │   ├── uninstall.sh
+│   │   │   ├── update.ps1
+│   │   │   └── update.sh
+│   │   ├── agent_performance.py
+│   │   ├── archive_now.ps1
+│   │   ├── archive_now.py
+│   │   ├── build_fixture_vault.py
+│   │   ├── consolidate_memory.py
+│   │   ├── dream_cycle.py
+│   │   ├── enrich_session.ps1
+│   │   ├── enrich_session.py
+│   │   ├── generate_skill_links.py
+│   │   ├── hourly_archive.py
+│   │   ├── New-TrendDigest.ps1
+│   │   ├── pipeline.ps1
+│   │   ├── pipeline.sh
+│   │   ├── pull_supermemory.py
+│   │   ├── seed_sample_data.py
+│   │   ├── semantic_search.py
+│   │   ├── session_tagger.py
+│   │   ├── skill_forecast.py
+│   │   ├── sync_to_hermes.py
+│   │   ├── tag_skill_map.json
+│   │   ├── trend_digest.py
+│   │   └── trend_digest.sh
+│   ├── Templates/
+│   │   ├── Architecture-Decision-Record.md
+│   │   ├── Daily-Review.md
+│   │   ├── Lesson-Learned.md
+│   │   ├── Personality-Judgment-Analysis.md
+│   │   ├── Personality-Judgment-Dashboard.md
+│   │   ├── Project.md
+│   │   └── Research-Note.md
+├── assets/
+│   ├── graph-view-screenshot.png
+│   └── install-demo.png
+├── docs/
+│   ├── LICENSE
+│   └── CHANGELOG.md
+├── .gitignore
+├── Dashboard.md
+├── INSTALL_PROMPT.md
+├── MOC.md
+├── README.md
+├── SETUP.md
+└── Welcome.md
+```
+
+**Structure Explanation:**
+- **01-Projects/** — Active projects with goals and deadlines
+- **02-Areas/** — Long-term standards, skills, and user profile
+- **03-Resources/** — Domain knowledge (MOCs, research, guides)
+- **04-Archives/** — Historical items (daily sessions, memory review)
+- **_System/** — Operational core (templates, scripts, canvases)
+
+This PARA-based structure keeps everything organized and discoverable.
+
 ## License
 
 MIT — see [LICENSE](docs/LICENSE). Use, fork, and adapt freely.
 
-## Known issues / Roadmap
-
-Tracked here so they're visible instead of buried in commit history. PRs
-welcome on any of these — see Contributing below.
-
-**Bugs to fix:**
-- [x] `Projects/Hermes-Agent-Vault-Setup.md` is referenced as the "master
-      hub note" by 6 files (`Welcome.md`, `Projects/README.md`,
-      `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`,
-      `Memory-Review/TEMPLATE.md`) but the file doesn't exist yet — new
-      users hit 6 dead links on first open. _(Fixed in v1.13.0.)_
-- [x] Several files hardcode a "4-agent team" (Codex/Ledger/Vox/Argus)
-      assumption as if every install has a multi-agent team, contradicting
-      `Team-Profiles-Index.md`'s own single-agent disclaimer. _(Fixed in
-      v1.14.0 — now phrased as "your agent(s)," with the 4-name table
-      relabeled as an example/starter template, not an assumed fact.)_
-- [x] `consolidate_memory.py` and `Memory-Review/TEMPLATE.md` hardcode
-      Supermemory-specific filenames as required fact sources, even though
-      Supermemory integration is meant to be optional. _(Fixed in v1.15.0
-      — the script already degraded gracefully when the files were
-      missing, but now says so explicitly instead of silently writing an
-      empty candidates file; docstring reworded to make clear Supermemory
-      is one optional source, not the only one.)_
-- [x] `Skills-Notes/README.md` has a stale specific skill count that goes
-      wrong the moment a user installs or removes a skill. _(Fixed in
-      v1.16.0 — reworded to "your installed Hermes skills," no baked-in
-      number.)_
-
-**Features under consideration:**
-- [x] Skill-usage breakdown on the Dashboard ("Top 5 most-used skills this
-      month," sourced from `Skill-to-Chat-Links.md`). _(Added in v1.17.0
-      as "Top skills used.")_
-- [x] "What changed since you last opened this" delta banner on the
-      Dashboard, tracked via the note's own frontmatter. _(Added in
-      v1.17.0 as "What's changed since your last visit.")_
-- [x] Recent Memory-Review promotions log — a small feed of what got
-      promoted to permanent memory recently. _(Added in v1.17.0 as
-      "Recently promoted," sourced from Consolidation-Log.md.)_
-- [x] Storage/file-count stats on the Dashboard via `app.vault.getFiles()`.
-      _(Added in v1.17.0 as "Storage & file counts.")_
-
-All 8 original roadmap items are now done — new ideas welcome via
-[Discussions](https://github.com/mistrysiddh/hermes-brain-template/discussions)
-or an issue.
 
 ## Contributing
 
