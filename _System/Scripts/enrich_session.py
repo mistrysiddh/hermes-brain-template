@@ -16,14 +16,27 @@ import re
 import sys
 from datetime import datetime
 
-VAULT = os.environ.get("HERMES_VAULT_PATH")
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.")
-    sys.exit(1)
+def resolve_vault(explicit_vault=None):
+    if explicit_vault and os.path.isdir(explicit_vault):
+        return os.path.abspath(explicit_vault)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
 
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+
+VAULT = resolve_vault()
+daily_cand = os.path.join(VAULT, "04-Archives", "Daily") if VAULT else ""
+DAILY = daily_cand if (daily_cand and os.path.exists(daily_cand)) else (os.path.join(VAULT, "Daily") if VAULT else "")
 SUMMARY_FRONTMATTER_KEY = "summary"
+
 
 def has_frontmatter(content):
     """Return True if content starts with a YAML frontmatter block."""

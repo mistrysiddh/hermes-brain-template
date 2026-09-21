@@ -5,6 +5,11 @@ no running scripts by hand — Hermes/OpenClaw does it for you and asks the same
 questions the installer would (where to put the vault, which embedding
 backend, etc).
 
+> [!TIP]
+> **Prefer a terminal one-liner instead of chatting?**
+> - **Windows (PowerShell):** `irm https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.ps1 | iex`
+> - **Linux / macOS:** `curl -fsSL https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.sh | bash`
+
 ---
 
 ## 1. One-shot install prompt
@@ -50,8 +55,9 @@ last hour as redacted markdown into my Hermes Brain vault's 04-Archives/Daily fo
 organized as 04-Archives/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
 in that vault's 04-Archives/Daily/README.md. The script also exports a JSONL copy to
 extract token usage (prompt + completion tokens) and appends daily totals to
-04-Archives/Audit-Reports/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
+04-Archives/Audit-Reports/Token-Usage.log. Execute: python "<vault>/_System/Scripts/hourly_archive.py". Use env.HERMES_VAULT_PATH for the vault
 location if it's set, otherwise ask me for the vault path first.
+
 
 IMPORTANT — idempotency: before creating anything, call
 `cronjob_manage(action='list')` and check for a job already named

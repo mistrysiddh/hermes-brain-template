@@ -262,11 +262,28 @@ def render_prose_mode(vault, skills, sessions, matches):
     return lines
 
 
+def get_vault():
+    if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
+        return os.path.abspath(sys.argv[1])
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
+
+
 def main():
-    if len(sys.argv) < 2:
-        print("usage: generate_skill_links.py <vault_root>")
+    vault = get_vault()
+    if not vault:
+        print("usage: generate_skill_links.py [vault_root]")
         sys.exit(1)
-    vault = sys.argv[1]
+
     skills_cand = os.path.join(vault, "02-Areas", "Skills")
     skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(vault, "Skills-Notes")
     daily_cand = os.path.join(vault, "04-Archives", "Daily")

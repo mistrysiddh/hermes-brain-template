@@ -51,17 +51,24 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 3. Warn about any cron job that might still reference this vault
+# 3. Cron job cleanup
 # ---------------------------------------------------------------------------
 echo
 bold "Cron job cleanup"
-info "This script cannot see or remove Hermes cron jobs (they're managed by"
-info "the Hermes agent, not this repo). If you set up hourly archiving for"
-info "this vault, ask your Hermes agent to remove it, e.g.:"
-info "  \"list my cron jobs and remove the one archiving $DEST\""
-info "Leaving a stale job pointed at a deleted vault will just fail silently"
-info "on its next run (HERMES_VAULT_PATH won't resolve) — not dangerous, but"
-info "worth cleaning up."
+if command -v hermes >/dev/null 2>&1; then
+  if hermes cron list 2>/dev/null | grep -q "hermes-brain-archive-hourly"; then
+    read -rp "  Found 'hermes-brain-archive-hourly' cron job. Remove it now? [Y/n]: " RM_CRON
+    if [ "${RM_CRON,,}" != "n" ]; then
+      hermes cron delete "hermes-brain-archive-hourly" \
+        && ok "Removed 'hermes-brain-archive-hourly' cron job." \
+        || warn "Could not remove cron job automatically — run: hermes cron delete hermes-brain-archive-hourly"
+    fi
+  else
+    info "No 'hermes-brain-archive-hourly' cron job found."
+  fi
+else
+  info "Hermes CLI not found — if you had an hourly cron job set up, remove it via Hermes chat or CLI."
+fi
 
 # ---------------------------------------------------------------------------
 # 4. Optionally delete the vault directory

@@ -65,85 +65,84 @@ what was intentionally left out.
 
 ## Quick start
 
-### Option A0 — just try it first (zero commitment)
+### 🚀 Option 1 — One-Line Terminal Install (Fastest, directly from GitHub)
 
-Not ready to install anything yet? Copy the template into a scratch temp
-directory and open it in Obsidian without touching your real config or
-registering anything with Hermes:
+Open your terminal and run the one-liner. It automatically clones or downloads the latest template directly from GitHub, sets up your vault, configures your Hermes CLI environment (`HERMES_VAULT_PATH`), and optionally registers the hourly session archiver:
 
+**Linux / macOS / WSL:**
 ```bash
-./Scripts/Installers/try.sh        # Linux/macOS
-```
-```powershell
-.\\Scripts\\Installers\\try.ps1        # Windows
-```
-
-Delete the scratch copy any time. Run Option A or B below when you're
-ready to keep it for real.
-
-### Option A — paste into Hermes (easiest)
-
-If you already run a Hermes agent, skip cloning/scripting entirely: open
-**[INSTALL_PROMPT.md](INSTALL_PROMPT.md)** and paste one block straight into
-your Hermes chat:
-
-- **Prompt 1** — installs the vault only
-- **Prompt 2** — sets up the hourly archiving cron job only (vault must already exist)
-- **Prompt 3 (master)** — does both in one paste: install the vault, then set
-  up the hourly cron job, no follow-up needed
-
-### Option B — run the installer yourself
-
-`install.sh` / `install.ps1` walk through the same questions interactively.
-Real transcript from an actual run:
-
-![install.sh demo transcript](assets/install-demo.png)
-
-**Linux / macOS:**
-```bash
-git clone https://github.com/mistrysiddh/hermes-brain-template.git
-cd hermes-brain-template
-chmod +x Scripts/Installers/install.sh
-./Scripts/Installers/install.sh
+curl -fsSL https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 ```powershell
-git clone https://github.com/mistrysiddh/hermes-brain-template.git
-cd hermes-brain-template
-powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
+irm https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.ps1 | iex
 ```
 
-The installer asks a few questions — where to put the vault, which local
-embedding backend you want for the optional trend-digest scripts (Ollama or
-sentence-transformers), and whether to auto-register the vault path with the
-Hermes CLI — then finishes the setup for you.
+*Non-interactive flags are supported: `--dest <path> --backend <ollama|python|skip> --test` (PowerShell: `-Dest <path> -Backend <ollama|python|skip> -Test`).*
 
-### Option C — full manual control
+---
 
-Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
+### 📦 Option 2 — GitHub "Use this template" or Clone
 
-### Option D — Clone & Use (for developers/contributors)
+If you want your own private/custom git repository:
+1. Click the green **[Use this template](https://github.com/mistrysiddh/hermes-brain-template/generate)** button on GitHub to create your personal vault repository.
+2. Clone your repository:
+   ```bash
+   git clone https://github.com/mistrysiddh/hermes-brain-template.git
+   cd hermes-brain-template
+   ```
+3. Run the interactive installer from inside the cloned folder:
+   - **Linux / macOS:**
+     ```bash
+     chmod +x _System/Scripts/Installers/install.sh
+     ./_System/Scripts/Installers/install.sh
+     ```
+   - **Windows (PowerShell):**
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\install.ps1
+     ```
 
-If you want to work with the template directly or contribute:
+The installer guides you through destination selection, optional local embeddings (Ollama / sentence-transformers), and registering your vault with the Hermes CLI.
 
+---
+
+### 🤖 Option 3 — One Paste into Hermes Agent (Easiest for Hermes users)
+
+If you already run a Hermes agent, skip cloning and manual scripting entirely: open
+**[INSTALL_PROMPT.md](INSTALL_PROMPT.md)** and paste the master prompt straight into
+your Hermes chat:
+
+- **Prompt 1** — installs the vault only
+- **Prompt 2** — sets up the hourly archiving cron job only (vault must already exist)
+- **Prompt 3 (master)** — does both in one paste: install the vault, then set up the hourly cron job, no follow-up needed
+
+---
+
+### 🧪 Option 4 — Zero-Commitment Trial (Scratch Vault)
+
+Not ready to install anything yet? Copy the template into a temporary scratch
+directory and open it in Obsidian without touching your real config or
+registering anything with Hermes:
+
+**Linux / macOS:**
 ```bash
-git clone https://github.com/mistrysiddh/hermes-brain-template.git
-cd hermes-brain-template
-# Open in Obsidian directly, or run installers if needed
-obsidian .  # macOS (adjust for your OS)
+./_System/Scripts/Installers/try.sh
 ```
 
-This gives you a clean template vault to customize. For Hermes integration,
-run the installer from within the cloned directory:
-
-```bash
-./_System/Scripts/Installers/install.sh  # Linux/macOS
-.\_System\Scripts\Installers\install.ps1  # Windows
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1
 ```
 
-Your cloned vault stays update-safe — you can pull template updates later
-without losing your local customizations.
+Delete the scratch copy any time. Run Option 1 or 2 when you are ready to keep it for real.
+
+---
+
+### 🛠️ Option 5 — Full Manual Control
+
+Prefer configuring everything by hand? Follow **[SETUP.md](SETUP.md)** step by step.
+
 
 ## Cross-platform scripts
 

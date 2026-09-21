@@ -29,21 +29,51 @@ try:
 except ImportError:
     HAS_PORTALOCKER = False
 
-VAULT = os.environ.get("HERMES_VAULT_PATH")
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.")
-    sys.exit(1)
+def resolve_vault(explicit_vault=None):
+    """Resolve the vault root path from argument, script location, or environment."""
+    if explicit_vault and os.path.isdir(explicit_vault):
+        return os.path.abspath(explicit_vault)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
 
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
-os.makedirs(DAILY, exist_ok=True)
-MANIFEST = os.path.join(DAILY, "manifest.jsonl")
 
-token_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Token-Usage.log")
-TOKEN_LOG = token_cand if os.path.exists(os.path.dirname(token_cand)) else os.path.join(VAULT, "Skills-Notes", "Token-Usage.log")
-LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")
+VAULT = None
+DAILY = None
+MANIFEST = None
+TOKEN_LOG = None
+LOCK_FILE = None
+
+
+def init_vault_paths(vault_path):
+    """Initialize global path variables for the given vault."""
+    global VAULT, DAILY, MANIFEST, TOKEN_LOG, LOCK_FILE
+    VAULT = vault_path
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    os.makedirs(DAILY, exist_ok=True)
+    MANIFEST = os.path.join(DAILY, "manifest.jsonl")
+
+    token_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Token-Usage.log")
+    TOKEN_LOG = token_cand if os.path.exists(os.path.dirname(token_cand)) else os.path.join(VAULT, "Skills-Notes", "Token-Usage.log")
+    LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")
+
+
+# Initialize default vault if discoverable
+_initial_vault = resolve_vault()
+if _initial_vault:
+    init_vault_paths(_initial_vault)
 
 CREATED_RE = re.compile(r'created_at:\s*"(\d{4})-(\d{2})-(\d{2})')
+
 
 
 def acquire_lock():
@@ -227,15 +257,23 @@ def update_token_log(daily_total, session_count):
 
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain hourly session archiver + token tracker")
+    parser.add_argument("--vault", type=str, help="Vault root directory (overrides auto-detection and HERMES_VAULT_PATH)")
     parser.add_argument("--enrich", action="store_true", help="Run session enrichment after archiving to add glanceable summaries")
     parser.add_argument("--since", type=str, help="Export sessions since this timestamp (ISO format). If omitted, reads latest exported_at from manifest.jsonl")
     parser.add_argument("--tag", action="store_true", help="Run session tagger after archiving (default: off, run separately via cron)")
     args = parser.parse_args()
 
+    vault = resolve_vault(args.vault)
+    if not vault:
+        print("Could not resolve vault path — set HERMES_VAULT_PATH or pass --vault <path>")
+        sys.exit(1)
+    init_vault_paths(vault)
+
     # 0. Acquire exclusive lock to prevent concurrent execution
     if not acquire_lock():
         print("Another instance of hourly_archive.py is already running — exiting.")
         sys.exit(0)
+
 
     try:
         hermes_bin = find_hermes()

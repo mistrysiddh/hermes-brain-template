@@ -35,11 +35,26 @@ try:
 except ImportError:
     COLOR_AVAILABLE = False
 
+def resolve_vault():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
+
+
 # Constants
-VAULT = os.environ.get("HERMES_VAULT_PATH")
+VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
 if not VAULT:
     print("HERMES_VAULT_PATH is not set — aborting.", file=sys.stderr)
     sys.exit(1)
+
 
 skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
 SKILLS_NOTES = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")

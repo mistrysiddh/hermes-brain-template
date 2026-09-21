@@ -20,25 +20,55 @@ import subprocess
 import sys
 from datetime import datetime, timedelta
 
-VAULT = os.environ.get("HERMES_VAULT_PATH")
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.")
-    sys.exit(1)
+def resolve_vault(explicit_vault=None):
+    """Resolve the vault root path from argument, script location, or environment."""
+    if explicit_vault and os.path.isdir(explicit_vault):
+        return os.path.abspath(explicit_vault)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
 
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
-os.makedirs(DAILY, exist_ok=True)
-MANIFEST = os.path.join(DAILY, "manifest.jsonl")
 
-token_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Token-Usage.log")
-TOKEN_LOG = token_cand if os.path.exists(os.path.dirname(token_cand)) else os.path.join(VAULT, "Skills-Notes", "Token-Usage.log")
-LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")  # reuse same lock file
+VAULT = None
+DAILY = None
+MANIFEST = None
+TOKEN_LOG = None
+LOCK_FILE = None
+
+
+def init_vault_paths(vault_path):
+    """Initialize global path variables for the given vault."""
+    global VAULT, DAILY, MANIFEST, TOKEN_LOG, LOCK_FILE
+    VAULT = vault_path
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    os.makedirs(DAILY, exist_ok=True)
+    MANIFEST = os.path.join(DAILY, "manifest.jsonl")
+
+    token_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Token-Usage.log")
+    TOKEN_LOG = token_cand if os.path.exists(os.path.dirname(token_cand)) else os.path.join(VAULT, "Skills-Notes", "Token-Usage.log")
+    LOCK_FILE = os.path.join(DAILY, ".hourly_archive.lock")  # reuse same lock file
+
+
+# Initialize default vault if discoverable
+_initial_vault = resolve_vault()
+if _initial_vault:
+    init_vault_paths(_initial_vault)
 
 CREATED_RE = re.compile(r'created_at:\s*"(\d{4})-(\d{2})-(\d{2})')
 
 def another_instance_running():
     """Return True if the lock file exists (another instance is running)."""
-    return os.path.exists(LOCK_FILE)
+    return os.path.exists(LOCK_FILE) if LOCK_FILE else False
+
 
 def find_hermes():
     for cand in ("hermes", shutil.which("hermes")):
@@ -131,19 +161,27 @@ def update_token_log(daily_total, session_count):
     return running_total
 
 def main():
+    # Parse command line: optional --since <time>, optional --vault <path>
+    import argparse
+    parser = argparse.ArgumentParser(description="Instant Hermes session archiver")
+    parser.add_argument("--since", default="5m", help="How far back to look (e.g., '5m', '1h', '2h30m')")
+    parser.add_argument("--vault", type=str, help="Vault root directory (overrides auto-detection and HERMES_VAULT_PATH)")
+    args = parser.parse_args()
+
+    vault = resolve_vault(args.vault)
+    if not vault:
+        print("Could not resolve vault path — set HERMES_VAULT_PATH or pass --vault <path>")
+        sys.exit(1)
+    init_vault_paths(vault)
+
     # 0. Prevent concurrent execution with hourly_archive.py or another archive_now.py
     if another_instance_running():
         print("Another archive process is already running — exiting.")
         sys.exit(0)
 
-    # Parse command line: optional --since <time>
-    import argparse
-    parser = argparse.ArgumentParser(description="Instant Hermes session archiver")
-    parser.add_argument("--since", default="5m", help="How far back to look (e.g., '5m', '1h', '2h30m')")
-    args = parser.parse_args()
-
     since_seconds = parse_since_arg(args.since)
     since_str = f"{since_seconds}s"
+
 
     hermes_bin = find_hermes()
 

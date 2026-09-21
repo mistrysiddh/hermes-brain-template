@@ -7,8 +7,18 @@ tags: [daily-review]
 
 # Daily Review — {{date}}
 
+## 💬 Sessions for this day
+
+```dataview
+TABLE file.mtime AS "Modified", file.size AS "Size"
+FROM "04-Archives/Daily" OR "Daily"
+WHERE (file.folder = this.file.folder + "/" + this.file.name OR file.folder = this.file.folder) AND file.name != this.file.name AND file.name != "README" AND file.name != "manifest"
+SORT file.name ASC
+```
+
 ## Sessions reviewed
 - 
+
 
 ## Durable facts found
 - [ ] 
