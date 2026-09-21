@@ -7,6 +7,7 @@
 [![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
 [![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](02-Areas/User-Profile.md)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/mistrysiddh)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
@@ -297,6 +298,15 @@ Here is the organized folder structure of the Hermes Brain template:
 - **_System/** — Operational core (templates, scripts, canvases)
 
 This PARA-based structure keeps everything organized and discoverable.
+
+## 💖 Support & Sponsor
+
+If you find Hermes Brain useful for your agent workflows and personal knowledge management, consider supporting its maintenance and continued development:
+
+[![GitHub Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/mistrysiddh)
+
+- **GitHub Sponsors:** [sponsor @mistrysiddh](https://github.com/sponsors/mistrysiddh)
+- ⭐ **Star this repository:** Helping more builders and AI researchers find the project!
 
 ## License
 
