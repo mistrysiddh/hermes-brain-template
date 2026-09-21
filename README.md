@@ -145,6 +145,28 @@ Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 | **Install / set up vault + cron** | `.\Scripts\Installers\install.ps1` | `./Scripts/Installers/install.sh` |
 | **Uninstall / clean up vault** | `.\Scripts\Installers\uninstall.ps1` | `./Scripts/Installers/uninstall.sh` |
 | **Update template in existing vault** | `.\Scripts\Installers\update.ps1` | `./Scripts/Installers/update.sh` |
+    ### Option D — Clone & Use (for developers/contributors)
+
+    If you want to work with the template directly or contribute:
+
+    ```bash
+    git clone https://github.com/mistrysiddh/hermes-brain-template.git
+    cd hermes-brain-template
+    # Open in Obsidian directly, or run installers if needed
+    obsidian .  # macOS (adjust for your OS)
+    ```
+
+    This gives you a clean template vault to customize. For Hermes integration,
+    run the installer from within the cloned directory:
+
+    ```bash
+    ./Scripts/Installers/install.sh  # Linux/macOS
+    .\Scripts\Installers\install.ps1  # Windows
+    ```
+
+    Your cloned vault stays update-safe — you can pull template updates later
+    without losing your local customizations.
+
 | Seed sample/demo data (preview only, opt-in) | `python Scripts\seed_sample_data.py .` | `python3 Scripts/seed_sample_data.py .` |
 
 ## Requirements
