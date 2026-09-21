@@ -168,15 +168,35 @@ def parse_decided_from_candidates(md_text):
     return decided
 
 
+def get_vault(explicit_vault=None):
+    if explicit_vault and os.path.isdir(explicit_vault):
+        return os.path.abspath(explicit_vault)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+        return cand_para
+    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+        return cand_flat
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
-    parser.add_argument("vault_root", help="Path to the vault root directory")
+    parser.add_argument("vault_root", nargs="?", default=None, help="Path to the vault root directory")
     parser.add_argument("--scan-secrets", action="store_true",
                         help="Enable detect-secrets scanning in addition to regex patterns")
     args = parser.parse_args()
 
-    vault = args.vault_root
+    vault = get_vault(args.vault_root)
+    if not vault:
+        print("Could not resolve vault path — pass vault_root or set HERMES_VAULT_PATH.")
+        sys.exit(1)
     mr_cand = os.path.join(vault, "04-Archives", "Memory-Review")
+
     mr_dir = mr_cand if os.path.exists(mr_cand) else os.path.join(vault, "Memory-Review")
     os.makedirs(mr_dir, exist_ok=True)
 

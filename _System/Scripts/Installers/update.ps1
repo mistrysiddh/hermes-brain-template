@@ -39,8 +39,8 @@ if ($Help) {
     exit 0
 }
 
-$ErrorActionPreference = "Stop"
-$VaultRoot = $PSScriptRoot
+$VaultRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+
 $RemoteName = "template"
 
 function Write-Ok($msg)   { Write-Host "  [OK] $msg" -ForegroundColor Green }

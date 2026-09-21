@@ -54,10 +54,24 @@ def main():
     args = parse_args()
     
     # Check VAULT after parsing (so --help works without it)
-    VAULT = os.environ.get("HERMES_VAULT_PATH")
+    def resolve_vault():
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
+        if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
+            return cand_para
+        cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
+        if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
+            return cand_flat
+        env_vault = os.environ.get("HERMES_VAULT_PATH")
+        if env_vault and os.path.exists(env_vault):
+            return os.path.abspath(env_vault)
+        return None
+
+    VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
     if not VAULT:
         print("HERMES_VAULT_PATH is not set — aborting.")
         sys.exit(1)
+
 
     VAULT_PATH = Path(VAULT)
     INDEX_DIR = VAULT_PATH / ".semantic-search"

@@ -9,7 +9,21 @@ This is a template. It ships with the folder structure, index notes, plugin mani
 
 ## Quick install (recommended)
 
-Run the installer for your platform from inside this template folder. It asks a few questions (where to put the vault, which embedding backend you want, whether to wire up the Hermes CLI) and does the rest.
+You can install Hermes Brain directly with a single terminal command from GitHub, or by running the installer inside a cloned template repository.
+
+### Option 1: One-Line Install from GitHub (No manual clone needed)
+
+**Linux / macOS / WSL:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.ps1 | iex
+```
+
+### Option 2: From Cloned Repo or Local Template
 
 **Linux / macOS:**
 ```bash
@@ -22,11 +36,12 @@ chmod +x _System/Scripts/Installers/install.sh
 powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\install.ps1
 ```
 
-Both scripts:
-- copy the template to the destination you choose (default `~/Hermes Brain`)
+Both installers:
+- copy/clone the template to the destination you choose (default `~/Hermes Brain`)
 - optionally set up Ollama *or* sentence-transformers for the trend-digest scripts
 - detect Obsidian and tell you which plugins to enable if it's missing anything
-- detect the `hermes` CLI and offer to save the vault path as `env.HERMES_VAULT_PATH`
+- detect the `hermes` CLI and register the vault path as `env.HERMES_VAULT_PATH`
+- offer to register the hourly session-archiving cron job (`hermes-brain-archive-hourly`)
 - optionally run `consolidate_memory.py` once as a sanity check
 
 If you'd rather do it by hand, or the installer can't run in your environment, follow the manual steps below.

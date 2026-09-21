@@ -9,7 +9,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-TEMPLATE_ROOT="$SCRIPT_DIR"
+TEMPLATE_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+
 
 bold()  { printf '\033[1m%s\033[0m\n' "$1"; }
 info()  { printf '  %s\n' "$1"; }
@@ -27,7 +28,7 @@ mkdir -p "$SCRATCH"
 
 info "Copying template to $SCRATCH ..."
 (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' .) | (cd "$SCRATCH" && tar xf -)
-chmod +x "$SCRATCH/Scripts/"*.sh 2>/dev/null || true
+chmod +x "$SCRATCH/_System/Scripts/"*.sh "$SCRATCH/_System/Scripts/Installers/"*.sh 2>/dev/null || true
 ok "Copied."
 
 echo

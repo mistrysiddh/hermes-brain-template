@@ -12,8 +12,11 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$Since = "5m"
+    [string]$Since = "5m",
+    [Parameter(Mandatory=$false)]
+    [string]$Vault = ""
 )
+
 
 function Find-Hermes {
     $hermesPath = Get-Command hermes -ErrorAction SilentlyContinue
@@ -101,12 +104,27 @@ function Update-TokenLog {
 }
 
 function Main {
-    # Vault path from environment
-    $vaultPath = $env:HERMES_VAULT_PATH
+    # Vault path from parameter, environment, or auto-detection
+    $vaultPath = $Vault
+    if (-not $vaultPath -and $env:HERMES_VAULT_PATH) {
+        $vaultPath = $env:HERMES_VAULT_PATH
+    }
     if (-not $vaultPath) {
-        Write-Error "HERMES_VAULT_PATH is not set — aborting."
+        $candPara = (Resolve-Path (Join-Path $PSScriptRoot "..\..") -ErrorAction SilentlyContinue).Path
+        if ($candPara -and ((Test-Path (Join-Path $candPara ".obsidian")) -or (Test-Path (Join-Path $candPara "01-Projects")))) {
+            $vaultPath = $candPara
+        } else {
+            $candFlat = (Resolve-Path (Join-Path $PSScriptRoot "..") -ErrorAction SilentlyContinue).Path
+            if ($candFlat -and ((Test-Path (Join-Path $candFlat ".obsidian")) -or (Test-Path (Join-Path $candFlat "01-Projects")))) {
+                $vaultPath = $candFlat
+            }
+        }
+    }
+    if (-not $vaultPath) {
+        Write-Error "Could not resolve vault path — set HERMES_VAULT_PATH or pass -Vault <path>."
         exit 1
     }
+
     
     $dailyCand = Join-Path $vaultPath "04-Archives\Daily"
     $dailyPath = if (Test-Path $dailyCand) { $dailyCand } else { Join-Path $vaultPath "Daily" }

@@ -12,7 +12,8 @@ function Write-Info($msg) { Write-Host "  $msg" }
 function Write-Warn($msg) { Write-Host "  ! $msg" -ForegroundColor Yellow }
 function Write-Ok($msg)   { Write-Host "  [OK] $msg" -ForegroundColor Green }
 
-$TemplateRoot = $PSScriptRoot
+$TemplateRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+
 
 Write-Host ""
 Write-Bold "Hermes Brain -- try it (scratch vault, no install)"
