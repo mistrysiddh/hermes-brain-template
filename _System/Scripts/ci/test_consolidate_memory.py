@@ -23,8 +23,9 @@ import tempfile
 import unittest
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-CONSOLIDATE_SCRIPT = os.path.join(REPO_ROOT, "Scripts", "consolidate_memory.py")
+CONSOLIDATE_SCRIPT = os.path.join(os.path.dirname(SCRIPT_DIR), "consolidate_memory.py")
+if not os.path.exists(CONSOLIDATE_SCRIPT):
+    CONSOLIDATE_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(SCRIPT_DIR)), "_System", "Scripts", "consolidate_memory.py")
 
 
 def write(path, content):
