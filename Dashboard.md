@@ -8,6 +8,9 @@ tags:
 dashboard_last_visit: ""
 dashboard_last_session_count: 0
 dashboard_last_candidate_count: 0
+cssclasses:
+  - dashboard-beta
+  - dashboard-wide
 ---
 
 # Dashboard
@@ -28,11 +31,13 @@ const file = app.vault.getAbstractFileByPath("Dashboard.md");
 const cache = app.metadataCache.getFileCache(file);
 const fm = cache?.frontmatter ?? {};
 
-const dailyPages = dv.pages('"Daily"')
+const rawDaily = dv.pages('"04-Archives/Daily"').length ? dv.pages('"04-Archives/Daily"') : dv.pages('"Daily"');
+const dailyPages = rawDaily
   .where(p => p.file.name !== "README" && p.file.name !== "manifest"
     && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation");
 const sessionCount = dailyPages.length;
-const candidateCount = dv.pages('"Memory-Review"').file.tasks.where(t => !t.completed).length;
+const mrPages = dv.pages('"04-Archives/Memory-Review"').length ? dv.pages('"04-Archives/Memory-Review"') : dv.pages('"Memory-Review"');
+const candidateCount = mrPages.file.tasks.where(t => !t.completed).length;
 
 const prevSessionCount = fm.dashboard_last_session_count;
 const prevCandidateCount = fm.dashboard_last_candidate_count;
@@ -96,7 +101,8 @@ _Checked live each time this note opens — needs internet access. Nothing is se
 
 ```dataviewjs
 // Last archived session — catches a dead/misconfigured hourly cron job.
-const dailyPages = dv.pages('"Daily"')
+const rawDaily = dv.pages('"04-Archives/Daily"').length ? dv.pages('"04-Archives/Daily"') : dv.pages('"Daily"');
+const dailyPages = rawDaily
   .where(p => p.file.name !== "README" && p.file.name !== "manifest"
     && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation");
 if (dailyPages.length === 0) {
@@ -114,7 +120,8 @@ if (dailyPages.length === 0) {
 }
 
 // Memory-Review backlog size — catches a review queue nobody's touching.
-const openTasks = dv.pages('"Memory-Review"').file.tasks
+const mrPages = dv.pages('"04-Archives/Memory-Review"').length ? dv.pages('"04-Archives/Memory-Review"') : dv.pages('"Memory-Review"');
+const openTasks = mrPages.file.tasks
   .where(t => !t.completed).length;
 if (openTasks === 0) {
   dv.paragraph("✅ No open Memory-Review candidates.");
@@ -150,7 +157,7 @@ _Live count via Obsidian's own `app.vault.getFiles()` — no script or cron need
 ## Token usage
 
 ```dataviewjs
-const tokenLog = app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
+const tokenLog = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Token-Usage.log") || app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
 if (!tokenLog) {
   dv.paragraph("ℹ️ Token usage log not found — will appear after first hourly archive run with token extraction.");
 } else {
@@ -220,7 +227,7 @@ _Updates live each time this note opens — reads from Skills-Notes/Token-Usage.
 ## Activity heatmap
 
 ```dataviewjs
-const tokenLog = app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
+const tokenLog = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Token-Usage.log") || app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
 if (!tokenLog) {
   dv.paragraph("ℹ️ No activity data yet — will appear after your first hourly archive run.");
 } else {
@@ -311,7 +318,7 @@ _Same data as Token usage above, shown as a calendar — darker green = more tok
 ## Vault audit
 
 ```dataviewjs
-const auditReport = app.vault.getAbstractFileByPath("Skills-Notes/Vault-Audit-Report.md");
+const auditReport = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Vault-Audit-Report.md") || app.vault.getAbstractFileByPath("Skills-Notes/Vault-Audit-Report.md");
 if (!auditReport) {
   dv.paragraph("ℹ️ Vault audit report not found — will appear after first `vault_audit.py` run. Run manually or wait for scheduled cron.");
 } else {
@@ -339,7 +346,7 @@ if (!auditReport) {
   // Show last generated time
   const genMatch = content.match(/Generated:\s*([^\n]+)/);
   if (genMatch) {
-    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](Skills-Notes/Vault-Audit-Report.md)`);
+    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](04-Archives/Audit-Reports/Vault-Audit-Report.md)`);
   }
 }
 ```
@@ -349,7 +356,7 @@ _Updated by `Scripts/vault_audit.py` on schedule (weekly/monthly via cron). Clic
 ## Agent performance
 
 ```dataviewjs
-const perfReport = app.vault.getAbstractFileByPath("Skills-Notes/Agent-Performance.md");
+const perfReport = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Agent-Performance.md") || app.vault.getAbstractFileByPath("Skills-Notes/Agent-Performance.md");
 if (!perfReport) {
   dv.paragraph("ℹ️ Agent performance report not found — run `Scripts/agent_performance.py` or wait for scheduled cron.");
 } else {
@@ -387,7 +394,7 @@ if (!perfReport) {
   // Last generated
   const genMatch = content.match(/Generated:\s*([^\n]+)/);
   if (genMatch) {
-    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](Skills-Notes/Agent-Performance.md)`);
+    dv.paragraph(`🕐 Last run: ${genMatch[1].trim()}  \n[Open full report →](04-Archives/Audit-Reports/Agent-Performance.md)`);
   }
 }
 ```
@@ -398,23 +405,23 @@ _Updated by `Scripts/agent_performance.py` on schedule (run alongside other scri
 
 ```dataview
 TABLE status, created
-FROM "Projects"
+FROM "01-Projects"
 WHERE type = "project" AND status = "active"
 SORT created DESC
 ```
 
-_All statuses, sortable/filterable: [[Projects/Projects.base|Projects.base]]._
+_All statuses, sortable/filterable: [[01-Projects/Projects.base|Projects.base]]._
 
 ## Open memory candidates
 
 ```dataview
 TASK
-FROM "Memory-Review"
+FROM "04-Archives/Memory-Review"
 WHERE !completed
 LIMIT 15
 ```
 
-_Full review flow: [[Memory-Review/TEMPLATE|Memory-Review/TEMPLATE.md]]. Regenerated by `Scripts/consolidate_memory.py`._
+_Full review flow: [[04-Archives/Memory-Review/TEMPLATE|Memory-Review/TEMPLATE.md]]. Regenerated by `Scripts/consolidate_memory.py`._
 
 ## Recently promoted
 
@@ -423,7 +430,7 @@ _Full review flow: [[Memory-Review/TEMPLATE|Memory-Review/TEMPLATE.md]]. Regener
 // by Scripts/consolidate_memory.py whenever a checked-off [x] candidate
 // is archived. Shows the last few decided candidates so the review
 // pipeline feels less like a black box.
-const logFile = app.vault.getAbstractFileByPath("Memory-Review/Consolidation-Log.md");
+const logFile = app.vault.getAbstractFileByPath("04-Archives/Memory-Review/Consolidation-Log.md") || app.vault.getAbstractFileByPath("Memory-Review/Consolidation-Log.md");
 if (!logFile) {
   dv.paragraph("ℹ️ No Consolidation-Log.md yet — will appear after your first `consolidate_memory.py` run that archives a decided candidate.");
 } else {
@@ -446,33 +453,33 @@ if (!logFile) {
 }
 ```
 
-_Full audit trail: [[Memory-Review/Consolidation-Log|Consolidation-Log.md]] — append-only, written automatically, never edited by hand._
+_Full audit trail: [[04-Archives/Memory-Review/Consolidation-Log|Consolidation-Log.md]] — append-only, written automatically, never edited by hand._
 
 ## Recent Daily sessions
 
 ```dataview
 TABLE file.mtime AS "Modified", file.folder AS "Date folder"
-FROM "Daily"
+FROM "04-Archives/Daily"
 WHERE file.name != "README" AND file.name != "manifest" AND file.name != "Timeline" AND file.name != "Chat-Correlation"
 SORT file.mtime DESC
 LIMIT 10
 ```
 
-_Full chronological view: [[Daily/Timeline]]._
+_Full chronological view: [[04-Archives/Daily/Timeline|Timeline]]._
 
 ## Installed skills
 
 ```dataviewjs
-const file = app.vault.getAbstractFileByPath("Skills-Notes/Installed-Skills-Index.md");
+const file = app.vault.getAbstractFileByPath("02-Areas/Skills/Installed-Skills-Index.md") || app.vault.getAbstractFileByPath("Skills-Notes/Installed-Skills-Index.md");
 if (file) {
   const content = await app.vault.read(file);
   const rows = content.split("\n")
     .filter(l => l.trim().startsWith("|"))
     .filter(l => !l.includes("---") && !l.trim().startsWith("| Skill"));
   const populated = rows.filter(r => r.replace(/\|/g, "").trim().length > 0);
-  dv.paragraph(`**${populated.length}** skill(s) listed in [[Skills-Notes/Installed-Skills-Index|Installed Skills Index]].`);
+  dv.paragraph(`**${populated.length}** skill(s) listed in [[02-Areas/Skills/Installed-Skills-Index|Installed Skills Index]].`);
 } else {
-  dv.paragraph("Skills-Notes/Installed-Skills-Index.md not found.");
+  dv.paragraph("Installed-Skills-Index.md not found.");
 }
 ```
 
@@ -482,9 +489,9 @@ if (file) {
 // Skill-usage breakdown — parses Skill-to-Chat-Links.md, auto-generated
 // by Scripts/generate_skill_links.py. Counts how many archived sessions
 // invoked each skill and shows the top 5.
-const file = app.vault.getAbstractFileByPath("Skills-Notes/Skill-to-Chat-Links.md");
+const file = app.vault.getAbstractFileByPath("02-Areas/Skills/Skill-to-Chat-Links.md") || app.vault.getAbstractFileByPath("Skills-Notes/Skill-to-Chat-Links.md");
 if (!file) {
-  dv.paragraph("ℹ️ Skills-Notes/Skill-to-Chat-Links.md not found — run `Scripts/generate_skill_links.py` (or wait for scheduled cron) to generate it.");
+  dv.paragraph("ℹ️ Skill-to-Chat-Links.md not found — run `_System/Scripts/generate_skill_links.py` (or wait for scheduled cron) to generate it.");
 } else {
   const content = await app.vault.read(file);
   // Tool-call mode: "### skill_name" heading followed by one "- [[link]]" per session.
@@ -511,7 +518,7 @@ if (!file) {
   }
   const ranked = Object.entries(counts).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
   if (ranked.length === 0) {
-    dv.paragraph("ℹ️ No genuine skill invocations found yet in `Daily/` — nothing to rank.");
+    dv.paragraph("ℹ️ No genuine skill invocations found yet in archived sessions — nothing to rank.");
   } else {
     let output = "🎯 **Top skills by session count:**\n";
     for (const [skill, n] of ranked) {
@@ -522,7 +529,7 @@ if (!file) {
 }
 ```
 
-_Full breakdown by category: [[Skills-Notes/Skill-to-Chat-Links|Skill-to-Chat-Links.md]]. Regenerated by `Scripts/generate_skill_links.py`._
+_Full breakdown by category: [[02-Areas/Skills/Skill-to-Chat-Links|Skill-to-Chat-Links.md]]. Regenerated by `_System/Scripts/generate_skill_links.py`._
 
 ## Semantic search
 
@@ -592,8 +599,8 @@ _Built with `sentence-transformers/all-MiniLM-L6-v2` (22 MB, runs entirely on yo
 // Requires: run `python Scripts/session_tagger.py` after archiving,
 // or let hourly_archive.py invoke it automatically.
 
-const tagCloudLog = app.vault.getAbstractFileByPath("Skills-Notes/Tag-Cloud.log");
-const tagTrendsLog = app.vault.getAbstractFileByPath("Skills-Notes/Tag-Trends.log");
+const tagCloudLog = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Tag-Cloud.log") || app.vault.getAbstractFileByPath("Skills-Notes/Tag-Cloud.log");
+const tagTrendsLog = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Tag-Trends.log") || app.vault.getAbstractFileByPath("Skills-Notes/Tag-Trends.log");
 
 if (!tagCloudLog) {
   dv.paragraph("ℹ️ Tag cloud not found — will appear after `session_tagger.py` runs (triggered automatically by hourly_archive.py). Run `python Scripts/session_tagger.py` manually to populate now.");

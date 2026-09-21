@@ -6,7 +6,7 @@
 [![Works with OpenClaw](https://img.shields.io/badge/Works%20with-OpenClaw-FF6B35.svg)](https://claude-code.nousresearch.com/docs)
 [![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
-[![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](User-Profile.md)
+[![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](02-Areas/User-Profile.md)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
@@ -29,7 +29,7 @@ other notes.
 
 | | Hermes Brain | Raw chat logs | Vector-DB memory (e.g. Mem0) | Generic Obsidian PKM |
 |---|---|---|---|---|
-| **Human review before "memory"** | ✅ staged in `Memory-Review/`, nothing auto-promotes | ❌ nothing structured | ❌ auto-embedded, opaque | N/A — no agent pipeline |
+| **Human review before "memory"** | ✅ staged in `04-Archives/Memory-Review/`, nothing auto-promotes | ❌ nothing structured | ❌ auto-embedded, opaque | N/A — no agent pipeline |
 | **Readable without special tooling** | ✅ plain markdown | ✅ but unstructured | ❌ needs the vendor's UI/API | ✅ |
 | **Portable / no vendor lock-in** | ✅ your files, your git repo | ✅ | ❌ tied to the service | ✅ |
 | **Built-in agent-usage analytics** | ✅ token usage, vault audit, agent performance — all in `Dashboard.md` | ❌ | Varies | ❌ |
@@ -43,21 +43,20 @@ in a format you already own.
 ## What's inside
 
 ```
-Daily/YYYY/MM/DD/*.md   →   Memory-Review/*.md   →   Hermes native MEMORY.md / USER.md
- (raw session archive)      (staged candidate         (durable, injected every
-                              facts, human-reviewed)    turn — promoted by hand)
+04-Archives/Daily/YYYY/MM/DD/*.md   →   04-Archives/Memory-Review/*.md   →   Hermes native MEMORY.md / USER.md
+     (raw session archive)                    (staged candidate                 (durable, injected every
+                                            facts, human-reviewed)            turn — promoted by hand)
 ```
 
-- **`Daily/`** — every Hermes session exported as redacted markdown, one file per session, organized by date, with a live [[Daily/Timeline|Timeline]] and [[Daily/Chat-Correlation|Chat-Correlation]] Dataview view.
-- **`Memory-Review/`** — durable-fact candidates staged for human review before promotion, with an automated dedupe/secret-scrub pass (`consolidate_memory.py`).
-- **`Research/`** — working space for in-progress investigation, plus optional local-embedding "trend digest" scripts.
-- **`Skills-Notes/`** — index of installed Hermes skills, a team-profiles index, a generated `Skill-to-Chat-Links.md` (which sessions actually used which skill — `generate_skill_links.py`), plus a [[Skills-Notes/Dataview-Query-Library|Dataview Query Library]] of copy-paste queries for this vault.
-- **`Projects/`** — one note per active project, with a `Project.md` template and Kanban board support.
-- **`Templates/`** — Project, Daily-Review, and Research-Note templates, wired into Obsidian's core Templates plugin.
-- **`Canvases/Memory-Pipeline.canvas`** — a visual Canvas map of the Daily → Memory-Review → native memory pipeline.
-- **`User-Profile.md`** — a single note documenting who *you* are from the agent's perspective: identity, communication preferences, technical environment, standing facts, boundaries — plus a section the agent itself writes and maintains, "What the agent has noticed about you."
-- **`Dashboard.md`** — one landing note with everything live: token usage, vault health (stale-archiver + Memory-Review backlog checks), vault integrity audit, agent performance snapshot, active projects, recent sessions, installed skills.
-- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus two bundled themes — **Tokyo Night** and **Nemoclaw** (a custom NVIDIA-inspired black/green theme, now the default).
+The vault is structured according to the **PARA Method** (Projects, Areas, Resources, Archives) with a dedicated `_System/` core:
+
+- **`01-Projects/`** — Active projects with goals and deadlines, architectural decision records (`01-Projects/ADR/`), and an Obsidian Dataview database (`Projects.base`).
+- **`02-Areas/`** — Long-term standards, human alignment parameters (`02-Areas/User-Profile.md`), installed skills catalog, team roster, and the 11-dimension [[02-Areas/Skills/Personality-Judgment-Framework|Personality Judgment Framework]].
+- **`03-Resources/`** — Domain knowledge hubs ([[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack]], [[03-Resources/MOCs/Cybersecurity-MOC|Cybersecurity]], [[03-Resources/MOCs/AI-ML-MOC|AI/ML]], [[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture]]), technical research inquiries (`03-Resources/Research/`), and reference guides (`03-Resources/Guides/`).
+- **`04-Archives/`** — Historical and completed items: [[04-Archives/Daily/Timeline|Daily Session Timeline]], [[04-Archives/Daily/Chat-Correlation|Chat Correlation]], 3-stage memory staging ([[04-Archives/Memory-Review/Memory-Board.kanban|Memory Kanban]]), and telemetry/audit reports (`04-Archives/Audit-Reports/`).
+- **`_System/`** — Operational core: Reusable note templates (`_System/Templates/`), cross-platform automation scripts (`_System/Scripts/`), and visual architecture canvases (`_System/Canvases/Memory-Pipeline.canvas`).
+- **`Dashboard.md` & `_System/Canvases/Dashboard-Beta.md`** — Live command centers providing immediate visibility into active projects, token telemetry, archiver health, recent sessions, and skill analytics.
+- Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus two bundled themes — **Tokyo Night** and **Nemoclaw**.
 
 This repo ships as a **template only** — no personal data, chat history, or
 API keys are included. See [SETUP.md](SETUP.md) for the full breakdown of
@@ -123,51 +122,49 @@ Hermes CLI — then finishes the setup for you.
 
 Follow **[SETUP.md](SETUP.md)** step by step instead of using either installer.
 
+### Option D — Clone & Use (for developers/contributors)
+
+If you want to work with the template directly or contribute:
+
+```bash
+git clone https://github.com/mistrysiddh/hermes-brain-template.git
+cd hermes-brain-template
+# Open in Obsidian directly, or run installers if needed
+obsidian .  # macOS (adjust for your OS)
+```
+
+This gives you a clean template vault to customize. For Hermes integration,
+run the installer from within the cloned directory:
+
+```bash
+./_System/Scripts/Installers/install.sh  # Linux/macOS
+.\_System\Scripts\Installers\install.ps1  # Windows
+```
+
+Your cloned vault stays update-safe — you can pull template updates later
+without losing your local customizations.
+
 ## Cross-platform scripts
 
 | Purpose | Windows | Linux/macOS |
 |---|---|---|
-| Memory consolidation ("dream cycle") | `python Scripts\consolidate_memory.py` | `python3 Scripts/consolidate_memory.py` |
-| Skill-to-Chat-Links regeneration | `python Scripts\generate_skill_links.py` | `python3 Scripts/generate_skill_links.py` |
-| Trend digest — Ollama backend | `Scripts\pipeline.ps1` | `Scripts/pipeline.sh` |
-| Trend digest — sentence-transformers backend | `Scripts\New-TrendDigest.ps1` | `Scripts/trend_digest.sh` |
-| **Hourly session archiving + token tracking** | `python Scripts\hourly_archive.py` | `python3 Scripts/hourly_archive.py` |
-| **Instant session archiving (manual trigger)** | `python Scripts\archive_now.py` | `python3 Scripts/archive_now.py` |
-| **Session enrichment (add summaries)** | `python Scripts\enrich_session.py` | `python3 Scripts/enrich_session.py` |
-| **Semantic search index (build/update/serve)** | `python Scripts\semantic_search.py` | `python3 Scripts/semantic_search.py` |
-| **Session tagging & topic tracking** | `python Scripts\session_tagger.py` | `python3 Scripts/session_tagger.py` |
-| **Future skill forecast** | `python Scripts\skill_forecast.py` | `python3 Scripts/skill_forecast.py` |
-| **Vault integrity audit** | `python Scripts\vault_audit.py` | `python3 Scripts/vault_audit.py` |
-| **Agent performance dashboard** | `python Scripts\agent_performance.py` | `python3 Scripts/agent_performance.py` |
-| Pull template updates into an installed vault | `.\\update.ps1` | `./update.sh` |
-| Cleanly remove a vault installation | `.\\uninstall.ps1` | `./uninstall.sh` |
-| **Zero-commitment trial run (scratch vault)** | `.\\try.ps1` | `./try.sh` |
-| **Install / set up vault + cron** | `.\Scripts\Installers\install.ps1` | `./Scripts/Installers/install.sh` |
-| **Uninstall / clean up vault** | `.\Scripts\Installers\uninstall.ps1` | `./Scripts/Installers/uninstall.sh` |
-| **Update template in existing vault** | `.\Scripts\Installers\update.ps1` | `./Scripts/Installers/update.sh` |
-    ### Option D — Clone & Use (for developers/contributors)
-
-    If you want to work with the template directly or contribute:
-
-    ```bash
-    git clone https://github.com/mistrysiddh/hermes-brain-template.git
-    cd hermes-brain-template
-    # Open in Obsidian directly, or run installers if needed
-    obsidian .  # macOS (adjust for your OS)
-    ```
-
-    This gives you a clean template vault to customize. For Hermes integration,
-    run the installer from within the cloned directory:
-
-    ```bash
-    ./Scripts/Installers/install.sh  # Linux/macOS
-    .\Scripts\Installers\install.ps1  # Windows
-    ```
-
-    Your cloned vault stays update-safe — you can pull template updates later
-    without losing your local customizations.
-
-| Seed sample/demo data (preview only, opt-in) | `python Scripts\seed_sample_data.py .` | `python3 Scripts/seed_sample_data.py .` |
+| Memory consolidation ("dream cycle") | `python _System\Scripts\consolidate_memory.py` | `python3 _System/Scripts/consolidate_memory.py` |
+| Skill-to-Chat-Links regeneration | `python _System\Scripts\generate_skill_links.py` | `python3 _System/Scripts/generate_skill_links.py` |
+| Trend digest — Ollama backend | `_System\Scripts\pipeline.ps1` | `_System/Scripts/pipeline.sh` |
+| Trend digest — sentence-transformers backend | `_System\Scripts\New-TrendDigest.ps1` | `_System/Scripts/trend_digest.sh` |
+| **Hourly session archiving + token tracking** | `python _System\Scripts\hourly_archive.py` | `python3 _System/Scripts/hourly_archive.py` |
+| **Instant session archiving (manual trigger)** | `python _System\Scripts\archive_now.py` | `python3 _System/Scripts/archive_now.py` |
+| **Session enrichment (add summaries)** | `python _System\Scripts\enrich_session.py` | `python3 _System/Scripts/enrich_session.py` |
+| **Semantic search index (build/update/serve)** | `python _System\Scripts\semantic_search.py` | `python3 _System/Scripts/semantic_search.py` |
+| **Session tagging & topic tracking** | `python _System\Scripts\session_tagger.py` | `python3 _System/Scripts/session_tagger.py` |
+| **Future skill forecast** | `python _System\Scripts\skill_forecast.py` | `python3 _System/Scripts/skill_forecast.py` |
+| **Vault integrity audit** | `python _System\Scripts\vault_audit.py` | `python3 _System/Scripts/vault_audit.py` |
+| **Agent performance dashboard** | `python _System\Scripts\agent_performance.py` | `python3 _System/Scripts/agent_performance.py` |
+| **Install / set up vault + cron** | `.\_System\Scripts\Installers\install.ps1` | `./_System/Scripts/Installers/install.sh` |
+| **Uninstall / clean up vault** | `.\_System\Scripts\Installers\uninstall.ps1` | `./_System/Scripts/Installers/uninstall.sh` |
+| **Update template in existing vault** | `.\_System\Scripts\Installers\update.ps1` | `./_System/Scripts/Installers/update.sh` |
+| **Zero-commitment trial run (scratch vault)** | `.\_System\Scripts\Installers\try.ps1` | `./_System/Scripts/Installers/try.sh` |
+| Seed sample/demo data (preview only, opt-in) | `python _System\Scripts\seed_sample_data.py .` | `python3 _System/Scripts/seed_sample_data.py .` |
 
 ## Requirements
 

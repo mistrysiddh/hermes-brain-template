@@ -6,51 +6,60 @@ tags: [moc, hub]
 
 # MOC — Hermes Brain Vault
 
-Map of Content: a hand-curated index for finding things by topic, not just
-by folder. Use this when browsing folders stops being fast (per current
-PARA/Zettelkasten best practice — MOCs beat deep folder nesting once a
-vault has more than a few dozen notes).
+Map of Content: a hand-curated index for finding things by topic, organized across the **PARA structure** (`01-Projects/`, `02-Areas/`, `03-Resources/`, `04-Archives/`, and `_System/`).
 
-## Start here
-- [[Welcome]] — orientation
-- [[Dashboard]] — live at-a-glance view: active projects, open memory candidates, recent sessions, installed skills
-- [[Canvases/Dashboard-Beta|Dashboard-Beta]] — experimental website-style card layout of the same dashboard (KPI strip, activity heatmap, session calendar, weather, quick actions) — opt-in, enable the `dashboard-beta` CSS snippet
-- [[Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: this vault's own folder structure, memory pipeline, and current status
-- [[Projects/README]] — active project index
+## 🧭 Dashboards & Primary Orientation
+- [[Welcome]] — orientation & system overview
+- [[Dashboard]] — live linear view: active projects, open memory candidates, recent sessions, installed skills
+- [[_System/Canvases/Dashboard-Beta|Dashboard-Beta]] — responsive widescreen card layout (KPI strip, activity heatmap, session calendar, weather, quick actions)
+- [[01-Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: vault architecture, memory pipeline, and status
+- [[01-Projects/README|01-Projects Index]] — active goals, deliverables, and ADRs
 
-## Specialized MOCs (deep-dive indexes)
-- [[Skills-Notes/Technology-Stack-MOC|Technology Stack MOC]] — Linux, Docker, Kubernetes, self-hosting, automation
-- [[Skills-Notes/Cybersecurity-MOC|Cybersecurity Framework MOC]] — Hardening, threat modeling, privacy tooling, monitoring
-- [[Skills-Notes/AI-ML-MOC|AI/ML Workflows MOC]] — LLM integration, agentic patterns, MLOps, research automation
-- [[Skills-Notes/Agentic-Architecture-MOC|Agentic Architecture MOC]] — Multi-agent orchestration, delegation, verification
+## 🌐 Specialized MOCs (Knowledge Domain Hubs)
+- [[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack MOC]] — Linux, Docker, Kubernetes, self-hosting, automation
+- [[03-Resources/MOCs/Cybersecurity-MOC|Cybersecurity Framework MOC]] — Hardening, threat modeling, privacy tooling, monitoring
+- [[03-Resources/MOCs/AI-ML-MOC|AI/ML Workflows MOC]] — LLM integration, agentic patterns, MLOps, research automation
+- [[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture MOC]] — Multi-agent orchestration, delegation, verification
 
-## Memory pipeline
-- [[Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] — visual map of Daily → Memory-Review → native memory
-- [[Daily/README]] — raw chat archive conventions
-- [[Daily/Timeline]] — live chronological browse (Dataview)
-- [[Daily/Chat-Correlation]] — live pattern/profile breakdown (Dataview)
-- [[Memory-Review/TEMPLATE]] — promotion criteria (durable / non-sensitive / verified / actionable)
-- [[Skills-Notes/Dataview-Query-Library]] — copy-paste Dataview queries for this vault
-- [[Skills-Notes/Kanban-Usage]] — suggested columns, card/project-note relationship, cross-platform notes
+## 🧠 Memory Pipeline & Archival
+- [[_System/Canvases/Memory-Pipeline.canvas|Memory-Pipeline Canvas]] — visual pipeline: Daily → Memory-Review → Durable Facts
+- [[04-Archives/Daily/README|Daily Archive Index]] — raw chat archive conventions & session logs
+- [[04-Archives/Daily/Timeline|Daily Timeline]] — live chronological session browse (Dataview)
+- [[04-Archives/Daily/Chat-Correlation|Chat Correlation]] — live pattern/agent profile breakdown (Dataview)
+- [[04-Archives/Memory-Review/TEMPLATE|Memory Review Criteria]] — durable / non-sensitive / verified / actionable standards
+- [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]] — 3-stage visual promotion Kanban board
+- [[03-Resources/Guides/Dataview-Query-Library|Dataview Query Library]] — copy-paste Dataview queries for this vault
+- [[03-Resources/Guides/Kanban-Usage|Kanban Usage Guide]] — board workflow, card/project note links
 
-## Team & skills
-- [[Skills-Notes/README]] — how to document installed skills for this vault
-- [[Skills-Notes/Installed-Skills-Index]] — catalog of skills installed for this vault
-- [[Skills-Notes/Team-Profiles-Index]] — per-teammate profile index
+## 👥 Areas of Responsibility, Team & Skills
+- [[02-Areas/README|02-Areas Index]] — long-term responsibilities, standards, and skill profiles
+- [[02-Areas/User-Profile|User Profile & Boundaries]] — human alignment parameters, preferences, and operating rules
+- [[02-Areas/Skills/Installed-Skills-Index|Installed Skills Index]] — catalog of agent skills available in the environment
+- [[02-Areas/Skills/Team-Profiles-Index|Team Profiles Index]] — specialized agent team profiles & persona definitions
 
-## Analysis frameworks
-- [[Skills-Notes/Personality-Judgment-Framework]] — structured method for analyzing communication patterns and personality traits
-- [[Templates/Personality-Judgment-Analysis.md]] — template for conducting personality judgment analyses
-- [[Templates/Personality-Judgment-Dashboard.md]] — Dataview dashboard for tracking and visualizing analyses
-- [[Canvases/Personality-Judgment-Canvas.canvas]] — visual overview of the entire framework (open in Obsidian Canvas)
+## 🎭 Analysis Frameworks
+- [[02-Areas/Skills/Personality-Judgment-Framework|Personality Judgment Framework]] — 11-dimension framework for communication patterns & behavioral analysis
+- [[_System/Templates/Personality-Judgment-Analysis|Personality Judgment Analysis Template]] — standard template for analyses
+- [[_System/Templates/Personality-Judgment-Dashboard|Personality Judgment Dashboard]] — Dataview dashboard tracking analyses & anomalies
+- [[_System/Canvases/Personality-Judgment-Canvas.canvas|Personality Judgment Canvas]] — interactive canvas of the 11-dimension framework
 
-## Active work
-- [[Research/README]] — in-progress investigations
-- [[Projects/README]] — active project index
-- **Templates** (`Templates/` folder, use via Ctrl/Cmd+P → "Insert template"): [[Templates/Project|Project.md]], [[Templates/Daily-Review|Daily-Review.md]], [[Templates/Research-Note|Research-Note.md]]
-- **Kanban board**: right-click any folder (e.g. `Projects/`) → New Kanban board, for teams that want a board view instead of linked notes
+## 🔬 Research & Inquiries
+- [[03-Resources/Research/README|Research Inquiries Index]] — technical investigations and synthesis
+- [[03-Resources/Research/Weekly-Synthesis-2026-W39|Weekly Synthesis Sample]] — sample weekly synthesis and findings
 
-## Getting started
-This vault starts empty on purpose — see [[../SETUP|SETUP.md]] in the repo
-root for install steps, then let `Daily/` and `Memory-Review/` fill in
-naturally as your Hermes agent runs.
+## ⚙️ System & Templates
+- [[_System/README|System Architecture Index]] — templates, automation scripts, and visual canvases
+- **Templates** (`_System/Templates/` folder):
+  - [[_System/Templates/Project|Project.md]] — new project charter
+  - [[_System/Templates/Architecture-Decision-Record|Architecture-Decision-Record.md]] — architecture decision record
+  - [[_System/Templates/Daily-Review|Daily-Review.md]] — daily reflection & agent alignment review
+  - [[_System/Templates/Research-Note|Research-Note.md]] — technical research inquiry
+  - [[_System/Templates/Lesson-Learned|Lesson-Learned.md]] — agent operational lesson learned
+- **Automation Scripts** (`_System/Scripts/` folder):
+  - `hourly_archive.py` / `archive_now.py` — session archiving
+  - `dream_cycle.py` — nocturnal memory distillation & synthesis
+  - `sync_to_hermes.py` — bidirectional sync to agent memory & preamble
+  - `vault_audit.py` — health check and integrity reporter
+
+---
+_See [[SETUP.md]] in repo root for environment setup and script automation._
