@@ -279,13 +279,15 @@ def main():
             "--yes",
             DAILY,
         ]
-        result_md = subprocess.run(cmd_md, capture_output=True, text=True)
-        print(result_md.stdout.strip())
+        result_md = subprocess.run(cmd_md, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if result_md.stdout:
+            print(result_md.stdout.strip())
         if result_md.returncode != 0:
-            print(result_md.stderr.strip())
+            if result_md.stderr:
+                print(result_md.stderr.strip())
             sys.exit(result_md.returncode)
 
-        if "Exported 0 session" in result_md.stdout:
+        if result_md.stdout and "Exported 0 session" in result_md.stdout:
             print("No new sessions this hour.")
             return
 
@@ -298,9 +300,9 @@ def main():
             "--yes",
             "-",  # stdout
         ]
-        result_jsonl = subprocess.run(cmd_jsonl, capture_output=True, text=True)
-        if result_jsonl.returncode != 0:
-            print(f"Warning: JSONL export failed: {result_jsonl.stderr.strip()}")
+        result_jsonl = subprocess.run(cmd_jsonl, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if result_jsonl.returncode != 0 or not result_jsonl.stdout:
+            print(f"Warning: JSONL export failed: {(result_jsonl.stderr or '').strip()}")
             jsonl_path = None
         else:
             # Write JSONL to a temp file for token extraction

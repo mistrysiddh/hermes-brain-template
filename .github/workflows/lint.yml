@@ -3,14 +3,12 @@ name: Lint Scripts
 on:
   push:
     paths:
-      - "Scripts/**"
-      - "Scripts/Installers/install.sh"
-      - "Scripts/Installers/install.ps1"
+      - "_System/Scripts/**"
+      - ".github/workflows/lint.yml"
   pull_request:
     paths:
-      - "Scripts/**"
-      - "Scripts/Installers/install.sh"
-      - "Scripts/Installers/install.ps1"
+      - "_System/Scripts/**"
+      - ".github/workflows/lint.yml"
 
 jobs:
   bash-syntax:
@@ -20,7 +18,10 @@ jobs:
       - name: Syntax-check all bash scripts
         run: |
           set -e
-          for f in install.sh Scripts/*.sh; do
+          shopt -s nullglob globstar
+          files=(_System/Scripts/**/*.sh)
+          if [ -f install.sh ]; then files+=(install.sh); fi
+          for f in "${files[@]}"; do
             echo "Checking $f"
             bash -n "$f"
           done
@@ -32,7 +33,8 @@ jobs:
       - name: Byte-compile all Python scripts
         run: |
           set -e
-          for f in Scripts/*.py; do
+          shopt -s nullglob globstar
+          for f in _System/Scripts/**/*.py; do
             echo "Checking $f"
             python3 -m py_compile "$f"
           done
@@ -45,7 +47,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $files = @("Scripts/Installers/install.ps1") + (Get-ChildItem -Path Scripts -Filter *.ps1 | ForEach-Object { $_.FullName })
+          $files = Get-ChildItem -Path _System/Scripts -Filter *.ps1 -Recurse | ForEach-Object { $_.FullName }
           $failed = $false
           foreach ($f in $files) {
             $nullTokens = $null
@@ -69,12 +71,12 @@ jobs:
         run: |
           set -e
           mkdir -p /tmp/hermes-brain-fixture
-          python3 Scripts/ci/build_fixture_vault.py /tmp/hermes-brain-fixture
+          python3 _System/Scripts/ci/build_fixture_vault.py /tmp/hermes-brain-fixture
       - name: Install fake hermes CLI on PATH
         run: |
           set -e
           mkdir -p /tmp/fakebin
-          cp Scripts/ci/fake_hermes.sh /tmp/fakebin/hermes
+          cp _System/Scripts/ci/fake_hermes.sh /tmp/fakebin/hermes
           chmod +x /tmp/fakebin/hermes
           echo "/tmp/fakebin" >> "$GITHUB_PATH"
       - name: Run vault_audit.py against fixture
@@ -82,37 +84,30 @@ jobs:
           HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
         run: |
           set -e
-          python3 Scripts/vault_audit.py
-          test -f /tmp/hermes-brain-fixture/Skills-Notes/Vault-Audit-Report.md
+          python3 _System/Scripts/vault_audit.py
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Vault-Audit-Report.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Vault-Audit-Report.md
           echo "vault_audit.py: OK, report generated"
       - name: Run agent_performance.py against fixture
         env:
           HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
         run: |
           set -e
-          python3 Scripts/agent_performance.py
-          test -f /tmp/hermes-brain-fixture/Skills-Notes/Agent-Performance.md
+          python3 _System/Scripts/agent_performance.py
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Agent-Performance.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Agent-Performance.md
           echo "agent_performance.py: OK, report generated"
       - name: Run hourly_archive.py against fixture (no-new-sessions path)
         env:
           HERMES_VAULT_PATH: /tmp/hermes-brain-fixture
         run: |
           set -e
-          python3 Scripts/hourly_archive.py
+          python3 _System/Scripts/hourly_archive.py
           echo "hourly_archive.py: OK, exited cleanly"
       - name: Run generate_skill_links.py against fixture
         run: |
           set -e
-          python3 Scripts/generate_skill_links.py /tmp/hermes-brain-fixture
-          test -f /tmp/hermes-brain-fixture/Skills-Notes/Skill-to-Chat-Links.md
+          python3 _System/Scripts/generate_skill_links.py /tmp/hermes-brain-fixture
+          test -f /tmp/hermes-brain-fixture/02-Areas/Skills/Skill-to-Chat-Links.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Skill-to-Chat-Links.md
           echo "generate_skill_links.py: OK, report generated"
-      # pull_supermemory.py and trend_digest.py are intentionally NOT
-      # smoke-tested here: pull_supermemory.py requires a real/mocked
-      # Supermemory API + key (network I/O, not just file I/O like the
-      # scripts above), and trend_digest.py requires sentence-transformers
-      # (a heavy ML dependency not worth adding to this lint job). Both
-      # remain candidates for their own dedicated CI job if that becomes
-      # worthwhile — see issue tracker.
 
   consolidate-memory-content-tests:
     runs-on: ubuntu-latest
@@ -121,4 +116,4 @@ jobs:
       - name: Run consolidate_memory.py content-correctness tests
         run: |
           set -e
-          python3 Scripts/ci/test_consolidate_memory.py
+          python3 _System/Scripts/ci/test_consolidate_memory.py

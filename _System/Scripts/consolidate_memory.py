@@ -175,6 +175,7 @@ def main():
                         help="Enable detect-secrets scanning in addition to regex patterns")
     args = parser.parse_args()
 
+    vault = args.vault_root
     mr_cand = os.path.join(vault, "04-Archives", "Memory-Review")
     mr_dir = mr_cand if os.path.exists(mr_cand) else os.path.join(vault, "Memory-Review")
     os.makedirs(mr_dir, exist_ok=True)
