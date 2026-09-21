@@ -22,11 +22,13 @@ from pathlib import Path
 from collections import defaultdict, Counter
 
 def find_vault_root(start_dir=None):
-    current = Path(start_dir or os.getcwd()).resolve()
-    for p in [current, current.parent, current.parent.parent]:
-        if (p / "User-Profile.md").exists() or (p / "Dashboard.md").exists():
+    if start_dir:
+        return Path(start_dir).resolve()
+    script_dir = Path(__file__).resolve().parent
+    for p in [Path.cwd().resolve(), script_dir, script_dir.parent, script_dir.parent.parent]:
+        if (p / "01-Projects").exists() or (p / "Dashboard.md").exists() or (p / ".obsidian").exists():
             return p
-    return current
+    return Path.cwd().resolve()
 
 def extract_session_data(file_path):
     """Parse session note for tags, title, topics, and tasks."""
@@ -92,6 +94,7 @@ def main():
     parser.add_argument("--link", action="store_true", help="Auto-inject Related Sessions backlinks into session notes")
     args = parser.parse_args()
 
+    vault_root = find_vault_root(args.vault)
     daily_cand = vault_root / "04-Archives" / "Daily"
     daily_dir = daily_cand if daily_cand.exists() else vault_root / "Daily"
     if not daily_dir.exists():

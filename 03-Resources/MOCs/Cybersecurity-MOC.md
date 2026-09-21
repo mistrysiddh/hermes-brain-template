@@ -30,8 +30,8 @@ Central map of content for cybersecurity practices, threat modeling, and privacy
 - [[../Research/DREAD-Scoring.md|DREAD Risk Assessment]]
 
 ### Practical Application
-- [[../Projects/Threat-Model-Hermes.md|Hermes Agent Threat Model]]
-- [[../Projects/Threat-Model-SelfHosted.md|Self-Hosted Stack Threat Model]]
+- [[01-Projects/Threat-Model-Hermes.md|Hermes Agent Threat Model]]
+- [[01-Projects/Threat-Model-SelfHosted.md|Self-Hosted Stack Threat Model]]
 
 ## 🔐 Identity & Access
 
@@ -78,8 +78,8 @@ Central map of content for cybersecurity practices, threat modeling, and privacy
 - Exploit development basics
 
 ### Practice Environments
-- [[../Projects/HackTheBox-Lab.md|HTB/TryHackMe Lab Notes]]
-- [[../Projects/VulnHub-Walkthroughs.md|VulnHub Machine Writeups]]
+- [[01-Projects/HackTheBox-Lab.md|HTB/TryHackMe Lab Notes]]
+- [[01-Projects/VulnHub-Walkthroughs.md|VulnHub Machine Writeups]]
 
 ---
 

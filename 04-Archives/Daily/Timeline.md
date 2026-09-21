@@ -16,7 +16,7 @@ TABLE
     choice(contains(file.name, "supermemory_"), "☁️ supermemory import",
     choice(contains(file.name, "cron_"), "⏰ cron run", "💬 session"))) AS Type,
     file.folder AS "Date folder"
-FROM "Daily"
+FROM "04-Archives/Daily" OR "Daily"
 WHERE file.name != "README" AND file.name != "manifest" AND file.name != "Timeline"
 SORT file.folder ASC, file.name ASC
 ```
@@ -25,7 +25,7 @@ SORT file.folder ASC, file.name ASC
 
 ```dataview
 TABLE file.mtime AS "Modified", file.folder AS "Date folder"
-FROM "Daily"
+FROM "04-Archives/Daily" OR "Daily"
 WHERE file.name != "README" AND file.name != "manifest" AND file.name != "Timeline"
 SORT file.mtime DESC
 LIMIT 20
@@ -34,13 +34,14 @@ LIMIT 20
 ## By month
 
 ```dataviewjs
-const pages = dv.pages('"Daily"').where(p => !["README","manifest","Timeline"].includes(p.file.name));
+const rawDaily = dv.pages('"04-Archives/Daily"').length ? dv.pages('"04-Archives/Daily"') : dv.pages('"Daily"');
+const pages = rawDaily.where(p => !["README","manifest","Timeline"].includes(p.file.name));
 const byMonth = {};
 for (const p of pages) {
   const parts = p.file.folder.split("/");
-  // Daily/YYYY/MM/DD -> parts = [Daily, YYYY, MM, DD]
-  if (parts.length >= 3) {
-    const key = `${parts[1]}-${parts[2]}`;
+  const yearIdx = parts.findIndex(pt => /^\d{4}$/.test(pt));
+  if (yearIdx !== -1 && yearIdx + 1 < parts.length) {
+    const key = `${parts[yearIdx]}-${parts[yearIdx+1]}`;
     byMonth[key] = (byMonth[key] || 0) + 1;
   }
 }
@@ -50,7 +51,7 @@ dv.table(["Month", "Files"], rows);
 
 ---
 
-See also: [[README]] (Daily folder conventions), [[../Projects/README]] (pipeline overview).
+See also: [[README]] (Daily folder conventions), [[01-Projects/README|Projects/README]] (pipeline overview).
 
 This page (and [[Chat-Correlation]]) were adapted from a real working vault
 that also imports Supermemory session data — the `supermemory_` filename
