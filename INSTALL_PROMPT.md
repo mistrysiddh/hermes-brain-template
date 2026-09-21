@@ -20,8 +20,8 @@ Clone https://github.com/mistrysiddh/hermes-brain-template into a new
 2. Clone the repo into that location (or download+extract if git isn't
    available).
 3. Run the platform-appropriate installer from inside it:
-   - Linux/macOS: chmod +x Scripts/Installers/install.sh && ./Scripts/Installers/install.sh
-   - Windows: powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
+   - Linux/macOS: chmod +x _System/Scripts/Installers/install.sh && ./_System/Scripts/Installers/install.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\\_System\\Scripts\\Installers\\install.ps1
 4. Let the installer's own prompts run (embedding backend choice, Obsidian
    detection, HERMES_VAULT_PATH registration) — relay its questions to me
    and pass my answers through if you're driving it non-interactively.
@@ -34,10 +34,10 @@ Clone https://github.com/mistrysiddh/hermes-brain-template into a new
 ## 2. Hourly session-archive cron job prompt
 
 This makes Hermes export every chat session from the last hour into your new
-vault's `Daily/YYYY/MM/DD/` folder automatically — the same pipeline this
-template's `Welcome.md` / `Projects/Hermes-Agent-Vault-Setup.md` describe.
+vault's `04-Archives/Daily/YYYY/MM/DD/` folder automatically — the same pipeline this
+template's `Welcome.md` / `01-Projects/Hermes-Agent-Vault-Setup.md` describe.
 The script now also extracts **token usage** (prompt + completion tokens)
-from each session and appends daily totals to `Skills-Notes/Token-Usage.log`,
+from each session and appends daily totals to `04-Archives/Audit-Reports/Token-Usage.log`,
 which the Dashboard reads live.
 
 Paste this into Hermes (after the vault is installed, or on its own if you
@@ -46,24 +46,24 @@ already have a Hermes Brain vault set up):
 ```
 Create a cron job named "hermes-brain-archive-hourly" that runs every hour
 (cron expression: 0 * * * *) and exports my Hermes chat sessions from the
-last hour as redacted markdown into my Hermes Brain vault's Daily folder,
-organized as Daily/YYYY/MM/DD/<session>.md, matching the structure documented
-in that vault's Daily/README.md. The script also exports a JSONL copy to
+last hour as redacted markdown into my Hermes Brain vault's 04-Archives/Daily folder,
+organized as 04-Archives/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
+in that vault's 04-Archives/Daily/README.md. The script also exports a JSONL copy to
 extract token usage (prompt + completion tokens) and appends daily totals to
-Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
+04-Archives/Audit-Reports/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
 location if it's set, otherwise ask me for the vault path first.
 
 IMPORTANT — idempotency: before creating anything, call
 `cronjob_manage(action='list')` and check for a job already named
 "hermes-brain-archive-hourly" (or any other job whose command targets this
-same vault's Daily/ folder). If one already exists, do NOT create a
+same vault's 04-Archives/Daily/ folder). If one already exists, do NOT create a
 duplicate — just tell me it's already set up and leave it alone. Only
 create the job if no matching one exists.
 ```
 
 If you'd rather set the cron job up yourself directly, the underlying pattern
 is documented in Hermes's `hermes-chat-archiving` skill — the schedule is
-`0 * * * *` (hourly) and the target is `<vault>/Daily/YYYY/MM/DD/`.
+`0 * * * *` (hourly) and the target is `<vault>/04-Archives/Daily/YYYY/MM/DD/`.
 
 ---
 
@@ -76,10 +76,10 @@ while giving you insights into agent usage:
 ```
 Create a cron job named "hermes-brain-vault-audit-weekly" that runs
 weekly on Sunday at 2 AM (cron: 0 2 * * 0) and runs:
-python3 Scripts/vault_audit.py
+python3 _System/Scripts/vault_audit.py
 inside the vault (using env.HERMES_VAULT_PATH). This checks for broken
 wikilinks, stale Memory-Review entries (>30 days), duplicate sessions,
-and orphaned files, writing a report to Skills-Notes/Vault-Audit-Report.md.
+and orphaned files, writing a report to 04-Archives/Audit-Reports/Vault-Audit-Report.md.
 
 Idempotency: first call `cronjob_manage(action='list')` and check whether a
 job named "hermes-brain-vault-audit-weekly" already exists. If it does,
@@ -90,9 +90,9 @@ don't create another — just confirm it's already set up.
 ```
 Create a cron job named "hermes-brain-agent-perf-weekly" that runs
 weekly on Monday at 3 AM (cron: 0 3 * * 1) and runs:
-python3 Scripts/agent_performance.py
+python3 _System/Scripts/agent_performance.py
 inside the vault. This analyzes session archives and skill usage to
-produce Skills-Notes/Agent-Performance.md with skill frequency, tool
+produce 04-Archives/Audit-Reports/Agent-Performance.md with skill frequency, tool
 usage, daily trends, and top sessions by tokens.
 
 Idempotency: first call `cronjob_manage(action='list')` and check whether a
@@ -148,8 +148,8 @@ PART 1 — Install
 2. Clone https://github.com/mistrysiddh/hermes-brain-template into that
    location (or download+extract if git isn't available).
 3. Run the platform-appropriate installer from inside it:
-   - Linux/macOS: chmod +x Scripts/Installers/install.sh && ./Scripts/Installers/install.sh
-   - Windows: powershell -ExecutionPolicy Bypass -File .\\Scripts\\Installers\\install.ps1
+   - Linux/macOS: chmod +x _System/Scripts/Installers/install.sh && ./_System/Scripts/Installers/install.sh
+   - Windows: powershell -ExecutionPolicy Bypass -File .\\_System\\Scripts\\Installers\\install.ps1
 4. Let the installer's own prompts run (embedding backend choice, Obsidian
    detection, HERMES_VAULT_PATH registration) — relay its questions to me
    and pass my answers through if you're driving it non-interactively.
@@ -159,21 +159,21 @@ PART 1 — Install
 PART 2 — Hourly archiving cron job
 6. Check with `cronjob_manage(action='list')` for a job already named
    "hermes-brain-archive-hourly" (or any job whose command targets this
-   vault's Daily/ folder). If one already exists, skip creating it — just
+   vault's 04-Archives/Daily/ folder). If one already exists, skip creating it — just
    tell me it's already set up.
 7. If none exists, create a cron job named "hermes-brain-archive-hourly"
    that runs every hour (cron expression: 0 * * * *) and exports my Hermes
    chat sessions from the last hour as redacted markdown into
-   <vault>/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
-   in the vault's Daily/README.md. The script also exports a JSONL copy to
+   <vault>/04-Archives/Daily/YYYY/MM/DD/<session>.md, matching the structure documented
+   in the vault's 04-Archives/Daily/README.md. The script also exports a JSONL copy to
    extract token usage (prompt + completion tokens) and appends daily totals to
-   Skills-Notes/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
+   04-Archives/Audit-Reports/Token-Usage.log. Use env.HERMES_VAULT_PATH for the vault
    location.
 8. **Optional: Vault audit + Agent performance cron jobs** — same
    idempotency check first (list, look for a matching name), only create if
    missing:
-   - "hermes-brain-vault-audit-weekly" (Sunday 2 AM): runs `python3 Scripts/vault_audit.py` → writes `Skills-Notes/Vault-Audit-Report.md`
-   - "hermes-brain-agent-perf-weekly" (Monday 3 AM): runs `python3 Scripts/agent_performance.py` → writes `Skills-Notes/Agent-Performance.md`
+   - "hermes-brain-vault-audit-weekly" (Sunday 2 AM): runs `python3 _System/Scripts/vault_audit.py` → writes `04-Archives/Audit-Reports/Vault-Audit-Report.md`
+   - "hermes-brain-agent-perf-weekly" (Monday 3 AM): runs `python3 _System/Scripts/agent_performance.py` → writes `04-Archives/Audit-Reports/Agent-Performance.md`
 9. Tell me the final vault path and confirm, for each cron job, whether it
    was newly created or already existed.
 ```
@@ -189,5 +189,5 @@ cron job after seeing the vault installed first.
 - Both prompts are safe to paste as-is — nothing in them touches secrets or runs destructive commands. Hermes will still ask for your input at the decision points above (vault location, embedding backend, whether you want the cron job).
 - If you already ran `install.sh`/`install.ps1` by hand, skip straight to prompt 2 for the cron job, or prompt 3 if you just want to pull updates.
 - Only run **one** archiving cron job per vault — see the Security notes in the main [README.md](README.md).
-- **Optional instant archive**: After installing, you also have `Scripts/archive_now.py` (or `.ps1`) available for manual, on-demand exports (e.g., after a long chat session). It exports sessions from a configurable time window (default: last 5 minutes) and uses the same lock file as the hourly cron to avoid conflicts. See `Daily/README.md` for details.
-- **Optional session enrichment**: After archiving (hourly or instant), you can run `Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one, making sessions more glanceable.
+- **Optional instant archive**: After installing, you also have `_System/Scripts/archive_now.py` (or `.ps1`) available for manual, on-demand exports (e.g., after a long chat session). It exports sessions from a configurable time window (default: last 5 minutes) and uses the same lock file as the hourly cron to avoid conflicts. See `04-Archives/Daily/README.md` for details.
+- **Optional session enrichment**: After archiving (hourly or instant), you can run `_System/Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one, making sessions more glanceable.
