@@ -4,9 +4,9 @@
 
 .dashboard-kpi-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
-  margin: 8px 0 4px 0;
+  margin: 8px 0 12px 0;
 }
 
 .dashboard-kpi-card {
@@ -34,12 +34,38 @@
   letter-spacing: 0.04em;
 }
 
+/* Grid Layouts */
+.dashboard-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  margin: 12px 0;
+  align-items: stretch;
+}
+
+.dashboard-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+  align-items: stretch;
+}
+
 .dashboard-card {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   padding: 14px 16px;
   margin: 10px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-2col > .dashboard-card,
+.dashboard-3col > .dashboard-card {
+  margin: 0;
+  height: 100%;
 }
 
 .dashboard-card-title {
@@ -49,8 +75,12 @@
   letter-spacing: 0.05em;
   color: var(--text-muted);
   margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
+/* Badges */
 .dashboard-badge {
   display: inline-flex;
   align-items: center;
@@ -76,13 +106,108 @@
   color: var(--text-muted);
 }
 
+.dashboard-badge-purple {
+  background: rgba(187, 134, 252, 0.16);
+  color: #bb86fc;
+}
+
+.dashboard-badge-blue {
+  background: rgba(79, 172, 254, 0.16);
+  color: #4facfe;
+}
+
+/* Buttons */
+.dashboard-btn {
+  cursor: pointer;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-normal);
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dashboard-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--text-accent);
+  color: var(--text-accent);
+}
+
+/* Tag Pills */
+.dashboard-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  font-size: 0.8em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dashboard-tag-pill:hover {
+  border-color: var(--text-accent);
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+.dashboard-tag-count {
+  font-size: 0.85em;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--background-secondary);
+  color: var(--text-faint);
+}
+
+/* Progress bar */
+.dashboard-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.dashboard-progress-fill {
+  height: 100%;
+  background: var(--text-accent);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
 /* Wide layout — apply via frontmatter `cssclasses: [dashboard-wide]` on
    any note that should ignore Obsidian's readable-line-length cap. Only
-   affects notes explicitly tagged with this class, nothing else.
-   Obsidian applies cssclasses directly onto the view element, so this
-   targets .markdown-preview-view.dashboard-wide / .markdown-source-view.dashboard-wide
-   (not a wrapping ancestor). */
+   affects notes explicitly tagged with this class, nothing else. */
+.dashboard-wide {
+  --file-line-width: min(96vw, 1600px) !important;
+  --line-width: min(96vw, 1600px) !important;
+  --line-width-wide: min(96vw, 1600px) !important;
+  --max-width: min(96vw, 1600px) !important;
+}
+
+.dashboard-wide .markdown-preview-sizer,
+.dashboard-wide.markdown-preview-view .markdown-preview-sizer,
+.dashboard-wide .cm-sizer,
+.dashboard-wide.markdown-source-view .cm-sizer,
+.dashboard-wide .markdown-preview-section,
 .markdown-preview-view.dashboard-wide.is-readable-line-width .markdown-preview-sizer,
 .markdown-source-view.dashboard-wide.is-readable-line-width .cm-sizer {
-  max-width: 1400px !important;
+  max-width: min(96vw, 1600px) !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
