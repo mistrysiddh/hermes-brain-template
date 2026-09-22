@@ -14,8 +14,9 @@ cssclasses:
 
 Central documentation and reference guide for all Obsidian note templates powering the Hermes Brain vault.
 
-> [!TIP] View & Copy Raw Source Code
-> Looking to see the actual raw markdown source code or copy templates in 1 click? Open **[[_System/Templates/Template-Showcase|Template-Showcase.md]]** for collapsible raw markdown blocks with syntax highlighting!
+> [!TIP] Interactive Template Hubs
+> - **Live Dataview Review:** Open **[[_System/Templates/Templates-Review|Templates-Review.md]]** for a Daily-Review style dynamic audit table and verification checklist.
+> - **Raw Source Gallery:** Open **[[_System/Templates/Template-Showcase|Template-Showcase.md]]** for 1-click copyable raw markdown code blocks.
 
 <div class="project-meta-banner">
   <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">

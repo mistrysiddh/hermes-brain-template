@@ -36,7 +36,7 @@ Operational machinery, automation engines, visual canvases, note templates, and 
 
 ### 📝 Templates & Note Schemas
 
-*👉 Documentation: [[_System/Templates/README|Templates Catalog]] · [[_System/Templates/Template-Showcase|Raw Source Showcase & Copy Gallery]]*
+*👉 Documentation: [[_System/Templates/README|Templates Catalog]] · [[_System/Templates/Templates-Review|Live Review Hub]] · [[_System/Templates/Template-Showcase|Raw Gallery]]*
 
 Located in `_System/Templates/`:
 - **[[_System/Templates/Project|Project Template]]:** Widescreen 2-column project dashboard.
