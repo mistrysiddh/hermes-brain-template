@@ -9,7 +9,7 @@ tags: [lesson-learned, self-correction, hermes-brain]
 
 # ⚠️ Lesson Learned: {{title}}
 
-> **Incident Date:** {{date}} | **Agent Profile:** `{{agent_profile}}` | **Severity:** `{{severity}}`
+> **Incident Date:** {{date}} | **Agent Profile:** `default` | **Severity:** `low`
 
 ## 1. What Happened (Trigger & Action)
 * **User Prompt / Intent:**

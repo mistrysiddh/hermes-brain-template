@@ -49,12 +49,14 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 
 ## ⚙️ System & Templates
 - [[_System/README|System Architecture Index]] — templates, automation scripts, and visual canvases
-- **Templates** (`_System/Templates/` folder):
+- **Templates** (`_System/Templates/` folder — see [[_System/Templates/README|Templates Catalog & Field Reference]]):
   - [[_System/Templates/Project|Project.md]] — new project charter
   - [[_System/Templates/Architecture-Decision-Record|Architecture-Decision-Record.md]] — architecture decision record
   - [[_System/Templates/Daily-Review|Daily-Review.md]] — daily reflection & agent alignment review
   - [[_System/Templates/Research-Note|Research-Note.md]] — technical research inquiry
   - [[_System/Templates/Lesson-Learned|Lesson-Learned.md]] — agent operational lesson learned
+  - [[_System/Templates/Personality-Judgment-Analysis|Personality-Judgment-Analysis.md]] — 7-dimension cognitive evaluation
+  - [[_System/Templates/Personality-Judgment-Dashboard|Personality-Judgment-Dashboard.md]] — Dataview KPI tracker and matrix
 - **Automation Scripts** (`_System/Scripts/` folder):
   - `hourly_archive.py` / `archive_now.py` — session archiving
   - `dream_cycle.py` — nocturnal memory distillation & synthesis

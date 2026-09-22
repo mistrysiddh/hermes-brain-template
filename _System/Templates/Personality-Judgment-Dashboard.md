@@ -12,16 +12,16 @@ TABLE
   top_hypothesis AS "Top Hypothesis",
   confidence AS "Confidence",
   dateformat(file.mtime, "yyyy-MM-dd") AS "Updated"
-FROM #personality-judgment or "04-Archives/Daily" or "Daily"
-WHERE subject AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md"
+FROM #personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"
+WHERE subject AND !contains(file.folder, "_System/Templates") AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
 
 ## 📈 Confidence Distribution
 
 ```dataviewjs
-const pages = dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.subject);
+const pages = dv.pages('#personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"')
+  .where(p => !p.file.folder.includes("_System/Templates") && p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.subject);
 
 const confidenceCounts = {
   High: 0,
@@ -50,8 +50,8 @@ TABLE
   hypothesis AS "Hypothesis",
   subject AS "Subject",
   confidence AS "Confidence"
-FROM #personality-judgment or "04-Archives/Daily" or "Daily"
-WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND hypotheses
+FROM #personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"
+WHERE !contains(file.folder, "_System/Templates") AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND hypotheses
 FLATTEN hypotheses AS hypothesis
 WHERE hypothesis
 SORT file.mtime DESC
@@ -67,16 +67,16 @@ TABLE WITHOUT ID
   subject AS "Subject",
   primary_style AS "Style",
   confidence AS "Confidence"
-FROM #personality-judgment or "04-Archives/Daily" or "Daily"
-WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND subject
+FROM #personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"
+WHERE subject AND !contains(file.folder, "_System/Templates") AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md"
 SORT file.mtime DESC
 ```
 
 ## 🏷️ Topics Analyzed
 
 ```dataviewjs
-const pages = dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
-  .where(p => p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.topic_behavior);
+const pages = dv.pages('#personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"')
+  .where(p => !p.file.folder.includes("_System/Templates") && p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md" && p.topic_behavior);
 
 const topicCounts = {};
 
@@ -103,8 +103,8 @@ TABLE
   anomaly AS "Anomaly",
   subject AS "Subject",
   file.link AS "Analysis"
-FROM #personality-judgment or "04-Archives/Daily" or "Daily"
-WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND anomalies
+FROM #personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"
+WHERE !contains(file.folder, "_System/Templates") AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND anomalies
 FLATTEN anomalies AS anomaly
 WHERE anomaly
 SORT file.mtime DESC
@@ -115,8 +115,8 @@ SORT file.mtime DESC
 ```dataview
 LIST
   recommendation
-FROM #personality-judgment or "04-Archives/Daily" or "Daily"
-WHERE file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND recommendations
+FROM #personality-judgment or "04-Archives/Daily" or "02-Areas" or "03-Resources"
+WHERE !contains(file.folder, "_System/Templates") AND file.name != "Personality-Judgment-Analysis.md" AND file.name != "Personality-Judgment-Dashboard.md" AND recommendations
 FLATTEN recommendations AS recommendation
 WHERE recommendation
 LIMIT 20

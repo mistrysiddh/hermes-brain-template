@@ -36,12 +36,16 @@ Operational machinery, automation engines, visual canvases, note templates, and 
 
 ### 📝 Templates & Note Schemas
 
+*👉 Full Documentation: [[_System/Templates/README|Templates Catalog & Field Reference]]*
+
 Located in `_System/Templates/`:
 - **[[_System/Templates/Project|Project Template]]:** Widescreen 2-column project dashboard.
 - **[[_System/Templates/Architecture-Decision-Record|ADR Template]]:** 4-agent persona evaluation framework.
 - **[[_System/Templates/Lesson-Learned|Lesson Learned Template]]:** Post-mortem and prevention schema.
-- **[[_System/Templates/Daily-Review|Daily Review Template]]:** Evening reflection and memory review.
+- **[[_System/Templates/Daily-Review|Daily Review Template]]:** Evening reflection and session audit.
 - **[[_System/Templates/Research-Note|Research Note Template]]:** Structured investigation brief.
+- **[[_System/Templates/Personality-Judgment-Analysis|Personality Judgment Analysis]]:** 7-dimension cognitive evaluation.
+- **[[_System/Templates/Personality-Judgment-Dashboard|Personality Judgment Dashboard]]:** Dataview KPI tracker and cross-session matrix.
 
 </div>
 
