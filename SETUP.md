@@ -76,9 +76,11 @@ The template ships **without** any API key.
 - Never paste it into a `.md` file in this vault.
 
 ## 4. Point Hermes's session archiver at this vault
-In Hermes, set up (or reuse) a cron job that exports session transcripts into `04-Archives/Daily/YYYY/MM/DD/`. See [[01-Projects/Hermes-Agent-Vault-Setup]] for the pipeline this vault expects: `04-Archives/Daily → 04-Archives/Memory-Review → native MEMORY.md/USER.md`. Give the cron job your vault's absolute path as the output root.
+Hermes archives chat sessions into `04-Archives/Daily/YYYY/MM/DD/` using either:
+- **Real-Time Lifecycle Hooks (instant, recommended):** Add shell hooks to `~/.hermes/config.yaml` (`on_session_start`, `post_llm_call`, `on_session_end`) pointing to `_System/Scripts/hermes_session_sync.cmd` (or `.sh`). New chats create notes instantly; existing chats update on every turn. See `INSTALL_PROMPT.md` for the YAML snippet.
+- **Hourly Cron (background catch-up):** An hourly cron job (`0 * * * *`) that executes `python _System/Scripts/hourly_archive.py`. Uses database-aware detection so active sessions are never missed.
 
-**Only run one archiving cron job per vault.** Duplicate jobs writing to the same `manifest.jsonl` will race and corrupt the index.
+See [[01-Projects/Hermes-Agent-Vault-Setup]] for the pipeline this vault expects: `04-Archives/Daily → 04-Archives/Memory-Review → native MEMORY.md/USER.md`.
 
 ## 5. Nightly memory consolidation & dream cycle
 `_System/Scripts/consolidate_memory.py` and `_System/Scripts/dream_cycle.py` deduplicate, stage candidates, and synthesize session insights:

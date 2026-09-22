@@ -73,7 +73,36 @@ is documented in Hermes's `hermes-chat-archiving` skill — the schedule is
 
 ---
 
-## 2b. Optional: Weekly vault audit + agent performance cron jobs
+## 2b. Real-time session syncing hooks (instant updates)
+
+For instant syncing without waiting for the hourly cron, configure Hermes shell hooks in your `~/.hermes/config.yaml`.
+This automatically creates a new `.md` file in `04-Archives/Daily/YYYY/MM/DD/` when any chat starts, and continuously updates old or ongoing chats on every turn:
+
+```yaml
+hooks:
+  on_session_start:
+    - _hermes_brain: true
+      command: '"<vault>/_System/Scripts/hermes_session_sync.cmd" --hook --event on_session_start'
+      timeout: 30
+  post_llm_call:
+    - _hermes_brain: true
+      command: '"<vault>/_System/Scripts/hermes_session_sync.cmd" --hook --event post_llm_call'
+      timeout: 30
+  on_session_end:
+    - _hermes_brain: true
+      command: '"<vault>/_System/Scripts/hermes_session_sync.cmd" --hook --event on_session_end'
+      timeout: 30
+  on_session_finalize:
+    - _hermes_brain: true
+      command: '"<vault>/_System/Scripts/hermes_session_sync.cmd" --hook --event on_session_finalize'
+      timeout: 30
+hooks_auto_accept: true
+```
+*(On Linux/macOS, use `hermes_session_sync.sh` instead of `.cmd`)*
+
+---
+
+## 2c. Optional: Weekly vault audit + agent performance cron jobs
 
 These run less frequently (weekly/monthly) and keep your vault healthy
 while giving you insights into agent usage:

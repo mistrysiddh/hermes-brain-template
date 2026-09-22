@@ -215,6 +215,55 @@ if ($hermes) {
         }
       }
     }
+
+    Write-Host ""
+    Write-Host "Real-time session syncing hooks" -ForegroundColor Cyan
+    $setupHooks = Read-Host "  Set up real-time session archiving hooks in Hermes now (syncs chats on start and every turn)? [Y/n]"
+    if ($setupHooks -notmatch '^[Nn]') {
+      $hookCmd = Join-Path $Dest "_System\Scripts\hermes_session_sync.cmd"
+      $pySetup = @"
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+hermes_cfg = os.path.expandvars(r'%LOCALAPPDATA%\hermes\config.yaml')
+if not os.path.exists(hermes_cfg):
+    hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception:
+        cfg = {}
+    
+    hooks = cfg.setdefault('hooks', {})
+    hook_script = r'$hookCmd'
+    
+    for evt in ['on_session_start', 'post_llm_call', 'on_session_end', 'on_session_finalize']:
+        entries = hooks.setdefault(evt, [])
+        cmd_str = f'\"{hook_script}\" --hook --event {evt}'
+        if not any(e.get('command') == cmd_str for e in entries if isinstance(e, dict)):
+            entries.append({'command': cmd_str, 'timeout': 30, '_hermes_brain': True})
+            
+    cfg['hooks_auto_accept'] = True
+    with open(hermes_cfg, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+    print('HOOKS_CONFIGURED')
+"@
+      $py = Get-Command python -ErrorAction SilentlyContinue
+      if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+      if ($py) {
+        $res = & $py.Source -c $pySetup 2>&1
+        if ($res -match "HOOKS_CONFIGURED") {
+          Write-Ok "Configured real-time session lifecycle hooks in Hermes config.yaml."
+        } else {
+          Write-Warn "Could not update config.yaml automatically -- see INSTALL_PROMPT.md."
+        }
+      }
+    }
   } else {
     Write-Info "Test mode: skipping Hermes env and cron configuration prompts."
   }
