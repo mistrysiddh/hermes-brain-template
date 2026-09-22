@@ -1,0 +1,68 @@
+title: Hermes Brain Template
+description: A comprehensive knowledge vault for AI agents and self-hosted systems
+show_downloads: true
+google_analytics:
+remote_theme: pmarsceill/just-the-docs
+
+# Just-the-docs configuration
+aux_links:
+  "Hermes Brain Template on GitHub":
+    - "//github.com/mistrysiddh/hermes-brain-template"
+
+back_to_top: true
+back_to_top_text: "Back to top"
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+# Color scheme currently only supports "dark", "light" (default), or "nil"
+color_scheme: nil
+
+# Default layout
+defaults:
+  -
+    scope:
+      path: "" # empty string for all files
+      type: "pages"
+    values:
+      layout: "default"
+      permalink: /:basename:output_ext
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      permalink: /:categories/:year-:month-:day-:title:output_ext
+
+# Exclude from processing.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - "*.gemspec"
+  - ".github/"
+  - ".gitignore"
+  - ".gitmodules"
+  - "script/"
+  - LICENSE
+  - README.md
+  - CONTRIBUTING.md
+  - "*.log"
