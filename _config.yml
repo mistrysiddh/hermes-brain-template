@@ -2,7 +2,7 @@ title: Hermes Brain Template
 description: A comprehensive knowledge vault for AI agents and self-hosted systems
 show_downloads: true
 google_analytics:
-remote_theme: pmarsceill/just-the-docs
+remote_theme: just-the-docs/just-the-docs
 
 # Just-the-docs configuration
 aux_links:
