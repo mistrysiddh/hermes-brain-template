@@ -75,7 +75,8 @@ def load_manifest():
 def validate_manifest():
     """Validate manifest.jsonl for consistency and completeness."""
     issues = []
-    manifest_path = os.path.join(VAULT, "Daily", "manifest.jsonl")
+    m_cand = os.path.join(VAULT, "04-Archives", "Daily", "manifest.jsonl")
+    manifest_path = m_cand if os.path.exists(m_cand) else os.path.join(VAULT, "Daily", "manifest.jsonl")
     if not os.path.exists(manifest_path):
         issues.append({"type": "missing", "message": "manifest.jsonl does not exist"})
         return issues
@@ -85,7 +86,8 @@ def validate_manifest():
     # Check for missing files referenced in manifest
     for sid, rec in sessions.items():
         path = rec.get("path", "")
-        if path and not os.path.exists(os.path.join(VAULT, path)):
+        file_path = path if os.path.isabs(path) else os.path.join(VAULT, path)
+        if path and not os.path.exists(file_path):
             issues.append({
                 "type": "missing_file",
                 "session_id": sid,
@@ -192,18 +194,32 @@ def find_stale_memory_review(days=30):
 
 def find_duplicate_sessions():
     """Find duplicate session_ids in manifest."""
-    sessions = load_manifest()
+    m_cand = os.path.join(VAULT, "04-Archives", "Daily", "manifest.jsonl")
+    manifest_path = m_cand if os.path.exists(m_cand) else os.path.join(VAULT, "Daily", "manifest.jsonl")
     duplicates = []
     seen = {}
-    for sid, rec in sessions.items():
-        if sid in seen:
-            duplicates.append({
-                "session_id": sid,
-                "orig_path": seen[sid].get("path", "unknown"),
-                "dup_path": rec.get("path", "unknown")
-            })
-        else:
-            seen[sid] = rec
+    if not os.path.exists(manifest_path):
+        return duplicates
+    with open(manifest_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            sid = rec.get("session_id")
+            if not sid:
+                continue
+            if sid in seen:
+                duplicates.append({
+                    "session_id": sid,
+                    "orig_path": seen[sid].get("path", "unknown"),
+                    "dup_path": rec.get("path", "unknown")
+                })
+            else:
+                seen[sid] = rec
     return duplicates
 
 
