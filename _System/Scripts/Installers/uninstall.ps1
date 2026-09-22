@@ -54,11 +54,11 @@ if ($hermesCmd) {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Cron job cleanup
+# 3. Cron job & hooks cleanup
 # ---------------------------------------------------------------------------
 Write-Host ""
-Write-Bold "Cron job cleanup"
-if ($hermes) {
+Write-Bold "Cron job & hooks cleanup"
+if ($hermesCmd) {
   $cronJobs = & hermes cron list 2>&1
   if ($cronJobs -match "hermes-brain-archive-hourly") {
     $rmCron = Read-Host "  Found 'hermes-brain-archive-hourly' cron job. Remove it now? [Y/n]"
@@ -75,6 +75,47 @@ if ($hermes) {
   }
 } else {
   Write-Info "Hermes CLI not found -- if you had an hourly cron job set up, remove it via Hermes chat or CLI."
+}
+
+# Clean up hooks from config.yaml if they reference this vault
+$py = Get-Command python -ErrorAction SilentlyContinue
+if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+if ($py) {
+  $pyHookCleanup = @"
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+hermes_cfg = os.path.expandvars(r'%LOCALAPPDATA%\hermes\config.yaml')
+if not os.path.exists(hermes_cfg):
+    hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+        hooks = cfg.get('hooks', {})
+        dest_norm = os.path.normpath(r'$Dest').lower()
+        modified = False
+        for evt in list(hooks.keys()):
+            if isinstance(hooks[evt], list):
+                new_list = [e for e in hooks[evt] if not (isinstance(e, dict) and dest_norm in os.path.normpath(e.get('command', '')).lower())]
+                if len(new_list) != len(hooks[evt]):
+                    hooks[evt] = new_list
+                    modified = True
+        if modified:
+            with open(hermes_cfg, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+            print('HOOKS_REMOVED')
+    except Exception:
+        pass
+"@
+  $hRes = & $py.Source -c $pyHookCleanup 2>&1
+  if ($hRes -match "HOOKS_REMOVED") {
+    Write-Ok "Removed vault hooks from Hermes config.yaml."
+  }
 }
 
 # ---------------------------------------------------------------------------

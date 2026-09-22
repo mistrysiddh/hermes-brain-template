@@ -246,6 +246,44 @@ if command -v hermes >/dev/null 2>&1; then
           || warn "Could not create cron job automatically — see INSTALL_PROMPT.md."
       fi
     fi
+
+    echo
+    bold "Real-time session syncing hooks"
+    read -rp "  Set up real-time session archiving hooks in Hermes now (syncs chats on start and every turn)? [Y/n]: " SETUP_HOOKS
+    if [ "${SETUP_HOOKS,,}" != "n" ]; then
+      HOOK_CMD="$DEST/_System/Scripts/hermes_session_sync.sh"
+      chmod +x "$HOOK_CMD" 2>/dev/null || true
+      PY=$(find_python || true)
+      if [ -n "$PY" ]; then
+        "$PY" -c "
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception:
+        cfg = {}
+    hooks = cfg.setdefault('hooks', {})
+    hook_script = '$HOOK_CMD'
+    for evt in ['on_session_start', 'post_llm_call', 'on_session_end', 'on_session_finalize']:
+        entries = hooks.setdefault(evt, [])
+        cmd_str = f'\"{hook_script}\" --hook --event {evt}'
+        if not any(e.get('command') == cmd_str for e in entries if isinstance(e, dict)):
+            entries.append({'command': cmd_str, 'timeout': 30, '_hermes_brain': True})
+    cfg['hooks_auto_accept'] = True
+    with open(hermes_cfg, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+    print('HOOKS_CONFIGURED')
+" 2>&1 | grep -q "HOOKS_CONFIGURED" \
+          && ok "Configured real-time session lifecycle hooks in ~/.hermes/config.yaml." \
+          || warn "Could not update config.yaml automatically — see INSTALL_PROMPT.md."
+      fi
+    fi
   else
     info "Test mode: skipping Hermes env and cron configuration prompts."
   fi

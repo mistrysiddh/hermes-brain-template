@@ -49,8 +49,10 @@ if not VAULT:
     print("Could not resolve vault path — set HERMES_VAULT_PATH or pass vault directory as argument.")
     sys.exit(1)
 
-rep_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Vault-Audit-Report.md")
-REPORT_PATH = rep_cand if os.path.exists(os.path.dirname(rep_cand)) else os.path.join(VAULT, "Skills-Notes", "Vault-Audit-Report.md")
+# Always write the report inside the resolved vault - never fall back to a different location
+report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+os.makedirs(report_dir, exist_ok=True)
+REPORT_PATH = os.path.join(report_dir, "Vault-Audit-Report.md")
 
 # Patterns
 WIKILINK_RE = re.compile(r'\[\[([^\]]+)\]\]')

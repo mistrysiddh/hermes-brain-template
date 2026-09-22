@@ -1,30 +1,33 @@
 # Daily
 
 Raw session archive, organized `YYYY/MM/DD/<session-file>.md` — one file per
-Hermes session, exported by your archiving cron job (or manual trigger). 
-`manifest.jsonl` (once your cron job creates it) indexes every exported session. 
-Don't silently mutate old files — the exporter should only add new ones.
+Hermes session, exported automatically by Hermes lifecycle hooks, your archiving cron job, or manual trigger. 
+`manifest.jsonl` indexes every exported session and keeps track of message counts and export timestamps.
+When an existing chat session is continued, its archive file is automatically updated in-place with all new turns.
 
 ## Auto-archiving options
 
-You have **two complementary ways** to get sessions from Hermes into your vault:
+You have **three complementary ways** to get sessions from Hermes into your vault:
 
-- **Hourly cron (passive, default)** – `Scripts/hourly_archive.py` (or `.ps1`) runs once per hour, exporting anything active in the last ~70 minutes. This is what the standard update/install process sets up for you. Expect up to ~70 minutes latency before a session appears in the vault.  
-- **Instant archive (manual, on-demand)** – `Scripts/archive_now.py` (or `.ps1`) exports sessions *right now* from a configurable window (default: last 5 minutes). Run it whenever you finish a long chat session and want the transcript available immediately. Both scripts use the same lock file (`.hourly_archive.lock`) so they can never run at the same time and corrupt `manifest.jsonl`.
+- **Real-time lifecycle hooks (instant, automatic)** – Configured in `~/.hermes/config.yaml` (`on_session_start`, `post_llm_call`, `on_session_end`). A new Markdown file is immediately created when a new chat starts, and updated after every turn when chatting in an ongoing or older session.
+- **Hourly cron (passive background sync)** – `_System/Scripts/hourly_archive.py` (or `.ps1`) runs once per hour, exporting anything active in the last ~70 minutes. Uses database-aware inspection of Hermes `state.db` so even active, non-finalized sessions are caught.
+- **Instant archive (manual, on-demand)** – `_System/Scripts/archive_now.py` (or `.ps1`) exports sessions *right now* from a configurable window (default: last 5 minutes) or for a specific `--session-id`.
 
-**Optional session enrichment** – After archiving (either hourly or instant), you can run `Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one. This makes sessions more glanceable and provides seed data for future memory pipeline steps.
-
-Both archiving scripts:
+All archiving triggers:
 - Export redacted markdown + JSONL (for token usage)
-- Reorganize files into `Daily/YYYY/MM/DD/`
+- Reorganize files into `04-Archives/Daily/YYYY/MM/DD/`
+- Clean up any temporary or placeholder slugs when titles are auto-generated
 - Update the deduplicated `manifest.jsonl`
-- Append to `Skills-Notes/Token-Usage.log`
+- Append to `04-Archives/Audit-Reports/Token-Usage.log`
+- Use the shared `.hourly_archive.lock` file so concurrent executions never conflict
+
+**Optional session enrichment** – After archiving, you can run `_System/Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one.
 
 This is the raw material for the memory pipeline: review sessions here for
 durable facts, stage candidates in [[../Memory-Review/TEMPLATE|Memory-Review]],
 then promote to Hermes's native MEMORY.md/USER.md. See
-[[../Projects/README]] for project context and the pipeline overview, and
-[[../Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] for a visual map.
+[[../../01-Projects/README]] for project context and the pipeline overview, and
+[[../../Canvases/Memory-Pipeline.canvas|Memory-Pipeline]] for a visual map.
 
 ## Browse chronologically
 
