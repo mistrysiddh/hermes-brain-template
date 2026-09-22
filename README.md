@@ -21,8 +21,6 @@ other notes.
 
 ![Hermes Brain graph view](assets/graph-view-screenshot.png)
 
-*[![Hermes Brain demo](assets/demo.gif)](assets/demo.gif)*  <!-- Replace demo.gif with your 15-sec demo recording -->
-
 ## Why this instead of nothing?
 
 - **You stop losing context.** Every Hermes session gets archived automatically — nothing lives only in a chat log you'll never scroll back to.
