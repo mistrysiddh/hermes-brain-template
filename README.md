@@ -21,6 +21,8 @@ other notes.
 
 ![Hermes Brain graph view](assets/graph-view-screenshot.png)
 
+[![Hermes Brain Install Video](https://img.youtube.com/vi/2cXrS1IWsSw/0.jpg)](https://youtu.be/2cXrS1IWsSw?si=hktew9KHCpGdLgE7)
+
 ## Why this instead of nothing?
 
 - **You stop losing context.** Every Hermes session gets archived automatically — nothing lives only in a chat log you'll never scroll back to.
