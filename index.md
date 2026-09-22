@@ -52,7 +52,8 @@ cd hermes-brain-template
 
 ## 📖 Documentation
 
-- [Installation Guide](SETUP.md)
+- [Setup & Installation Guide](docs/setup.md)
+- [Note Templates Reference](docs/templates.md)
 - [Directory Structure](#vault-structure)
 - [AI Agent Integration](https://hermes-agent.nousresearch.com/)
 - [Custom Scripts Reference](_System/Scripts/)
