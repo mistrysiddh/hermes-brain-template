@@ -8,6 +8,8 @@
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
 [![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](02-Areas/User-Profile.md)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/mistrysiddh)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
+[![GitHub Stars](https://img.shields.io/github/stars/mistrysiddh/hermes-brain-template?style=social)](https://github.com/mistrysiddh/hermes-brain-template/stargazers)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
@@ -18,6 +20,8 @@ vault, so you can search it, link it, graph it, and back it up like any
 other notes.
 
 ![Hermes Brain graph view](assets/graph-view-screenshot.png)
+
+*[![Hermes Brain demo](assets/demo.gif)](assets/demo.gif)*  <!-- Replace demo.gif with your 15-sec demo recording -->
 
 ## Why this instead of nothing?
 
@@ -143,6 +147,25 @@ Delete the scratch copy any time. Run Option 1 or 2 when you are ready to keep i
 
 Prefer configuring everything by hand? Follow **[SETUP.md](SETUP.md)** step by step.
 
+---
+
+### 🌐 Option 6 — GitHub Codespaces (Zero-Local-Setup Trial)
+
+No local install needed. Click the badge above or use this link to spin up a ready-to-run environment in your browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
+
+Once the Codespace loads, run the scratch-vault trial:
+
+```bash
+./_System/Scripts/Installers/try.sh
+```
+
+This creates a temporary vault at `/tmp/hermes-brain-trial` that you can open in Obsidian (via the Obsidian URI scheme or by copying files out). When you're done, just delete the Codespace — no cleanup needed on your machine.
+
+> **Tip:** Codespaces gives you 60 hours/month free on the GitHub Free plan — plenty for evaluating the template.
+
+---
 
 ## Cross-platform scripts
 
@@ -171,6 +194,35 @@ Prefer configuring everything by hand? Follow **[SETUP.md](SETUP.md)** step by s
 - [Obsidian](https://obsidian.md) (free)
 - A [Hermes](https://claude-code.nousresearch.com/docs) agent install (e.g., via [OpenClaw](https://openclaw.nousresearch.com/)), if you want the automated session-archive/memory pipeline
 - Optional, for the trend-digest scripts: [Ollama](https://ollama.com) *or* Python 3 with `sentence-transformers`
+
+## FAQ
+
+**Do I need to run a local LLM (Ollama, etc.)?**
+No. The core vault, session archiver, and memory-review pipeline work with any Hermes agent — no local models required. The optional *trend-digest* scripts (`pipeline.sh`, `trend_digest.py`, etc.) are the only parts that need Ollama or `sentence-transformers` for embeddings.
+
+**Is my data private?**
+Yes. Everything lives in your local vault (or your private fork of this template). No data is sent to this repo or any external service unless *you* configure it to (e.g., enabling the Local REST API plugin and exposing it).
+
+**Can I use this without Hermes / OpenClaw?**
+Absolutely. The vault structure, templates, Dataview queries, Kanban boards, and scripts are all usable as a standalone Obsidian "second brain" template. The Hermes-specific automation (hourly archiving, `INSTALL_PROMPT.md`) simply won't run without a Hermes agent.
+
+**What's the difference between the "Use this template" button and the one-line install?**
+- **Use this template** → creates *your own private repo* on GitHub with full history. Best if you want to version-control your personal vault.
+- **One-line install** (`curl ... | bash`) → downloads the latest template directly to your machine, no GitHub account needed. Best for quick local setup.
+
+**Why are `Daily/`, `Memory-Review/`, and `.smart-env/` git-ignored?**
+They contain your *personal* session data, API keys, and plugin state. The template only ships the *structure* (folders, templates, scripts). See `SETUP.md` for the full list of intentionally excluded paths.
+
+**How do I update the template after I've installed it?**
+Run the update script from inside your vault:
+```bash
+./_System/Scripts/Installers/update.sh     # Linux/macOS
+.\\_System\\Scripts\\Installers\\update.ps1   # Windows
+```
+This pulls the latest template files (scripts, templates, configs) without touching your personal data in `Daily/`, `Memory-Review/`, etc.
+
+**Where do I ask questions or request features?**
+Open a [Discussion](https://github.com/mistrysiddh/hermes-brain-template/discussions) — there's a welcome post to get started. Bugs and PRs go in Issues.
 
 ## Security notes
 

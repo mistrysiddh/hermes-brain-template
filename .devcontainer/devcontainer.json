@@ -1,0 +1,27 @@
+{
+  "name": "Hermes Brain Template",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscodevim.vim",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "timonwong.shellcheck",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "postCreateCommand": "bash -c \"cd /workspaces/hermes-brain-template && pip install --user -q requests && echo 'Dev container ready! Run ./_System/Scripts/Installers/try.sh for a scratch vault.'\"",
+  "forwardPorts": [],
+  "postAttachCommand": "echo '🚀 Hermes Brain Template — Run ./_System/Scripts/Installers/try.sh to create a scratch vault for testing'",
+  "remoteUser": "vscode"
+}
