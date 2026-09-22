@@ -1,34 +1,34 @@
 /* ========================================
    Hermes Brain — GitHub Pages Styles
-   Modern, technical, accessible
+   One Dark theme inspired
    ======================================== */
 
 /* --- CSS Custom Properties --- */
 :root {
-    /* Colors - Nemoclaw inspired */
-    --bg-primary: #0d1117;
-    --bg-secondary: #161b22;
-    --bg-tertiary: #21262d;
-    --bg-code: #161b22;
-    --fg-primary: #e6edf3;
-    --fg-secondary: #8b949e;
-    --fg-muted: #6e7681;
-    --accent-primary: #1f6feb;
-    --accent-hover: #388bfd;
-    --accent-glow: rgba(31, 111, 235, 0.3);
-    --success: #3fb950;
-    --warning: #d29922;
-    --danger: #f85149;
-    --border: #30363d;
-    --border-light: #484f58;
+    /* Colors - One Dark inspired */
+    --bg-primary: #21252b;
+    --bg-secondary: #282c34;
+    --bg-tertiary: #3e4452;
+    --bg-code: #282c34;
+    --fg-primary: #abb2bf;
+    --fg-secondary: #5c6370;
+    --fg-muted: #8b949e;
+    --accent-primary: #61afef;   // Blue
+    --accent-hover: #98c379;    // Green (alternative hover)
+    --accent-glow: rgba(97, 175, 239, 0.3);
+    --success: #98c379;
+    --warning: #e5c07b;
+    --danger: #e06c75;
+    --border: #3e4452;
+    --border-light: #545862;
 
-    /* Syntax highlighting */
-    --syn-keyword: #ff7b72;
-    --syn-function: #d2a8ff;
-    --yn-string: #a5d6ff;
-    --syn-comment: #8b949e;
-    --syn-number: #79c0ff;
-    --syn-operator: #ff7b72;
+    /* Syntax highlighting (One Dark) */
+    --syn-keyword: #c678dd;   // Purple
+    --syn-function: #61afef;  // Blue
+    --syn-string: #98c379;    // Green
+    --syn-comment: #5c6370;   // Darker gray
+    --syn-number: #d19a66;    // Orange
+    --syn-operator: #e06c75;  // Red
 
     /* Typography */
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
@@ -273,7 +273,7 @@ pre code {
     left: 0;
     right: 0;
     height: var(--header-height);
-    background: rgba(var(--bg-primary-rgb, 13, 17, 23), 0.85);
+    background: rgba(var(--bg-primary-rgb, 33, 37, 43), 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     z-index: 100;
@@ -368,7 +368,7 @@ pre code {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--accent-primary);
-    background: rgba(31, 111, 235, 0.15);
+    background: rgba(97, 175, 239, 0.15);
     border: 1px solid var(--accent-primary);
     border-radius: 999px;
     margin-bottom: var(--space-lg);
@@ -466,9 +466,9 @@ pre code {
     background: var(--border-light);
 }
 
-.dots span:nth-child(1) { background: #ff5f57; }
-.dots span:nth-child(2) { background: #ffbd2e; }
-.dots span:nth-child(3) { background: #28ca42; }
+.dots span:nth-child(1) { background: #e06c75; }   // Red
+.dots span:nth-child(2) { background: #e5c07b; }   // Yellow
+.dots span:nth-child(3) { background: #98c379; }   // Green
 
 .window-title {
     font-family: var(--font-mono);
@@ -521,7 +521,7 @@ pre code {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(31, 111, 235, 0.1);
+    background: rgba(97, 175, 239, 0.1);
     border-radius: var(--radius-md);
     color: var(--accent-primary);
     margin-bottom: var(--space-md);
@@ -732,7 +732,7 @@ pre code {
 }
 
 .scripts-table tr.highlight td {
-    background: rgba(31, 111, 235, 0.05);
+    background: rgba(97, 175, 239, 0.05);
 }
 
 .scripts-table tr.highlight td:first-child {
@@ -742,7 +742,7 @@ pre code {
 /* --- CTA Section --- */
 .cta {
     text-align: center;
-    background: linear-gradient(135deg, rgba(31, 111, 235, 0.1) 0%, transparent 100%);
+    background: linear-gradient(135deg, rgba(97, 175, 239, 0.1) 0%, transparent 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: var(--space-3xl) var(--space-xl);
