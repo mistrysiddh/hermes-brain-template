@@ -1,0 +1,271 @@
+# Changelog
+
+All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
+
+## [1.21.0] — 2026-09-18
+
+### Added
+
+- **Future skill forecast widget** — `Scripts/skill_forecast.py` analyzes vault activity trends (from `Tag-Trends.log`) and installed skills (from `Installed-Skills-Index.md`) to suggest which skills to learn/install next for maximum relevance. Maps session tags to potential skill categories via a configurable mapping, identifies installed skills that already cover trending topics, and outputs actionable suggestions with reasoning. Runs as a standalone script or can be integrated into cron workflows.
+- **Cross-platform script table updated** — added row for `skill_forecast.py`.
+
+### Verified
+
+- `skill_forecast.py` syntax checks clean (`python -m py_compile`).
+- Correctly parses 70 installed skills from `Installed-Skills-Index.md`.
+- Correctly parses 15 unique trending tags from `Tag-Trends.log` (top: hermes, linux, llm, automation, obsidian, video).
+- Tag-to-skill mapping covers all major trending categories.
+- Output logged to `Skills-Notes/Skill-Forecast.log` with timestamps.
+
+## [1.20.0] — 2026-09-17
+
+### Added
+
+- **Automated session tagging & topic tracking** — `Scripts/session_tagger.py` extracts topics/themes from archived session markdown using lightweight keyword pattern matching (no external API, no heavy ML deps). Runs automatically as part of `hourly_archive.py` after sessions are moved into `YYYY/MM/DD/` directories. Maintains:
+  - Per-session `tags` array in `Daily/manifest.jsonl`
+  - Global tag cloud with counts in `Skills-Notes/Tag-Cloud.log`
+  - Daily tag trends in `Skills-Notes/Tag-Trends.log`
+- **Dashboard "Tag cloud & trends" widget** — renders the tag cloud as styled pills (size/opacity scaled by frequency) with hover effects, plus a 14-day trend history from `Tag-Trends.log`. Degrades gracefully when source files don't exist yet.
+- **Cross-platform script table updated** — added row for `session_tagger.py`.
+
+### Verified
+
+- `session_tagger.py` syntax checks clean (`python -m py_compile`).
+- Pattern extraction tested against seeded sample sessions — correctly identifies topics like `linux`, `hermes`, `python`, `database`, `automation`, `devops`, `networking`, `obsidian`, `video`.
+- Tag cloud and trends logs written and formatted correctly.
+- All 13 `dataviewjs` blocks in `Dashboard.md` pass `node --check`; markdown fences balanced.
+- `hourly_archive.py` still byte-compiles cleanly after integration.
+- `Scripts/vault_audit.py` reports 0 broken links.
+
+## [1.19.0] — 2026-09-17
+
+### Added
+
+- **Semantic search layer** — `Scripts/semantic_search.py` builds a local vector search index over the vault's session and knowledge files using `sentence-transformers/all-MiniLM-L6-v2` (22 MB, CPU-only, no external API). Supports full rebuild (`--build`), incremental update (`--update`), CLI search (`--search`), and an HTTP server (`--serve`) for real-time DataviewJS queries.
+- **Dashboard "Semantic search" widget** — natural-language search box on `Dashboard.md` that queries the local endpoint (or falls back gracefully with clear instructions). Click results to open matching notes.
+- **Cross-platform script table updated** — added rows for `semantic_search.py`, `archive_now.py`, `enrich_session.py`.
+
+### Verified
+
+- `semantic_search.py` syntax checks clean (`python -m py_compile`).
+- Index builds incrementally (only re-embeds new/changed files via SHA256 hash tracking).
+- Dashboard widget renders without errors; debounced input with loading state and clickable result links.
+- All existing Dashboard DataviewJS blocks still pass `node --check`; markdown fences balanced.
+
+## [1.18.0] — 2026-09-17
+
+### Added
+
+- **Manifest concurrency lock + instant archive trigger** — `Scripts/hourly_archive.py` (and `.ps1`) now acquire an exclusive lock file (`.hourly_archive.lock`) to prevent concurrent execution with itself or the new manual trigger. Added `Scripts/archive_now.py` (and `.ps1`) for on-demand, instant exports (default: last 5 minutes) that share the same lock so they never race the hourly cron. Both scripts export redacted markdown + JSONL, update `manifest.jsonl`, and append to `Token-Usage.log`.
+- **Optional session enrichment** — `Scripts/enrich_session.py` (and `.ps1`) adds a simple `summary:` frontmatter (first non-empty line, capped at 200 chars) to session markdown files that lack one, making sessions more glanceable without opening each file.
+- **Documentation updates** — `Daily/README.md` explains the two archiving paths (hourly cron vs instant manual) and the enrichment step. `INSTALL_PROMPT.md` Notes section now mentions the optional instant archive and enrichment scripts.
+
+### Verified
+
+- All scripts (`hourly_archive.py`, `archive_now.py`, `enrich_session.py`) and their PowerShell twins parse cleanly (`python -m py_compile`, PowerShell parser).
+- Throwaway-vault test: ran `archive_now.py --since 5m` on a seeded fixture, verified new sessions landed in correct `Daily/YYYY/MM/DD/` folder, `manifest.jsonl` updated, token usage logged, and no duplicate entries on re‑run.
+- Enrichment test: ran `enrich_session.py` on the same fixture, confirmed summary frontmatter added only to files missing it, and existing frontmatter left untouched.
+- Lock‑file test: launched two instances of `hourly_archive.py` in parallel — second exited with "Another instance … is already running — exiting." Same for `archive_now.py` vs `hourly_archive.py`.
+- `Scripts/vault_audit.py` reports 0 broken links.
+- Markdown fences in `Dashboard.md` and `README.md` remain balanced.
+
+## [1.17.0] — 2026-09-16
+
+### Added
+
+- **4 new Dashboard.md sections** — the last 4 roadmap items, all shipped together:
+  - **"What's changed since your last visit"** — a delta banner comparing this note's own frontmatter (written on every open) against current session/candidate counts, so you see "3 new sessions, 2 new candidates since you last opened this" instead of nothing.
+  - **"Storage & file counts"** — live file count and total size via `app.vault.getFiles()`, plus a breakdown of the top 5 file types.
+  - **"Recently promoted"** — parses `Memory-Review/Consolidation-Log.md` (written by `consolidate_memory.py`) and surfaces the last 5 decided candidates, so the review pipeline feels less like a black box.
+  - **"Top skills used"** — parses `Skills-Notes/Skill-to-Chat-Links.md` (auto-generated by `generate_skill_links.py`) and ranks the top 5 skills by session count, working against both its tool-call mode and prose-mode output formats.
+- All 4 sections degrade gracefully when their source file doesn't exist yet (first-run/no-data messages, same pattern as every other Dashboard section).
+
+**Verified:** all 11 `dataviewjs` blocks in `Dashboard.md` pass `node --check`; ran a full mock-harness pass with realistic fake data against every block (including a dedicated second-visit test for the delta banner, confirming it correctly detects 3 new sessions and 2 new candidates against saved frontmatter); `Scripts/vault_audit.py` — 0 broken links; markdown fences balanced (28 fence lines / 14 code blocks).
+
+## [1.16.0] — 2026-09-16
+
+### Fixed
+
+- **Stale hardcoded skill count** (roadmap item #4, last of the 4 known bugs) — `Skills-Notes/README.md` said "all 154 installed Hermes skills," a number copied from one real vault's install that goes wrong the moment any user installs or removes a skill. Reworded to "your installed Hermes skills" with no baked-in count, and pointed at `hermes skills list` for regenerating the index. Verified via `Scripts/vault_audit.py`: 0 broken links.
+
+## [1.15.0] — 2026-09-16
+
+### Fixed
+
+- **Supermemory presented as required, not optional** (roadmap item #3) — `Scripts/consolidate_memory.py` already handled missing Supermemory export files gracefully (its `read()` helper returns `""` for a nonexistent path, so it never errored), but gave no signal to a non-Supermemory user that the pipeline was silently producing zero candidates every run. Added an explicit stdout message when neither `Supermemory-All-Memory-Entries.md` nor `Supermemory-Explicit-Memories.md` exists, pointing at the manual/`Daily`-sourced alternative documented in `Memory-Review/TEMPLATE.md`. Reworded the script's docstring to describe Supermemory as one optional fact source, not the only one, and noted that automating non-Supermemory sources is a future roadmap item. All 6 existing `Scripts/ci/test_consolidate_memory.py` tests still pass; verified a clean 0-candidate run against a fresh vault with no Supermemory files (exit code 0, new message printed, valid `Promotion-Candidates.md` written).
+
+## [1.14.0] — 2026-09-16
+
+### Fixed
+
+- **Hardcoded "4-agent team" assumption** (roadmap item #2) — `Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, and `Skills-Notes/Team-Profiles-Index.md` all stated "the Hermes agent team (Codex, Ledger, Vox, Argus)" as a fact, contradicting `Team-Profiles-Index.md`'s own note that single-agent setups should delete it down to one row. Reworded all 5 files to say "your agent(s)" and relabeled the 4-name table in `Team-Profiles-Index.md` as an example/starter template rather than an assumed roster. `Memory-Review/TEMPLATE.md` similarly reworded to make agent attribution and Supermemory sourcing both explicitly optional. Verified via `Scripts/vault_audit.py`: 0 broken links.
+
+## [1.13.0] — 2026-09-16
+
+### Fixed
+
+- **Missing "master hub note"** (roadmap item #1) — `Projects/Hermes-Agent-Vault-Setup.md` was referenced by 6 files (`Welcome.md`, `Projects/README.md`, `Research/README.md`, `Skills-Notes/README.md`, `SETUP.md`, `Memory-Review/TEMPLATE.md`) as the vault's master hub note, but never actually existed — every new user hit 6 dead links on first open. Wrote the actual file: covers folder structure, the memory pipeline, and status/decisions scaffolding, following the same frontmatter format as `Templates/Project.md`. Kept deliberately agent-count-agnostic (doesn't hardcode a "4-agent team" assumption) so it doesn't reintroduce roadmap item #2. Linked from `MOC.md`. Verified via `Scripts/vault_audit.py`: 0 broken links (down from all 6 references broken).
+
+## [1.12.0] — 2026-09-16
+
+### Added
+
+- **`User-Profile.md` — creative pass.** Added a TL;DR callout at the top, "talk to me like this / not like that" dialogue examples, ASCII trait sliders (directness/formality/risk tolerance), a new **Availability & reaching you** section (working hours, response-time expectations, notification channel), a new **Decision authority** section (unilateral action vs sign-off, optional/deletable for solo users), a scannable **vibe-check table** (mood → signal → what to do) replacing prose bullets, an **"if I go quiet" playbook**, a **running jokes & call signs** section, and a **review cadence** note in the Update log.
+- **README badge** — new `User Profile: documented` badge linking to `User-Profile.md`, alongside the existing License/Obsidian/Hermes/OpenClaw/CI/Changelog badges.
+- **README "Known issues / Roadmap" section** — checkbox list surfacing 4 known bugs (missing `Projects/Hermes-Agent-Vault-Setup.md` hub note referenced by 6 files, hardcoded 4-agent-team assumption in 5 files, Supermemory-only memory pipeline assumptions, a stale skill-count number) and 4 features under consideration (skill-usage breakdown, delta-since-last-visit banner, recent Memory-Review promotions log, storage/file-count stats) — tracked in the open instead of buried in commit history.
+
+## [1.11.0] — 2026-09-16
+
+### Added
+
+- **`Dashboard-Beta.md`** — opt-in, website-style card redesign of `Dashboard.md`. Same underlying data sources, same level of detail, nothing trimmed — just restyled as a card grid with a KPI strip up top instead of a plain vertical stack. Enable via Settings → Appearance → CSS snippets → toggle `dashboard-beta`. New sections beyond a straight restyle of the original:
+  - **Welcome header** — live clock, time-of-day mood-based greeting, and an editable brand title/mantra (click-to-edit, `localStorage`-only — never written to any file, never committed).
+  - **Today's focus** — click-to-edit personal focus note, `localStorage`-only.
+  - **Quick actions** — buttons that run real Obsidian commands (new Daily Review, open Memory-Review, open Vault Audit report, open Daily Timeline).
+  - **Session calendar** — a month-grid with dots marking days that have archived `Daily/` sessions; click a day to open it.
+  - **Weather** — optional OpenWeatherMap widget. Requires pasting your own free API key into a settings popup on first use; the key lives only in that Obsidian window's `localStorage`, never in a file, never in git.
+  - **On this day** — surfaces `Daily/` sessions from the same month/day in past years; renders nothing at all when there's no match.
+  - Ideas adapted from the **Atlas** and **Komorebi** dashboards in [InlitX/Obsidian-Dashboard-Gallery](https://github.com/InlitX/Obsidian-Dashboard-Gallery) (MIT) — kept the concepts, dropped what didn't fit an agent-memory vault (e.g. Komorebi's weather widget now needs an explicit city+key instead of a hardcoded default; personalization stays `localStorage`-only, never file-based).
+  - Card-grid CSS ships as `.obsidian/snippets/dashboard-beta.css`, enabled by default in `.obsidian/appearance.json`.
+
+## [1.10.0] — 2026-09-14
+
+### Added
+
+- **Activity heatmap** on `Dashboard.md` — a GitHub-style, day-wise calendar heatmap (18 weeks × 7 days) showing token usage intensity per day, reusing the existing `Skills-Notes/Token-Usage.log` data (no new script or cron job needed). Color intensity scales toward the active theme's accent color via 4 steps, so it matches whichever theme (Nemoclaw, Tokyo Night, etc.) is active. Hover any cell for the exact date, tokens, and session count. Built with plain colored `<div>` cells (not SVG) to avoid the Dataview parser fragility that broke the earlier token-trend graph in v1.5.1–v1.5.3.
+- **`Scripts/seed_sample_data.py`** — opt-in sample/demo data generator (not shipped pre-populated, addresses the "empty vault on first open" problem from issue discussion around #9 without the staleness risk of committing fake data by default). Run it yourself to populate `Daily/`, `Memory-Review/`, `Projects/`, and `Skills-Notes/Token-Usage.log` with realistic-looking fake sessions/candidates/a project note, so a freshly installed vault's Dashboard and graph view show a populated state instead of empty. Every generated file/entry is tagged `sample: true` (or `[sample]` in the token log) for easy removal later.
+
+## [1.9.1] — 2026-09-14
+
+### Changed
+
+- **`INSTALL_PROMPT.md` — all 4 cron-job creation prompts now check before creating.** Previously the wording only asked the agent to check for a *conflicting* archiving job before creating the hourly archiver; it didn't explicitly tell it to skip creation if a job with the *same name* already existed for any of the 4 cron prompts (hourly archive, weekly vault audit, weekly agent performance, and the combined master install+cron prompt). Each now explicitly instructs: call `cronjob_manage(action='list')` first, and if a job with that name (or targeting the same vault Daily/ folder) already exists, don't create a duplicate — just report that it's already set up.
+
+## [1.9.0] — 2026-09-14
+
+### Added
+
+- **Light-mode variant of the Nemoclaw theme** (fixes #2) — added a full `.theme-light` block to `.obsidian/themes/Nemoclaw/theme.css` (all CSS variables + structural touches mirrored from the existing `.theme-dark` block, same NVIDIA-green accent darkened for AA contrast on white surfaces). Switch via Settings → Appearance → Base color scheme → Light while Nemoclaw is active. Theme manifest bumped to 1.1.0.
+- **`Skills-Notes/Kanban-Usage.md`** (fixes #3) — new doc covering suggested default columns (Backlog/In Progress/Blocked/Done), how Kanban cards relate to `Projects/*.md` notes (link-don't-duplicate pattern), and cross-platform behavior notes for the bundled `obsidian-kanban` plugin. Linked from `MOC.md`.
+
+## [1.8.0] — 2026-09-14
+
+### Added
+
+- **OpenClaw badge** in README, alongside the existing Hermes badge.
+
+### Fixed
+
+- **`update.sh` / `update.ps1` merge conflicts on `User-Profile.md`** (fixes #5) — a user who fills in `User-Profile.md` before or independently of a template update could hit a hard "both-added" git merge conflict on every future `update.sh` run, since the template also ships its own (blank) copy of the same filename. Both update scripts now register a local-only `merge=ours` git attribute for `User-Profile.md` on every run: the first pull still delivers the blank scaffold to new vaults as normal, but every pull after that silently keeps the user's local content on conflict instead of stopping with conflict markers. This is vault-local config (`.git/info/attributes`), never synced to the template repo itself.
+- Conflict-resolution tip added to both update scripts' failure output, and a new "Resolving update.sh/update.ps1 merge conflicts" section in `CONTRIBUTING.md`, covering the remaining conflict class (customized `.obsidian/appearance.json` / theme `theme.css`) that the merge driver doesn't cover.
+
+## [1.7.1] — 2026-09-14
+
+### Fixed
+
+- **Personal Data Guard workflow** — the v1.7.0 release's guard job failed on push because its allow-list was missing `Daily/Timeline.md`, `Daily/Chat-Correlation.md`, and `Daily/.gitkeep`, and its empty-tree fallback re-flagged every pre-existing template file as "new" whenever `github.event.before` was the null SHA. Completed the allow-list and changed the fallback to diff against the last commit instead of the empty tree.
+
+## [1.7.0] — 2026-09-14
+
+### Added
+
+- **`try.sh` / `try.ps1`** — copy the template into a scratch temp directory and open it in Obsidian with zero commitment: no Hermes CLI registration, no cron setup, doesn't touch your real Obsidian config. Delete the copy any time.
+- **`uninstall.sh` / `uninstall.ps1`** — cleanly remove a vault installation: unsets `env.HERMES_VAULT_PATH` if it points at the target vault, warns about any Hermes cron job that may still reference it, and optionally deletes the vault directory after a typed confirmation.
+- **CI: Personal Data Guard** (`.github/workflows/personal-data-guard.yml`) — new workflow that fails a push/PR if it touches disallowed personal-content paths (`Daily/`, `Memory-Review/`, `Research/`, `.smart-env/`, plugin `data.json` files) outside the template's own allowed exceptions (`Memory-Review/TEMPLATE.md`, `Daily/README.md`, `Research/README.md`). Automates what `CONTRIBUTING.md` previously only asked contributors to self-check.
+- **CI: `consolidate_memory.py` content-correctness tests** (`Scripts/ci/test_consolidate_memory.py`) — 6 tests asserting on actual output content (not just "did a file get written"): exact-duplicate dedup, fuzzy near-duplicate dedup, secret-string scrubbing, false-positive check on normal facts, decided-candidate exclusion (regression test for the v1.1.0 hash-prefix bug), and state-file JSON validity.
+- **CI: extended runtime smoke-test** — `generate_skill_links.py` now also runs against the fixture vault in the `runtime-smoke-test` job (alongside the existing `vault_audit.py`, `agent_performance.py`, `hourly_archive.py` coverage). `pull_supermemory.py` and `trend_digest.py` are intentionally excluded — the former needs a real/mocked network API + key, the latter needs `sentence-transformers`, a heavy ML dependency not worth adding to this lint job.
+- **CI badge** in README, linking to the Lint Scripts Actions workflow.
+
+### Changed
+
+- `CONTRIBUTING.md` — notes that the Personal Data Guard CI job now automatically enforces the "never commit real vault content" rule, not just an honor-system reminder.
+
+## [1.6.0] — 2026-09-11
+
+### Added
+
+- **User-Profile.md** — new template note documenting the human user's identity, communication preferences, technical environment, standing facts, current focus, interests, and boundaries for the agent. Includes a distinctive "What the agent has noticed about you" section, written by the agent (not the user) based on real interaction patterns — a mirror, not a form.
+- **Nemoclaw theme** — new custom dark theme bundled in `.obsidian/themes/Nemoclaw/`, NVIDIA-inspired black background with signature green (#76b900) accents, monospace headings, and a subtle grid overlay. Now the template's default theme (was Tokyo Night, still available as an alternative via Settings → Appearance).
+- MOC.md and Dashboard.md link to User-Profile.md for discoverability.
+
+## [1.5.3] — 2026-09-11
+
+### Removed
+
+- **Token usage trend graph** — Removed the live SVG line graph visualization of token usage from Dashboard.md to simplify the token usage section.
+
+## [1.5.0] — 2026-09-11
+
+### Added
+
+- **Token usage tracking** — `hourly_archive.py` now extracts prompt/completion tokens from JSONL exports and maintains a running total in `Skills-Notes/Token-Usage.log`. Dashboard shows live token usage (today, all-time, 7-day trend, day-over-day).
+- **Token usage trend graph** — Added live SVG line graph visualization of token usage over the last 30 days to Dashboard, showing daily totals with axis labels and data points.
+- **Vault integrity audit** — `vault_audit.py` scans for broken wikilinks, stale Memory-Review entries (>30 days), duplicate sessions in manifest, and orphaned files. Writes `Skills-Notes/Vault-Audit-Report.md`. Dashboard shows summary.
+- **Agent performance dashboard** — `agent_performance.py` analyzes session archives for skill usage frequency, tool call patterns, daily trends, top sessions by tokens. Writes `Skills-Notes/Agent-Performance.md`. Dashboard shows snapshot.
+- Dashboard tiles for all three new features (Token usage, Vault audit, Agent performance) with click-through links.
+- `Skills-Notes/Token-Usage.log` starter file.
+- Updated `INSTALL_PROMPT.md` with optional weekly cron prompts for vault audit (Sunday 2 AM) and agent performance (Monday 3 AM).
+- README script table updated with three new automation scripts.
+
+### Changed
+
+- `hourly_archive.py` — now dual-exports (markdown for vault + JSONL for token extraction), idempotent token logging.
+- `INSTALL_PROMPT.md` — added optional weekly cron prompts for vault audit and agent performance.
+
+## [1.4.0] — 2026-09-10
+
+### Added
+
+- Dashboard.md — new "Vault health" section: flags a stale/dead hourly archiver (based on the newest Daily/ session's timestamp) and a growing Memory-Review backlog, both read-only against files already in the vault.
+- `Scripts/hourly_archive.py` — exports Hermes sessions from the last hour, reorganizes them into `Daily/YYYY/MM/DD/`, and maintains a deduped `Daily/manifest.jsonl`. Designed to be idempotent — safe to re-run.
+- `Scripts/pull_supermemory.py` — pulls all memories for a Supermemory container tag and saves them as both a raw JSON dump and a human-readable markdown note.
+- `CHANGELOG.md` and `.github/ISSUE_TEMPLATE/` (bug report + feature request templates, Discussions link).
+- `INSTALL_PROMPT.md` — new "Upgrade prompt" section for pulling template updates into an existing vault via a single Hermes paste (wraps `update.sh`/`update.ps1`).
+
+### Changed
+
+- `.gitignore` — added `.smart-env/`.
+
+## [1.3.0] — 2026-09-10
+
+### Added
+
+- In-vault update notifications: `Dashboard.md` now checks GitHub's releases API live and shows a banner if a newer template version is available (fails soft if offline).
+- `VERSION` file — tracks the installed template version; carried through fresh installs and future updates.
+- `update.sh` / `update.ps1` — safely pull template updates into an already-installed vault via a read-only git remote and 3-way merge, so hand-edited files surface as conflicts instead of being silently overwritten. Personal content (`Daily/`, `Memory-Review/*`, `Projects/*` beyond README, plugin `data.json`) stays protected via the vault's existing `.gitignore`.
+
+## [1.2.0] — 2026-09-10
+
+### Added
+
+- `Dashboard.md` — single landing note with live Dataview views: active projects, open Memory-Review candidates, recent Daily sessions, installed-skills count.
+- `Projects/Projects.base` — native Obsidian Bases table view over `Projects/` (all projects grouped by status, active-only filter).
+- Bundled Dataview plugin updated to 0.5.70.
+
+### Changed
+
+- README opening rewritten with a punchier hook instead of leading with a feature list; updated hero screenshot.
+- Fixed dead links in `MOC.md` to `Skills-Notes/Installed-Skills-Index` and `Team-Profiles-Index`.
+
+## [1.1.0] — 2026-09-08
+
+### Added
+
+- `Scripts/generate_skill_links.py` — generates a Skill-to-Chat-Links index per session.
+- `Skills-Notes/Installed-Skills-Index.md` and `Team-Profiles-Index.md` starter tables.
+
+### Fixed
+
+- `Scripts/consolidate_memory.py` — `decided_hashes` was comparing full 40-char hashes against 8-char prefix keys, so already-approved candidates kept reappearing on every run instead of staying excluded.
+
+### Changed
+
+- Consolidated `New-TrendDigest.ps1` and `Write-TrendDigest.ps1` (near-duplicate scripts) into one.
+
+## [1.0.0] — 2026-09-06
+
+### Added
+
+- Initial template release: Obsidian vault structure (Daily/, Memory-Review/, Projects/, Research/, Skills-Notes/), Kanban plugin, 3 note templates (Project, Daily-Review, Research-Note), Dataview query library, `Canvases/Memory-Pipeline.canvas` visual map.
+- Cross-platform installers (`install.sh` / `install.ps1`), `INSTALL_PROMPT.md` for one-paste setup via a Hermes agent.
+- CI (bash/python/powershell syntax checks), wiki, MIT license.
