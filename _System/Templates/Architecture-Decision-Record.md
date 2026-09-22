@@ -6,9 +6,9 @@ deciders: [Human, Codex, Argus, Ledger, Vox]
 tags: [adr, architecture, multi-agent]
 ---
 
-# 📑 ADR-{{title}}: {{description}}
+# 📑 ADR-{{title}}
 
-> **Status:** `{{status}}` | **Date:** {{date}} | **Deciders:** `{{deciders}}`
+> **Status:** `proposed` | **Date:** {{date}} | **Deciders:** `[Human, Codex, Argus, Ledger, Vox]`
 
 ## 1. Context & Problem Statement
 * What technical decision or architecture question are we solving?
