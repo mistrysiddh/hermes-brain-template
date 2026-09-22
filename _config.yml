@@ -4,8 +4,12 @@ description: A comprehensive knowledge vault for AI agents and self-hosted syste
 show_downloads: true
 google_analytics:
 remote_theme: just-the-docs/just-the-docs
+repository: mistrysiddh/hermes-brain-template
 
 # Just-the-docs configuration
+plugins:
+  - jekyll-remote-theme
+
 aux_links:
   "Hermes Brain Template on GitHub":
     - "//github.com/mistrysiddh/hermes-brain-template"
@@ -66,5 +70,4 @@ exclude:
   - LICENSE
   - README.md
   - CONTRIBUTING.md
-  - "*.log"# Last rebuilt: Tue, Sep 22, 2026  4:05:43 AM
-# Force rebuild Tue, Sep 22, 2026  4:09:02 AM
+  - "*.log"
