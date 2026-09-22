@@ -23,19 +23,25 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 def get_vault():
+    # 1. Check environment variable
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
+
+    # 2. Check command line argument
     for arg in sys.argv[1:]:
         if not arg.startswith("--") and os.path.isdir(arg):
             return os.path.abspath(arg)
+
+    # 3. Heuristic: look for .obsidian or 01-Projects in parent directories
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
-    cand = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return env_vault
+    for cand in [
+        os.path.abspath(os.path.join(script_dir, "..", "..")),
+        os.path.abspath(os.path.join(script_dir, ".."))
+    ]:
+        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
+            return cand
+
     return None
 
 VAULT = get_vault()
