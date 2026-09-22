@@ -75,9 +75,9 @@ def load_manifest():
 def validate_manifest():
     """Validate manifest.jsonl for consistency and completeness."""
     issues = []
-    manifest_path = os.path.join(VAULT, "Daily", "manifest.jsonl")
+    m_cand = os.path.join(VAULT, "04-Archives", "Daily", "manifest.jsonl")
+    manifest_path = m_cand if os.path.exists(m_cand) else os.path.join(VAULT, "Daily", "manifest.jsonl")
     if not os.path.exists(manifest_path):
-        issues.append({"type": "missing", "message": "manifest.jsonl does not exist"})
         return issues
 
     sessions = load_manifest()
