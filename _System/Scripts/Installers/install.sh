@@ -122,7 +122,16 @@ if [ "$IS_REMOTE" = true ]; then
   mkdir -p "$DEST"
   if command -v git >/dev/null 2>&1; then
     info "Cloning template from GitHub ($REPO_URL)..."
-    git clone "$REPO_URL" "$DEST"
+    # Clone to temp dir first, then copy preserving User-Profile.md
+    TMP_CLONE="$(mktemp -d -t hermes-brain-clone.XXXXXX)"
+    git clone "$REPO_URL" "$TMP_CLONE"
+    # Preserve User-Profile.md if it already exists and has content
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      rm -f "$TMP_CLONE/02-Areas/User-Profile.md"
+    fi
+    cp -R "$TMP_CLONE/"* "$DEST/"
+    rm -rf "$TMP_CLONE"
     ok "Cloned."
   else
     info "Downloading template archive from GitHub..."
@@ -130,6 +139,11 @@ if [ "$IS_REMOTE" = true ]; then
     TMP_EXTRACT="$(mktemp -d -t hermes-brain-extract.XXXXXX 2>/dev/null || mktemp -d /tmp/hermes-brain-extract.XXXXXX)"
     curl -fsSL "$ZIP_URL" -o "$TMP_ZIP"
     unzip -q "$TMP_ZIP" -d "$TMP_EXTRACT"
+    # Preserve User-Profile.md if it already exists and has content
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      rm -f "$TMP_EXTRACT/hermes-brain-template-main/02-Areas/User-Profile.md"
+    fi
     cp -R "$TMP_EXTRACT/hermes-brain-template-main/"* "$DEST/"
     rm -rf "$TMP_ZIP" "$TMP_EXTRACT"
     ok "Downloaded and extracted."
@@ -145,7 +159,13 @@ else
     fi
     mkdir -p "$DEST"
     info "Copying template to $DEST ..."
-    (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' .) | (cd "$DEST" && tar xf -)
+    # Preserve User-Profile.md if it already exists and has content (not just template)
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' --exclude='02-Areas/User-Profile.md' .) | (cd "$DEST" && tar xf -)
+    else
+      (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' .) | (cd "$DEST" && tar xf -)
+    fi
     ok "Copied."
   fi
 fi
