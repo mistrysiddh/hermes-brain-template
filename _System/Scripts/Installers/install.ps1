@@ -95,21 +95,31 @@ if ($isRemote) {
   } catch {}
 
   if ($sameLocation) {
-    Write-Info "Configuring in place at $Dest"
-  } else {
-    if (Test-Path $Dest) {
-      $confirm = Read-Host "  $Dest already exists. Overwrite/merge into it? [y/N]"
-      if ($confirm -notmatch '^[Yy]') { Write-Host "Aborted."; exit 1 }
+      Write-Info "Configuring in place at $Dest"
     } else {
-      New-Item -ItemType Directory -Path $Dest -Force | Out-Null
+      if (Test-Path $Dest) {
+        $confirm = Read-Host "  $Dest already exists. Overwrite/merge into it? [y/N]"
+        if ($confirm -notmatch '^[Yy]') { Write-Host "Aborted."; exit 1 }
+      } else {
+        New-Item -ItemType Directory -Path $Dest -Force | Out-Null
+      }
+      Write-Info "Copying template to $Dest ..."
+      # Preserve User-Profile.md if it already exists and has content (not just template)
+      $userProfilePath = Join-Path $Dest "02-Areas\User-Profile.md"
+      $shouldPreserve = (Test-Path $userProfilePath -PathType Leaf) -and ((Get-Item $userProfilePath).Length -gt 0)
+      if ($shouldPreserve) {
+        Write-Info "Preserving existing User-Profile.md (skipping template copy)"
+        Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" -and -not ($_.Name -eq "02-Areas" -and (Test-Path (Join-Path $_.FullName "User-Profile.md") -PathType Leaf)) } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
+        }
+      } else {
+        Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
+        }
+      }
+      Write-Ok "Copied."
     }
-    Write-Info "Copying template to $Dest ..."
-    Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" } | ForEach-Object {
-      Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
-    }
-    Write-Ok "Copied."
   }
-}
 
 
 # ---------------------------------------------------------------------------
