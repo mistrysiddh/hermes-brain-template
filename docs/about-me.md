@@ -49,7 +49,7 @@ A page to share **who you are** — helpful for collaborators, future you, or an
 ## 📞 How to Reach You
 - **Primary channel:** Chat only (Hermes desktop app)
 - **Response-time expectations:** Reply fast if I'm mid-task / batch it for long-running work
-- **Notification channels (if any):** Leave blank for "chat only" (Hermes desktop app is sufficient)
+- **Notification channels (if any):** Matrix Space (community announcements): https://matrix.to/#/#hermes-brain-general:matrix.org; leave blank for "chat only" (Hermes desktop app is sufficient)
 
 --|
 
