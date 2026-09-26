@@ -1,0 +1,63 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": true,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "color": "#4facfe",
+      "name": "01-Projects",
+      "tag": "#projects"
+    },
+    {
+      "color": "#ff9ff3",
+      "name": "02-Areas",
+      "tag": "#areas"
+    },
+    {
+      "color": "#feca57",
+      "name": "03-Resources",
+      "tag": "#resources"
+    },
+    {
+      "color": "#ff6b6b",
+      "name": "04-Archives",
+      "tag": "#archives"
+    },
+    {
+      "color": "#48dbfb",
+      "name": "Templates",
+      "tag": "#template"
+    },
+    {
+      "color": "#ff9f43",
+      "name": "00-Inbox",
+      "tag": "#inbox"
+    },
+    {
+      "color": "#bb86fc",
+      "name": "Skills",
+      "tag": "#skill"
+    },
+    {
+      "color": "#00b894",
+      "name": "Daily Notes",
+      "tag": "#daily"
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0.3,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1.1,
+  "collapse-forces": true,
+  "centerStrength": 0.45,
+  "repelStrength": 12,
+  "linkStrength": 0.8,
+  "linkDistance": 280,
+  "scale": 0.15,
+  "close": true
+}
