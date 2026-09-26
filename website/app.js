@@ -1,13 +1,22 @@
 /**
- * Hermes Brain — Showcase Website Logic & Interactive Simulator
+ * Hermes Brain — Showcase Website Logic & Interactive Simulator Suite
+ * Features: Tokyo Night/Nemoclaw theme, Command Palette (Ctrl+K), Multi-Agent ADR simulator,
+ * Personality matrix, Template gallery, Token calculator, Neural canvas, MCP tester.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  initThemeSwitcher();
+  initMobileMenu();
+  initCommandPalette();
   initNeuralCanvas();
   initCopyButtons();
   initTerminalTabs();
   initMockupTabs();
   initPipelineSimulator();
+  initAdrSimulator();
+  initPersonalityMatrix();
+  initTemplateGallery();
+  initTokenCalculator();
   initParaExplorer();
   initMcpSimulator();
   initInstallWizard();
@@ -37,7 +46,616 @@ function showToast(message = "Copied to clipboard!") {
 }
 
 /* ==========================================================================
-   Copy to Clipboard
+   Theme Switcher (Tokyo Night ↔ Nemoclaw)
+   ========================================================================== */
+function initThemeSwitcher() {
+  const toggleBtn = document.getElementById("theme-toggle-btn");
+  const currentTheme = localStorage.getItem("hermes_theme") || "tokyo";
+
+  if (currentTheme === "nemoclaw") {
+    document.body.classList.add("theme-nemoclaw");
+    updateThemeBtn(true);
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const isNemoclaw = document.body.classList.toggle("theme-nemoclaw");
+      localStorage.setItem("hermes_theme", isNemoclaw ? "nemoclaw" : "tokyo");
+      updateThemeBtn(isNemoclaw);
+      showToast(isNemoclaw ? "Switched to Nemoclaw Theme (Amber)" : "Switched to Tokyo Night Theme (Violet)");
+    });
+  }
+
+  function updateThemeBtn(isNemoclaw) {
+    if (!toggleBtn) return;
+    const label = toggleBtn.querySelector(".theme-label");
+    const icon = toggleBtn.querySelector(".theme-icon");
+    if (label) label.innerText = isNemoclaw ? "Nemoclaw" : "Tokyo Night";
+    if (icon) icon.innerText = isNemoclaw ? "🔥" : "🌙";
+    toggleBtn.title = isNemoclaw ? "Switch to Tokyo Night Theme (Violet)" : "Switch to Nemoclaw Theme (Amber)";
+  }
+}
+
+/* ==========================================================================
+   Mobile Navigation Drawer Toggle
+   ========================================================================== */
+function initMobileMenu() {
+  const toggleBtn = document.getElementById("mobile-menu-toggle");
+  const drawer = document.getElementById("mobile-nav-drawer");
+  if (!toggleBtn || !drawer) return;
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    drawer.classList.toggle("open");
+  });
+
+  drawer.querySelectorAll(".drawer-link, .btn-primary").forEach((link) => {
+    link.addEventListener("click", () => {
+      drawer.classList.remove("open");
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!toggleBtn.contains(e.target) && !drawer.contains(e.target)) {
+      drawer.classList.remove("open");
+    }
+  });
+}
+
+/* ==========================================================================
+   Global Command Palette (Ctrl+K / Cmd+K / Slash)
+   ========================================================================== */
+const COMMAND_INDEX = [
+  { title: "Memory Pipeline Simulator", subtitle: "4-stage session-to-durable memory pipeline", url: "#pipeline", type: "Section" },
+  { title: "Multi-Agent ADR Simulator", subtitle: "Argus, Codex, Ledger & Vox architecture review", url: "#adr-sim", type: "Interactive" },
+  { title: "11-Dimension Personality Matrix", subtitle: "Interactive slider generator for User-Profile.md", url: "#personality", type: "Interactive" },
+  { title: "Obsidian Template Gallery", subtitle: "Raw Markdown sources for ADR, Charter, Lessons", url: "#templates", type: "Templates" },
+  { title: "Token Economy Calculator", subtitle: "Calculate monthly token & API cost reduction", url: "#calculator", type: "Tool" },
+  { title: "Interactive Knowledge Graph", subtitle: "Live zoomable 2D/3D Vis-network vault graph", url: "#graph-view", type: "Graph" },
+  { title: "PARA Method Vault Hierarchy", subtitle: "01-Projects, 02-Areas, 03-Resources, 04-Archives", url: "#para", type: "Architecture" },
+  { title: "Built-In MCP Server", subtitle: "JSON-RPC tools for Claude Desktop & Cursor", url: "#mcp", type: "MCP" },
+  { title: "One-Line Terminal Install", subtitle: "Windows PowerShell & Linux Bash curl commands", url: "#install", type: "Install" },
+  { title: "Hermes 1-Paste Chat Prompt", subtitle: "Automated install prompt for Hermes/OpenClaw", url: "#install", type: "Install" },
+  { title: "Frequently Asked Questions", subtitle: "Privacy, local LLM requirements, update scripts", url: "#faq", type: "Docs" }
+];
+
+function initCommandPalette() {
+  const backdrop = document.getElementById("cmd-backdrop");
+  const input = document.getElementById("cmd-input");
+  const list = document.getElementById("cmd-results");
+  const triggerBtn = document.getElementById("cmd-trigger-btn");
+  let selectedIndex = 0;
+
+  function openPalette() {
+    if (!backdrop) return;
+    backdrop.classList.add("open");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+    renderResults(COMMAND_INDEX);
+  }
+
+  function closePalette() {
+    if (!backdrop) return;
+    backdrop.classList.remove("open");
+  }
+
+  function renderResults(items) {
+    if (!list) return;
+    selectedIndex = 0;
+    if (items.length === 0) {
+      list.innerHTML = `<li style="padding: 18px; text-align: center; color: var(--text-dim);">No matching sections found.</li>`;
+      return;
+    }
+
+    list.innerHTML = items
+      .map((item, idx) => `
+        <li class="cmd-item ${idx === 0 ? "selected" : ""}" data-url="${item.url}" data-idx="${idx}">
+          <div class="cmd-item-left">
+            <span class="cmd-item-type">${item.type}</span>
+            <div>
+              <div style="font-weight: 600; color: #fff;">${item.title}</div>
+              <div style="font-size: 0.78rem; color: var(--text-dim);">${item.subtitle}</div>
+            </div>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">↵ Jump</span>
+        </li>
+      `)
+      .join("");
+
+    list.querySelectorAll(".cmd-item").forEach((el) => {
+      el.addEventListener("click", () => {
+        const url = el.getAttribute("data-url");
+        if (url) {
+          window.location.hash = url;
+          closePalette();
+        }
+      });
+    });
+  }
+
+  // Keyboard shortcut listener
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (backdrop && backdrop.classList.contains("open")) closePalette();
+      else openPalette();
+    } else if (e.key === "Escape") {
+      closePalette();
+    } else if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      openPalette();
+    } else if (backdrop && backdrop.classList.contains("open")) {
+      const items = list.querySelectorAll(".cmd-item");
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % items.length;
+        updateSelected(items);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        updateSelected(items);
+      } else if (e.key === "Enter" && items[selectedIndex]) {
+        e.preventDefault();
+        items[selectedIndex].click();
+      }
+    }
+  });
+
+  function updateSelected(items) {
+    items.forEach((it, idx) => it.classList.toggle("selected", idx === selectedIndex));
+    if (items[selectedIndex]) items[selectedIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  if (input) {
+    input.addEventListener("input", () => {
+      const q = input.value.toLowerCase().trim();
+      const filtered = COMMAND_INDEX.filter(
+        (it) => it.title.toLowerCase().includes(q) || it.subtitle.toLowerCase().includes(q) || it.type.toLowerCase().includes(q)
+      );
+      renderResults(filtered);
+    });
+  }
+
+  if (triggerBtn) triggerBtn.addEventListener("click", openPalette);
+  if (backdrop) {
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) closePalette();
+    });
+  }
+}
+
+/* ==========================================================================
+   Multi-Agent ADR Simulator (Argus, Codex, Ledger, Vox)
+   ========================================================================== */
+const ADR_PRESETS = [
+  {
+    title: "Public GitHub Commits",
+    proposal: "Auto-commit and push daily session markdown archives directly to a public GitHub repository.",
+    argus: { verdict: "BLOCK", text: "Critical hazard. Even with regex redaction, zero-day token leakage to public GitHub commits is an irreversible security boundary breach. Prohibited under User-Profile rules." },
+    codex: { verdict: "PASS", text: "Technically straightforward git push operation via cron, but lacks atomic rollback mechanisms if an upstream push fails mid-write." },
+    ledger: { verdict: "PASS", text: "Minimal token consumption. Plain git command execution adds negligible overhead to context window." },
+    vox: { verdict: "BLOCK", text: "Direct violation of Siddh's User-Profile boundary: 'Never make commits/pushes to git from cron jobs (local file edits only)'." },
+    consensus: { status: "REJECTED (3-1)", note: "Proposal rejected due to explicit operator boundary violations and credential exposure risk. Local archiving only." }
+  },
+  {
+    title: "SQLite to Redis",
+    proposal: "Switch local agent session indexing from SQLite to a local Redis cache instance running on HermesPi.",
+    argus: { verdict: "PASS", text: "Approved with condition: must bind strictly to 127.0.0.1 or wireguard subnet with 'protected-mode yes' enabled and strong auth token." },
+    codex: { verdict: "PASS", text: "Excellent upgrade for high-frequency chat sync hooks. Key-value TTLs align cleanly with session life cycles." },
+    ledger: { verdict: "PASS", text: "Fast in-memory reads reduce prompt indexing latency from 180ms to 4ms. Zero token penalty." },
+    vox: { verdict: "PASS", text: "Aligns with Siddh's technical stack preferences (Linux/HermesPi/Docker self-hosted services)." },
+    consensus: { status: "APPROVED (UNANIMOUS)", note: "Architectural decision accepted. Proceed with ADR-005: Redis Session Cache with protected-mode yes." }
+  },
+  {
+    title: "Unrestricted Shell Exec",
+    proposal: "Grant the agent unrestricted root shell execution privileges with auto-approval for all bash commands.",
+    argus: { verdict: "BLOCK", text: "Extreme danger. Unconstrained shell access circumvents safety boundaries and could accidentally corrupt host filesystem or expose secrets." },
+    codex: { verdict: "WARN", text: "Requires explicit sandboxing (Docker isolated container) and dry-run confirmation before applying state changes." },
+    ledger: { verdict: "PASS", text: "Command output truncation is required; unbounded stdout risks overflowing context window limit." },
+    vox: { verdict: "BLOCK", text: "Contradicts operator requirement: destructive actions require explicit approval before execution." },
+    consensus: { status: "REJECTED", note: "Auto-execution rejected. Commands must require operator interactive confirmation." }
+  }
+];
+
+function initAdrSimulator() {
+  const proposalInput = document.getElementById("adr-proposal-input");
+  const evalBtn = document.getElementById("adr-eval-btn");
+  const presetsContainer = document.getElementById("adr-presets");
+  const argusSpeech = document.getElementById("adr-argus-speech");
+  const argusBadge = document.getElementById("adr-argus-badge");
+  const codexSpeech = document.getElementById("adr-codex-speech");
+  const codexBadge = document.getElementById("adr-codex-badge");
+  const ledgerSpeech = document.getElementById("adr-ledger-speech");
+  const ledgerBadge = document.getElementById("adr-ledger-badge");
+  const voxSpeech = document.getElementById("adr-vox-speech");
+  const voxBadge = document.getElementById("adr-vox-badge");
+  const consensusBox = document.getElementById("adr-consensus-box");
+
+  if (!evalBtn || !proposalInput) return;
+
+  // Render Preset buttons
+  if (presetsContainer) {
+    presetsContainer.innerHTML = ADR_PRESETS.map(
+      (p, i) => `<button class="adr-preset-btn" data-preset="${i}">💡 ${p.title}</button>`
+    ).join("");
+
+    presetsContainer.querySelectorAll(".adr-preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-preset"));
+        const data = ADR_PRESETS[idx];
+        proposalInput.value = data.proposal;
+        applyAdrEvaluation(data);
+      });
+    });
+  }
+
+  evalBtn.addEventListener("click", () => {
+    const text = proposalInput.value.trim();
+    if (!text) {
+      showToast("Please enter an architecture proposal first!");
+      return;
+    }
+    // Check if matches preset, else generate synthetic
+    const match = ADR_PRESETS.find((p) => text.toLowerCase().includes(p.title.toLowerCase()) || p.proposal.toLowerCase().includes(text.toLowerCase()));
+    if (match) {
+      applyAdrEvaluation(match);
+    } else {
+      generateDynamicAdrEvaluation(text);
+    }
+  });
+
+  function applyAdrEvaluation(data) {
+    setAgentCard(argusBadge, argusSpeech, data.argus.verdict, data.argus.text);
+    setAgentCard(codexBadge, codexSpeech, data.codex.verdict, data.codex.text);
+    setAgentCard(ledgerBadge, ledgerSpeech, data.ledger.verdict, data.ledger.text);
+    setAgentCard(voxBadge, voxSpeech, data.vox.verdict, data.vox.text);
+
+    if (consensusBox) {
+      const isApproved = data.consensus.status.includes("APPROVED");
+      consensusBox.innerHTML = `
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim);">Consensus Decision</span>
+          <div style="font-size: 1.25rem; font-weight: 700; color: ${isApproved ? "var(--accent-emerald)" : "var(--accent-rose)"}; margin-top: 2px;">
+            ${data.consensus.status}
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">${data.consensus.note}</p>
+        </div>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${escapeHtml(data.consensus.note)}'); showToast('ADR verdict copied!');">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copy Record</span>
+        </button>
+      `;
+    }
+  }
+
+  function setAgentCard(badge, speech, verdict, text) {
+    if (badge) {
+      badge.innerText = verdict;
+      badge.className = `agent-verdict-badge ${verdict === "PASS" ? "badge-pass" : verdict === "WARN" ? "badge-warn" : "badge-block"}`;
+    }
+    if (speech) speech.innerText = text;
+  }
+
+  function generateDynamicAdrEvaluation(proposal) {
+    const isSecuritySensitive = /secret|token|password|auth|root|key|credential|public/i.test(proposal);
+    const isPerformance = /cache|index|token|speed|fast|sqlite|db/i.test(proposal);
+
+    const argus = isSecuritySensitive
+      ? { verdict: "BLOCK", text: "Security flags detected. Proposal touches authentication, credential storage, or public boundary." }
+      : { verdict: "PASS", text: "No sensitive credential leakage or unmitigated network surface expansion detected." };
+
+    const codex = { verdict: "PASS", text: `Verified implementation feasibility for: '${proposal.slice(0, 35)}...'. Clean fit within PARA structure.` };
+    const ledger = isPerformance
+      ? { verdict: "PASS", text: "Optimizes agent cycle throughput. Low impact on overall token budget." }
+      : { verdict: "WARN", text: "Verify context size when notes generated by this change are injected at runtime." };
+    const vox = isSecuritySensitive
+      ? { verdict: "BLOCK", text: "Safety boundaries require explicit human confirmation before committing." }
+      : { verdict: "PASS", text: "Matches operator tone and operational autonomy preferences." };
+
+    const isBlocked = argus.verdict === "BLOCK" || vox.verdict === "BLOCK";
+    const consensus = {
+      status: isBlocked ? "REJECTED (REQUIRES REVISION)" : "APPROVED WITH SAFEGUARDS",
+      note: isBlocked
+        ? "Proposal contains potential boundary or credential exposure hazards. Revise with explicit security guards."
+        : "Architectural consensus reached. Complies with PARA standards and operator boundaries."
+    };
+
+    applyAdrEvaluation({ argus, codex, ledger, vox, consensus });
+  }
+
+  // Load default preset on init
+  applyAdrEvaluation(ADR_PRESETS[0]);
+}
+
+/* ==========================================================================
+   11-Dimension Personality Framework Matrix
+   ========================================================================== */
+function initPersonalityMatrix() {
+  const sliders = {
+    autonomy: document.getElementById("slider-autonomy"),
+    verbosity: document.getElementById("slider-verbosity"),
+    skepticism: document.getElementById("slider-skepticism"),
+    formality: document.getElementById("slider-formality"),
+    tools: document.getElementById("slider-tools")
+  };
+
+  const previewEl = document.getElementById("personality-profile-preview");
+  const copyBtn = document.getElementById("copy-personality-btn");
+
+  function updateProfile() {
+    const autoVal = sliders.autonomy ? parseInt(sliders.autonomy.value) : 6;
+    const verbVal = sliders.verbosity ? parseInt(sliders.verbosity.value) : 2;
+    const skepVal = sliders.skepticism ? parseInt(sliders.skepticism.value) : 8;
+    const formVal = sliders.formality ? parseInt(sliders.formality.value) : 4;
+    const toolVal = sliders.tools ? parseInt(sliders.tools.value) : 7;
+
+    // Update tags
+    document.getElementById("tag-autonomy").innerText = `${autoVal}/10`;
+    document.getElementById("tag-verbosity").innerText = `${verbVal}/10`;
+    document.getElementById("tag-skepticism").innerText = `${skepVal}/10`;
+    document.getElementById("tag-formality").innerText = `${formVal}/10`;
+    document.getElementById("tag-tools").innerText = `${toolVal}/10`;
+
+    const profileMarkdown = `---
+type: alignment_profile
+framework_version: 11-dimension-v2
+updated: ${new Date().toISOString().split("T")[0]}
+---
+
+## 🗣️ Communication & Alignment Directives
+
+- **Autonomy Level [${autoVal}/10]:** ${autoVal > 6 ? "Execute safe self-contained commands automatically; ask confirmation only for breaking operations." : "Ask explicit confirmation before modifying production configs or running filesystem writes."}
+- **Verbosity & Preamble [${verbVal}/10]:** ${verbVal < 4 ? "Strictly concise. Commands first, diffs second, zero conversational fluff or repeating the prompt." : "Provide structured explanations with trade-off analysis alongside code changes."}
+- **Fact Skepticism [${skepVal}/10]:** ${skepVal > 6 ? "Strict verification. Challenge unverified assertions; stage candidate facts only after multiple empirical observations." : "Accept user assumptions directly without requiring citations."}
+- **Interpersonal Tone [${formVal}/10]:** ${formVal > 5 ? "Warm, approachable, with playful developer banter and zero emotional dependency." : "Crisp, technical, and strictly utilitarian."}
+- **Tool Proactivity [${toolVal}/10]:** ${toolVal > 5 ? "Autonomously leverage vault search and MCP read tools to resolve context before asking the user." : "Wait for explicit user instructions before invoking external tools."}`;
+
+    if (previewEl) previewEl.innerText = profileMarkdown;
+  }
+
+  Object.values(sliders).forEach((s) => {
+    if (s) s.addEventListener("input", updateProfile);
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      if (previewEl) {
+        navigator.clipboard.writeText(previewEl.innerText).then(() => {
+          showToast("Profile snippet copied for User-Profile.md!");
+        });
+      }
+    });
+  }
+
+  updateProfile();
+}
+
+/* ==========================================================================
+   Live Template Gallery
+   ========================================================================== */
+const TEMPLATE_SOURCES = {
+  adr: {
+    title: "Architecture Decision Record (ADR)",
+    target: "01-Projects/ADR/ADR-<Number>-<Title>.md",
+    badge: "📑 Architecture ADR",
+    code: `---
+type: adr
+status: proposed
+date: {{date}}
+deciders: [User, Codex, Argus, Ledger, Vox]
+tags: [adr, architecture]
+---
+
+# ADR-XXX: Title
+
+## Context & Problem Statement
+What technical dilemma or infrastructure requirement prompted this decision?
+
+## Decision Drivers
+- Security boundary preservation (Argus)
+- Maintainability and code simplicity (Codex)
+- Token economy and context limits (Ledger)
+- Human alignment (Vox)
+
+## Considered Options
+1. Option A:
+2. Option B:
+
+## Multi-Agent Review Matrix
+| Persona | Verdict | Reasoning |
+|---------|---------|-----------|
+| **Argus** (Security) | Pass/Block | Vulnerability & boundary check |
+| **Codex** (Code) | Pass/Block | Architecture & implementation review |
+| **Ledger** (Tokens) | Pass/Block | Context token budget impact |
+| **Vox** (Alignment) | Pass/Block | Operator preference compliance |
+
+## Decision Outcome
+Chosen option:
+- Direct Consequences:
+- Follow-up Actions:`
+  },
+  project: {
+    title: "Project Charter & Dashboard",
+    target: "01-Projects/<Project-Name>.md",
+    badge: "🟢 Active Project",
+    code: `---
+type: project
+status: active
+priority: high
+created: {{date}}
+deadline: 
+tags: [project, para/projects]
+---
+
+# Project: Title
+
+> **Executive Objective:** One clear sentence describing the definition of done.
+
+## 🎯 Key Milestones & Deliverables
+- [ ] Milestone 1: Core engine & schemas
+- [ ] Milestone 2: Automated tests passing
+- [ ] Milestone 3: Obsidian vault documentation update
+
+## 🛠️ Multi-Agent Squad Roles
+- **Codex**: Implementation & refactoring
+- **Argus**: Security boundaries & audit checks
+- **Ledger**: Token efficiency & prompt caching
+
+## 📋 Active Tasks (Dataview)
+\`\`\`dataview
+TASK FROM "01-Projects"
+WHERE !completed AND file.name = this.file.name
+\`\`\``
+  },
+  lesson: {
+    title: "Lesson Learned (Post-Mortem)",
+    target: "02-Areas/Skills/Lessons-Learned/<Topic>.md",
+    badge: "⚠️ Operational Post-Mortem",
+    code: `---
+type: lesson_learned
+severity: medium
+date: {{date}}
+trigger: agent_correction
+tags: [lesson, self-correction]
+---
+
+# Lesson Learned: Title
+
+## 💥 The Incident / Mistake
+What action did the agent take that required operator correction?
+
+## 🔍 Root Cause Analysis
+Why did this occur? (e.g. Over-aggressive tool execution, missing file check, outdated context).
+
+## 🛡️ Preventative Rule
+Standing directive to be injected into \`User-Profile.md\` or relevant Skill:
+- **Rule:** Never execute X without first checking Y.
+- **Verification:** Run automated test before declaring task done.`
+  },
+  daily: {
+    title: "Daily Review & Chat Audit",
+    target: "04-Archives/Daily/YYYY/MM/YYYY-MM-DD-Review.md",
+    badge: "📅 Evening Reflection",
+    code: `---
+type: daily_review
+date: {{date}}
+tags: [review, daily, audit]
+---
+
+# Daily Review: {{date}}
+
+## 💬 Today's Archived Chat Sessions
+\`\`\`dataview
+TABLE length(file.tasks) AS "Tasks", tokens.total AS "Tokens"
+FROM "04-Archives/Daily"
+WHERE file.cday = this.file.cday
+\`\`\`
+
+## 🧠 Memory Candidates Staged
+- [ ] Review pending cards in [[Memory-Board.kanban]]
+
+## 📝 Key Insights & Observations
+- Insight 1:
+- Insight 2:`
+  }
+};
+
+function initTemplateGallery() {
+  const tabs = document.querySelectorAll(".template-tab-btn");
+  const titleEl = document.getElementById("template-title");
+  const targetEl = document.getElementById("template-target");
+  const badgeEl = document.getElementById("template-badge");
+  const codeEl = document.getElementById("template-raw-code");
+  const copyBtn = document.getElementById("copy-template-btn");
+
+  let currentKey = "adr";
+
+  function renderTemplate(key) {
+    currentKey = key;
+    const tpl = TEMPLATE_SOURCES[key];
+    if (!tpl) return;
+
+    tabs.forEach((t) => t.classList.toggle("active", t.getAttribute("data-tpl") === key));
+
+    if (titleEl) titleEl.innerText = tpl.title;
+    if (targetEl) targetEl.innerText = tpl.target;
+    if (badgeEl) badgeEl.innerText = tpl.badge;
+    if (codeEl) codeEl.innerText = tpl.code;
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const key = tab.getAttribute("data-tpl");
+      renderTemplate(key);
+    });
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const tpl = TEMPLATE_SOURCES[currentKey];
+      if (tpl) {
+        navigator.clipboard.writeText(tpl.code).then(() => {
+          showToast(`Copied ${tpl.title} template to clipboard!`);
+        });
+      }
+    });
+  }
+
+  renderTemplate("adr");
+}
+
+/* ==========================================================================
+   Token Economy & Context Budget Calculator
+   ========================================================================== */
+function initTokenCalculator() {
+  const sliderSessions = document.getElementById("calc-sessions");
+  const sliderLength = document.getElementById("calc-length");
+  const valSessions = document.getElementById("calc-val-sessions");
+  const valLength = document.getElementById("calc-val-length");
+
+  const kpiMonthlyRaw = document.getElementById("kpi-monthly-raw");
+  const kpiMonthlyVault = document.getElementById("kpi-monthly-vault");
+  const kpiSavedTokens = document.getElementById("kpi-saved-tokens");
+  const kpiCostSaved = document.getElementById("kpi-cost-saved");
+
+  function calculate() {
+    const sessionsPerDay = sliderSessions ? parseInt(sliderSessions.value) : 10;
+    const tokensPerSession = sliderLength ? parseInt(sliderLength.value) : 4000;
+
+    if (valSessions) valSessions.innerText = `${sessionsPerDay} chats/day`;
+    if (valLength) valLength.innerText = `${tokensPerSession.toLocaleString()} tokens`;
+
+    // Calculation:
+    // Naive raw log injection: Every turn carries historical uncompressed sessions (accumulates exponentially ~ 30 days * sessions)
+    const monthlyRaw = sessionsPerDay * 30 * tokensPerSession;
+    // Hermes Brain staging: Extracts only ~3% of durable facts, keeping active prompt context lean (~180 tokens/candidate)
+    const monthlyVault = Math.round(monthlyRaw * 0.08);
+    const tokensSaved = monthlyRaw - monthlyVault;
+    // Estimated LLM API pricing ($3.00 per 1M context tokens avg across Claude 3.5 Sonnet / GPT-4o)
+    const dollarsSaved = ((tokensSaved / 1000000) * 3.0).toFixed(2);
+
+    if (kpiMonthlyRaw) kpiMonthlyRaw.innerText = formatNumber(monthlyRaw);
+    if (kpiMonthlyVault) kpiMonthlyVault.innerText = formatNumber(monthlyVault);
+    if (kpiSavedTokens) kpiSavedTokens.innerText = `${formatNumber(tokensSaved)} (92%)`;
+    if (kpiCostSaved) kpiCostSaved.innerText = `$${dollarsSaved} / mo`;
+  }
+
+  function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(0) + "k";
+    return num.toString();
+  }
+
+  if (sliderSessions) sliderSessions.addEventListener("input", calculate);
+  if (sliderLength) sliderLength.addEventListener("input", calculate);
+
+  calculate();
+}
+
+/* ==========================================================================
+   Copy to Clipboard (Global)
    ========================================================================== */
 function initCopyButtons() {
   document.querySelectorAll(".copy-btn").forEach((btn) => {

@@ -8,6 +8,7 @@
 [![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
 [![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](02-Areas/User-Profile.md)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/mistrysiddh)
+[![Website](https://img.shields.io/badge/Showcase-Live%20Website-7C3AED.svg)](website/index.html)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
 [![GitHub Stars](https://img.shields.io/github/stars/mistrysiddh/hermes-brain-template?style=social)](https://github.com/mistrysiddh/hermes-brain-template/stargazers)
 
@@ -68,6 +69,8 @@ API keys are included. See [SETUP.md](SETUP.md) for the full breakdown of
 what was intentionally left out.
 
 ## Quick start
+
+> 🌐 **Interactive Web Tour:** Explore the memory pipeline simulator, live architecture explorer, and MCP tool tester on the [Hermes Brain Showcase Website](website/index.html).
 
 ### 🚀 Option 1 — One-Line Terminal Install (Fastest, directly from GitHub)
 
