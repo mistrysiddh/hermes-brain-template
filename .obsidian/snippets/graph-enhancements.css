@@ -1,0 +1,59 @@
+/* Graph View Enhancements for Hermes Brain Template */
+/* Makes graph nodes and connections clearer and more informative */
+
+/* Improve node label readability */
+.graph-view .node-label {
+    font-size: 0.9em !important;
+    font-weight: 500 !important;
+    text-shadow: 0 0 3px rgba(0,0,0,0.3) !important;
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+
+/* Make connection lines more subtle but visible */
+.graph-view .link {
+    stroke-width: 1.5px !important;
+    stroke-opacity: 0.3 !important;
+    transition: stroke-opacity 0.2s ease !important;
+}
+
+.graph-view .link:hover {
+    stroke-opacity: 0.6 !important;
+}
+
+/* Highlight nodes on hover */
+.graph-view .node-circle:hover {
+    stroke-width: 3px !important;
+    transform: scale(1.05) !important;
+}
+
+/* Improve tag/pill appearance in nodes */
+.graph-view .node-tag {
+    font-size: 0.75em !important;
+    padding: 1px 4px !important;
+    border-radius: 10px !important;
+    opacity: 0.8 !important;
+}
+
+/* Make orphan nodes more visible but distinct */
+.graph-view .node-orphan .node-circle {
+    border: 2px dashed var(--text-muted) !important;
+}
+
+/* Slightly increase hit area for easier node selection */
+.graph-view .node-circle {
+    cursor: pointer !important;
+}
+
+/* Improve search highlight in graph */
+.graph-view .node-label.match {
+    background: var(--text-accent) !important;
+    color: var(--background-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Make unresolve links more visible */
+.graph-view .unresolved .node-circle {
+    border: 2px dotted var(--text-faint) !important;
+}
