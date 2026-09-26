@@ -23,15 +23,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 def get_vault():
-    # 1. Check environment variable
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return os.path.abspath(env_vault)
-
-    # 2. Check command line argument
+    # 1. Check command line argument (explicit argument always takes precedence)
     for arg in sys.argv[1:]:
         if not arg.startswith("--") and os.path.isdir(arg):
             return os.path.abspath(arg)
+
+    # 2. Check environment variable
+    env_vault = os.environ.get("HERMES_VAULT_PATH")
+    if env_vault and os.path.exists(env_vault):
+        return os.path.abspath(env_vault)
 
     # 3. Heuristic: look for .obsidian or 01-Projects in parent directories
     script_dir = os.path.dirname(os.path.abspath(__file__))

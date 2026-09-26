@@ -5,9 +5,9 @@ created: 2026-09-10
 tags:
   - dashboard
   - hub
-dashboard_last_visit: ""
-dashboard_last_session_count: 0
-dashboard_last_candidate_count: 0
+dashboard_last_visit: 2026-09-24T19:01:12.384Z
+dashboard_last_session_count: 1
+dashboard_last_candidate_count: 3
 cssclasses:
   - dashboard-beta
   - dashboard-wide
@@ -414,14 +414,208 @@ _All statuses, sortable/filterable: [[01-Projects/Projects.base|Projects.base]].
 
 ## Open memory candidates
 
-```dataview
-TASK
-FROM "04-Archives/Memory-Review"
-WHERE !completed
-LIMIT 15
+```dataviewjs
+// 1-Click Interactive Memory Promotion & Triage Center
+const rootDir = dv.pages('"04-Archives/Memory-Review"').length ? "04-Archives/Memory-Review" : "Memory-Review";
+const candidatePages = dv.pages(`"${rootDir}"`)
+  .where(p => p.file.name !== "README" && p.file.name !== "TEMPLATE" 
+           && p.file.name !== "HERMES-PREAMBLE" && p.file.name !== "Consolidation-Log" 
+           && p.file.name !== "Promotion-Candidates"
+           && (!p.status || p.status === "pending-review")
+           && !p.file.folder.includes("Reviewed"));
+
+const container = dv.container;
+container.empty();
+
+if (candidatePages.length === 0) {
+  dv.paragraph("✨ **All caught up!** No pending memory candidates in review queue.");
+} else {
+  const wrapper = container.createEl("div", { cls: "memory-triage-wrapper" });
+  wrapper.style.display = "flex";
+  wrapper.style.flexDirection = "column";
+  wrapper.style.gap = "12px";
+  wrapper.style.margin = "10px 0";
+
+  dv.paragraph(`📬 **${candidatePages.length}** candidate(s) awaiting your review:`);
+
+  for (const page of candidatePages) {
+    const file = app.vault.getAbstractFileByPath(page.file.path);
+    if (!file) continue;
+
+    const content = await app.vault.read(file);
+    const factMatch = content.match(/### Candidate Fact\s*\n+>\s*([\s\S]+?)(?=\n\n|\n###|$)/);
+    const factText = factMatch ? factMatch[1].trim() : page.file.name;
+    const category = page.category || "general";
+    const source = page.source || "Agent Session";
+
+    const card = wrapper.createEl("div", { cls: "memory-candidate-card" });
+    card.style.background = "var(--background-secondary)";
+    card.style.border = "1px solid var(--background-modifier-border)";
+    card.style.borderRadius = "8px";
+    card.style.padding = "14px 18px";
+    card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+
+    // Header badge row
+    const headerRow = card.createEl("div");
+    headerRow.style.display = "flex";
+    headerRow.style.justifyContent = "space-between";
+    headerRow.style.alignItems = "center";
+    headerRow.style.marginBottom = "8px";
+
+    const badgeGroup = headerRow.createEl("div");
+    badgeGroup.style.display = "flex";
+    badgeGroup.style.gap = "6px";
+
+    const catBadge = badgeGroup.createEl("span", { text: `🏷️ ${category}` });
+    catBadge.style.fontSize = "0.75em";
+    catBadge.style.padding = "2px 8px";
+    catBadge.style.borderRadius = "4px";
+    catBadge.style.background = "var(--interactive-accent)";
+    catBadge.style.color = "var(--text-on-accent)";
+
+    const srcBadge = badgeGroup.createEl("span", { text: `📍 ${source}` });
+    srcBadge.style.fontSize = "0.75em";
+    srcBadge.style.padding = "2px 8px";
+    srcBadge.style.borderRadius = "4px";
+    srcBadge.style.background = "var(--background-modifier-border)";
+
+    const fileLink = headerRow.createEl("a", { text: page.file.name, href: page.file.path });
+    fileLink.style.fontSize = "0.8em";
+    fileLink.style.color = "var(--text-muted)";
+
+    // Fact text block
+    const factEl = card.createEl("blockquote");
+    factEl.style.margin = "8px 0 12px 0";
+    factEl.style.padding = "6px 12px";
+    factEl.style.borderLeft = "3px solid var(--interactive-accent)";
+    factEl.style.fontStyle = "italic";
+    factEl.innerText = factText;
+
+    // Button action row
+    const btnRow = card.createEl("div");
+    btnRow.style.display = "flex";
+    btnRow.style.gap = "8px";
+    btnRow.style.flexWrap = "wrap";
+
+    const promoteHermesBtn = btnRow.createEl("button", { text: "🟢 Approve to Hermes (MEMORY.md)" });
+    promoteHermesBtn.style.cursor = "pointer";
+    promoteHermesBtn.style.padding = "5px 12px";
+    promoteHermesBtn.style.borderRadius = "6px";
+    promoteHermesBtn.style.fontSize = "0.85em";
+
+    const promoteProfileBtn = btnRow.createEl("button", { text: "🔵 Promote to User-Profile" });
+    promoteProfileBtn.style.cursor = "pointer";
+    promoteProfileBtn.style.padding = "5px 12px";
+    promoteProfileBtn.style.borderRadius = "6px";
+    promoteProfileBtn.style.fontSize = "0.85em";
+
+    const dismissBtn = btnRow.createEl("button", { text: "🔴 Dismiss" });
+    dismissBtn.style.cursor = "pointer";
+    dismissBtn.style.padding = "5px 12px";
+    dismissBtn.style.borderRadius = "6px";
+    dismissBtn.style.fontSize = "0.85em";
+
+    const statusMsg = card.createEl("div");
+    statusMsg.style.marginTop = "8px";
+    statusMsg.style.fontSize = "0.85em";
+    statusMsg.style.fontWeight = "bold";
+
+    // Helper to log to Consolidation-Log.md
+    const logConsolidation = async (actionText) => {
+      const logPath = `${rootDir}/Consolidation-Log.md`;
+      let logFile = app.vault.getAbstractFileByPath(logPath);
+      const timestamp = new Date().toISOString().replace("T", " ").substring(0, 16) + " UTC";
+      const line = `- [x] ${factText} (${actionText} on ${timestamp})\n`;
+      if (!logFile) {
+        await app.vault.create(logPath, `# Consolidation Log\n\n${line}`);
+      } else {
+        const cur = await app.vault.read(logFile);
+        await app.vault.modify(logFile, cur + line);
+      }
+    };
+
+    // Helper to mark note reviewed
+    const markNoteReviewed = async (decision) => {
+      await app.fileManager.processFrontMatter(file, (fm) => {
+        fm.status = decision;
+      });
+      const updated = await app.vault.read(file);
+      await app.vault.modify(file, updated + `\n\n---\n> **Triage Decision:** \`${decision.toUpperCase()}\` at ${new Date().toISOString()}\n`);
+    };
+
+    // 1. Approve to Hermes
+    promoteHermesBtn.onclick = async () => {
+      promoteHermesBtn.disabled = true;
+      let writtenToHermes = false;
+      try {
+        if (typeof require !== "undefined") {
+          const fs = require("fs");
+          const path = require("path");
+          const os = require("os");
+          const hermesMemPath = path.join(os.homedir(), ".hermes", "MEMORY.md");
+          const entryLine = `- [${new Date().toISOString().substring(0, 10)}] [${category}] ${factText}\n`;
+          if (fs.existsSync(hermesMemPath)) {
+            fs.appendFileSync(hermesMemPath, entryLine, "utf8");
+          } else {
+            fs.writeFileSync(hermesMemPath, `# Hermes Memory\n\n## 🧠 Durable Facts & Rules\n${entryLine}`, "utf8");
+          }
+          writtenToHermes = true;
+        }
+      } catch (err) {
+        console.error("Direct fs write to ~/.hermes/MEMORY.md failed:", err);
+      }
+
+      await logConsolidation("HERMES → ~/.hermes/MEMORY.md");
+      await markNoteReviewed("approved");
+
+      btnRow.style.display = "none";
+      statusMsg.innerText = writtenToHermes 
+        ? "✅ Approved & written directly into ~/.hermes/MEMORY.md!" 
+        : "✅ Approved and logged to Consolidation-Log.md!";
+      statusMsg.style.color = "var(--text-success)";
+      if (typeof new Notice !== "undefined") new Notice("Memory Approved to Hermes!");
+    };
+
+    // 2. Promote to User Profile
+    promoteProfileBtn.onclick = async () => {
+      promoteProfileBtn.disabled = true;
+      const profilePath = app.vault.getAbstractFileByPath("02-Areas/User-Profile.md") || app.vault.getAbstractFileByPath("User-Profile.md");
+      const entryLine = `- [${new Date().toISOString().substring(0, 10)}] ${factText}\n`;
+      if (profilePath) {
+        const curProf = await app.vault.read(profilePath);
+        if (curProf.includes("## 📌 Learned Rules & Preferences")) {
+          const parts = curProf.split("## 📌 Learned Rules & Preferences");
+          await app.vault.modify(profilePath, parts[0] + "## 📌 Learned Rules & Preferences\n" + entryLine + parts[1]);
+        } else {
+          await app.vault.modify(profilePath, curProf + "\n\n## 📌 Learned Rules & Preferences\n" + entryLine);
+        }
+      }
+
+      await logConsolidation("USER-PROFILE → 02-Areas/User-Profile.md");
+      await markNoteReviewed("approved");
+
+      btnRow.style.display = "none";
+      statusMsg.innerText = "✅ Promoted to User-Profile.md!";
+      statusMsg.style.color = "var(--text-accent)";
+      if (typeof new Notice !== "undefined") new Notice("Promoted to User-Profile.md!");
+    };
+
+    // 3. Dismiss
+    dismissBtn.onclick = async () => {
+      dismissBtn.disabled = true;
+      await logConsolidation("DISMISSED");
+      await markNoteReviewed("dismissed");
+
+      btnRow.style.display = "none";
+      statusMsg.innerText = "🗑️ Dismissed and archived.";
+      statusMsg.style.color = "var(--text-muted)";
+      if (typeof new Notice !== "undefined") new Notice("Candidate Dismissed.");
+    };
+  }
+}
 ```
 
-_Full review flow: [[04-Archives/Memory-Review/TEMPLATE|Memory-Review/TEMPLATE.md]]. Regenerated by `Scripts/consolidate_memory.py`._
+_Full review flow: [[04-Archives/Memory-Review/TEMPLATE|Memory-Review/TEMPLATE.md]]. Automated CLI backend: `Scripts/promote_memory.py`._
 
 ## Recently promoted
 
