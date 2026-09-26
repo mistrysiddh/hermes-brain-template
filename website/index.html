@@ -30,7 +30,8 @@
 
   <!-- Header Navigation -->
   <header class="site-header">
-    <div class="container nav-wrap">
+    <div class="nav-container">
+      <!-- Brand -->
       <a href="#" class="brand-link">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -38,32 +39,153 @@
           </svg>
         </div>
         <span class="brand-text">Hermes Brain</span>
-        <span class="brand-badge">v1.22.20</span>
+        <span class="brand-badge">v1.22</span>
       </a>
 
-      <ul class="nav-links">
-        <li><a href="#pipeline">Memory Pipeline</a></li>
-        <li><a href="#para">PARA Vault</a></li>
-        <li><a href="#comparison">Why This?</a></li>
-        <li><a href="#mcp">MCP Server</a></li>
-        <li><a href="#features">Capabilities</a></li>
-        <li><a href="#install">Install Guide</a></li>
-        <li><a href="#faq">FAQ</a></li>
-      </ul>
+      <!-- Grouped Nav Links -->
+      <nav class="nav-menu">
+        <ul class="nav-links">
+          <li><a href="#pipeline" class="nav-item-link">Pipeline</a></li>
+          
+          <!-- Simulators Dropdown -->
+          <li class="nav-dropdown-wrap">
+            <button class="nav-dropdown-trigger" type="button">
+              <span>Simulators</span>
+              <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="nav-dropdown-menu">
+              <a href="#adr-sim" class="dropdown-item">
+                <span class="item-icon">🤖</span>
+                <div class="item-text">
+                  <strong>ADR Squad Review</strong>
+                  <small>Argus, Codex, Ledger & Vox consensus</small>
+                </div>
+              </a>
+              <a href="#personality" class="dropdown-item">
+                <span class="item-icon">🎭</span>
+                <div class="item-text">
+                  <strong>Personality Matrix</strong>
+                  <small>11-dimension cognitive tuning dials</small>
+                </div>
+              </a>
+              <a href="#graph-view" class="dropdown-item">
+                <span class="item-icon">🕸️</span>
+                <div class="item-text">
+                  <strong>Knowledge Graph</strong>
+                  <small>Live interactive Vis-network vault view</small>
+                </div>
+              </a>
+            </div>
+          </li>
 
+          <!-- Vault Architecture Dropdown -->
+          <li class="nav-dropdown-wrap">
+            <button class="nav-dropdown-trigger" type="button">
+              <span>Vault</span>
+              <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="nav-dropdown-menu">
+              <a href="#para" class="dropdown-item">
+                <span class="item-icon">📁</span>
+                <div class="item-text">
+                  <strong>PARA Hierarchy</strong>
+                  <small>Projects, Areas, Resources, Archives</small>
+                </div>
+              </a>
+              <a href="#mcp" class="dropdown-item">
+                <span class="item-icon">🔌</span>
+                <div class="item-text">
+                  <strong>MCP Server</strong>
+                  <small>JSON-RPC tools for Claude & Cursor</small>
+                </div>
+              </a>
+              <a href="#templates" class="dropdown-item">
+                <span class="item-icon">📑</span>
+                <div class="item-text">
+                  <strong>Note Templates</strong>
+                  <small>ADR, Project, Lessons, Daily Review</small>
+                </div>
+              </a>
+              <a href="#calculator" class="dropdown-item">
+                <span class="item-icon">💰</span>
+                <div class="item-text">
+                  <strong>Token ROI Calculator</strong>
+                  <small>Prompt cost & context reduction</small>
+                </div>
+              </a>
+            </div>
+          </li>
+
+          <li><a href="#install" class="nav-item-link">Install</a></li>
+          <li><a href="#faq" class="nav-item-link">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Actions -->
       <div class="nav-actions">
+        <!-- Quick Search (Command Palette) -->
+        <button id="cmd-trigger-btn" class="search-trigger-btn" title="Quick Search (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="search-label">Search</span>
+          <span class="kbd-badge">Ctrl K</span>
+        </button>
+
+        <!-- Theme Toggle (Tokyo Night / Nemoclaw) -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme (Tokyo Night ↔ Nemoclaw)">
+          <span class="theme-icon">🌙</span>
+        </button>
+
+        <!-- GitHub Icon -->
         <a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer" class="btn-icon" title="View Source on GitHub">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
           </svg>
         </a>
-        <a href="#install" class="btn-primary">
+
+        <!-- CTA -->
+        <a href="#install" class="btn-primary nav-cta-btn">
           <span>Get Started</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
         </a>
+
+        <!-- Mobile Toggle Button -->
+        <button id="mobile-menu-toggle" class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+      <div class="mobile-drawer-inner">
+        <div class="mobile-drawer-group">
+          <span class="drawer-group-title">Core</span>
+          <a href="#pipeline" class="drawer-link">Memory Pipeline</a>
+          <a href="#install" class="drawer-link">Installation Guide</a>
+          <a href="#faq" class="drawer-link">FAQ</a>
+        </div>
+        <div class="mobile-drawer-group">
+          <span class="drawer-group-title">Simulators</span>
+          <a href="#adr-sim" class="drawer-link">🤖 Multi-Agent ADR Squad</a>
+          <a href="#personality" class="drawer-link">🎭 11-Dimension Personality Matrix</a>
+          <a href="#graph-view" class="drawer-link">🕸️ Knowledge Graph</a>
+        </div>
+        <div class="mobile-drawer-group">
+          <span class="drawer-group-title">Vault Architecture</span>
+          <a href="#para" class="drawer-link">📁 PARA Method Hierarchy</a>
+          <a href="#mcp" class="drawer-link">🔌 Built-In MCP Server</a>
+          <a href="#templates" class="drawer-link">📑 Note Templates</a>
+          <a href="#calculator" class="drawer-link">💰 Token ROI Calculator</a>
+        </div>
+        <div class="mobile-drawer-footer">
+          <a href="#install" class="btn-primary" style="width: 100%; justify-content: center;">Install Vault Template</a>
+        </div>
       </div>
     </div>
   </header>
@@ -96,15 +218,11 @@
             <line x1="12" y1="4" x2="12" y2="16"></line>
           </svg>
         </a>
-        <a href="#pipeline" class="btn-secondary">
-          <span>Explore Pipeline Simulator</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="10 8 16 12 10 16 10 8"></polygon>
-          </svg>
+        <a href="#adr-sim" class="btn-secondary">
+          <span>Try Multi-Agent ADR Simulator</span>
         </a>
-        <a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-          <span>GitHub (⭐ Star)</span>
+        <a href="#graph-view" class="btn-secondary">
+          <span>Explore Live Graph</span>
         </a>
       </div>
 
@@ -259,6 +377,339 @@
     </div>
   </section>
 
+  <!-- Multi-Agent Squad ADR Simulator -->
+  <section id="adr-sim">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Peer Review</span>
+        <h2 class="section-title">Multi-Agent ADR Squad Simulator</h2>
+        <p class="section-desc">
+          Test any architecture decision or tool directive against Hermes Brain's 4 peer review personas before committing it.
+        </p>
+      </div>
+
+      <div class="adr-sim-container">
+        <div class="adr-input-bar">
+          <input type="text" id="adr-proposal-input" class="adr-proposal-input" placeholder="Type an architecture dilemma or proposal (e.g. 'Switch SQLite to Redis' or 'Auto-commit to public git')...">
+          <button id="adr-eval-btn" class="btn-primary">
+            <span>Evaluate with Squad</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="adr-presets-row">
+          <span style="font-size: 0.8rem; color: var(--text-dim);">Sample Dilemmas:</span>
+          <div id="adr-presets" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+
+        <div class="adr-agent-grid">
+          <!-- Argus -->
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-avatar avatar-argus">🛡️</div>
+              <div class="agent-name-role">
+                <div class="agent-name">Argus</div>
+                <div class="agent-role">Security & Boundaries</div>
+              </div>
+              <span id="adr-argus-badge" class="agent-verdict-badge badge-block">BLOCK</span>
+            </div>
+            <div id="adr-argus-speech" class="agent-speech-bubble">Loading evaluation...</div>
+          </div>
+
+          <!-- Codex -->
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-avatar avatar-codex">💻</div>
+              <div class="agent-name-role">
+                <div class="agent-name">Codex</div>
+                <div class="agent-role">Architecture & Code</div>
+              </div>
+              <span id="adr-codex-badge" class="agent-verdict-badge badge-pass">PASS</span>
+            </div>
+            <div id="adr-codex-speech" class="agent-speech-bubble">Loading evaluation...</div>
+          </div>
+
+          <!-- Ledger -->
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-avatar avatar-ledger">📊</div>
+              <div class="agent-name-role">
+                <div class="agent-name">Ledger</div>
+                <div class="agent-role">Token Budget & Context</div>
+              </div>
+              <span id="adr-ledger-badge" class="agent-verdict-badge badge-pass">PASS</span>
+            </div>
+            <div id="adr-ledger-speech" class="agent-speech-bubble">Loading evaluation...</div>
+          </div>
+
+          <!-- Vox -->
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-avatar avatar-vox">🎯</div>
+              <div class="agent-name-role">
+                <div class="agent-name">Vox</div>
+                <div class="agent-role">User Alignment & Tone</div>
+              </div>
+              <span id="adr-vox-badge" class="agent-verdict-badge badge-block">BLOCK</span>
+            </div>
+            <div id="adr-vox-speech" class="agent-speech-bubble">Loading evaluation...</div>
+          </div>
+        </div>
+
+        <div id="adr-consensus-box" class="consensus-verdict-box"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11-Dimension Personality Framework Matrix -->
+  <section id="personality">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Behavioral Alignment</span>
+        <h2 class="section-title">11-Dimension Personality Matrix</h2>
+        <p class="section-desc">
+          Tune your agent's behavioral dials in real time. Generates a calibrated <code>User-Profile.md</code> alignment block.
+        </p>
+      </div>
+
+      <div class="personality-container">
+        <div class="sliders-panel">
+          <!-- Autonomy -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Autonomy vs Confirmation</span>
+              <span id="tag-autonomy" class="slider-val-tag">6/10</span>
+            </div>
+            <input type="range" id="slider-autonomy" class="matrix-slider" min="1" max="10" value="6">
+            <div class="slider-ends">
+              <span>1: Ask before every action</span>
+              <span>10: Autonomous self-directed</span>
+            </div>
+          </div>
+
+          <!-- Verbosity -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Verbosity & Preamble</span>
+              <span id="tag-verbosity" class="slider-val-tag">2/10</span>
+            </div>
+            <input type="range" id="slider-verbosity" class="matrix-slider" min="1" max="10" value="2">
+            <div class="slider-ends">
+              <span>1: Commands only, 0 fluff</span>
+              <span>10: Deep explanatory prose</span>
+            </div>
+          </div>
+
+          <!-- Skepticism -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Fact Verification & Skepticism</span>
+              <span id="tag-skepticism" class="slider-val-tag">8/10</span>
+            </div>
+            <input type="range" id="slider-skepticism" class="matrix-slider" min="1" max="10" value="8">
+            <div class="slider-ends">
+              <span>1: Blindly trust claims</span>
+              <span>10: Strict empirical citations</span>
+            </div>
+          </div>
+
+          <!-- Formality -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Tone: Formality vs Banter</span>
+              <span id="tag-formality" class="slider-val-tag">4/10</span>
+            </div>
+            <input type="range" id="slider-formality" class="matrix-slider" min="1" max="10" value="4">
+            <div class="slider-ends">
+              <span>1: Ultra-formal corporate</span>
+              <span>10: Playful developer banter</span>
+            </div>
+          </div>
+
+          <!-- Tools -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Tool & MCP Proactivity</span>
+              <span id="tag-tools" class="slider-val-tag">7/10</span>
+            </div>
+            <input type="range" id="slider-tools" class="matrix-slider" min="1" max="10" value="7">
+            <div class="slider-ends">
+              <span>1: Wait for instructions</span>
+              <span>10: Proactively search vault</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-output-wrap">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">Generated <code>02-Areas/User-Profile.md</code> Block</span>
+              <span style="font-size: 0.75rem; color: var(--accent-emerald);">● Live Reactive</span>
+            </div>
+            <div id="personality-profile-preview" class="profile-code"></div>
+          </div>
+
+          <button id="copy-personality-btn" class="btn-primary" style="margin-top: 16px; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Custom Profile to Clipboard</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Template Gallery -->
+  <section id="templates">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Note Engineering</span>
+        <h2 class="section-title">Obsidian Note Template Gallery</h2>
+        <p class="section-desc">
+          Inspect and 1-click copy the production Markdown templates bundled in <code>_System/Templates/</code>.
+        </p>
+      </div>
+
+      <div class="template-gallery-box">
+        <div class="template-nav-strip">
+          <button class="template-tab-btn active" data-tpl="adr">📑 ADR (4-Agent Review)</button>
+          <button class="template-tab-btn" data-tpl="project">🟢 Project Charter</button>
+          <button class="template-tab-btn" data-tpl="lesson">⚠️ Lesson Learned (Post-Mortem)</button>
+          <button class="template-tab-btn" data-tpl="daily">📅 Evening Daily Review</button>
+        </div>
+
+        <div class="template-display-body">
+          <div class="template-meta-bar">
+            <div>
+              <h3 id="template-title" style="font-size: 1.2rem; color: #fff;">Architecture Decision Record (ADR)</h3>
+              <span id="template-target" style="font-size: 0.8rem; font-family: monospace; color: var(--accent-cyan);">01-Projects/ADR/ADR-&lt;Number&gt;-&lt;Title&gt;.md</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span id="template-badge" class="brand-badge">📑 Architecture ADR</span>
+              <button id="copy-template-btn" class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy Template</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="template-code-frame">
+            <pre><code id="template-raw-code">Loading template...</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Knowledge Graph Section -->
+  <section id="graph-view">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Persistent Connections</span>
+        <h2 class="section-title">Interactive Vault Knowledge Graph</h2>
+        <p class="section-desc">
+          Explore real note connections across Projects, Areas, Resources, and Archives directly in your browser.
+        </p>
+      </div>
+
+      <div class="graph-section-wrapper">
+        <div class="graph-top-bar">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="terminal-dots">
+              <span class="dot-red"></span>
+              <span class="dot-yellow"></span>
+              <span class="dot-green"></span>
+            </div>
+            <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">Live Vis-Network Graph Explorer</span>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <a href="graph.html" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="padding: 5px 12px; font-size: 0.8rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              <span>Open Fullscreen Tab</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="graph-iframe-wrap">
+          <iframe src="graph.html" title="Hermes Brain Interactive Graph" class="graph-iframe" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Token ROI & Context Budget Calculator -->
+  <section id="calculator">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Economics & Efficiency</span>
+        <h2 class="section-title">Token ROI & Context Budget Calculator</h2>
+        <p class="section-desc">
+          Compare the context window token overhead of naive chat log dumping vs Hermes Brain's human-staged fact memory.
+        </p>
+      </div>
+
+      <div class="calc-container">
+        <div class="calc-grid">
+          <div class="calc-controls">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">Daily Agent Sessions</span>
+                <span id="calc-val-sessions" class="slider-val-tag">10 chats/day</span>
+              </div>
+              <input type="range" id="calc-sessions" class="matrix-slider" min="1" max="40" value="10">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
+                <span>1 session</span>
+                <span>40 sessions/day</span>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">Avg Tokens per Session</span>
+                <span id="calc-val-length" class="slider-val-tag">4,000 tokens</span>
+              </div>
+              <input type="range" id="calc-length" class="matrix-slider" min="1000" max="12000" step="500" value="4000">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
+                <span>1k tokens (short)</span>
+                <span>12k tokens (deep spike)</span>
+              </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 14px; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted);">
+              💡 <strong>Why this matters:</strong> Staging verified facts into <code>04-Archives/Memory-Review/</code> extracts durable knowledge while discarding 92% of transient chat noise from prompt tokens.
+            </div>
+          </div>
+
+          <div class="calc-kpi-grid">
+            <div class="calc-kpi-card">
+              <span class="calc-kpi-lbl">Naive Unstaged Context</span>
+              <div id="kpi-monthly-raw" class="calc-kpi-val kpi-rose">1.2M</div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">monthly prompt tokens</span>
+            </div>
+
+            <div class="calc-kpi-card">
+              <span class="calc-kpi-lbl">Hermes Brain Footprint</span>
+              <div id="kpi-monthly-vault" class="calc-kpi-val kpi-emerald">96k</div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">staged facts injected</span>
+            </div>
+
+            <div class="calc-kpi-card">
+              <span class="calc-kpi-lbl">Tokens Saved (Monthly)</span>
+              <div id="kpi-saved-tokens" class="calc-kpi-val kpi-cyan">1.1M (92%)</div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">context reduction</span>
+            </div>
+
+            <div class="calc-kpi-card">
+              <span class="calc-kpi-lbl">Estimated API Savings</span>
+              <div id="kpi-cost-saved" class="calc-kpi-val kpi-purple">$3.31 / mo</div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">at $3.00/1M tokens avg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- PARA Vault Structure Explorer -->
   <section id="para">
     <div class="container">
@@ -328,77 +779,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Comparison Matrix -->
-  <section id="comparison">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Unbiased Evaluation</span>
-        <h2 class="section-title">Why Hermes Brain vs Alternatives?</h2>
-        <p class="section-desc">
-          Compare architectural trade-offs between human-curated local vaults, raw chat logs, and opaque vector memory APIs.
-        </p>
-      </div>
-
-      <div class="table-responsive">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>Evaluation Criterion</th>
-              <th class="col-highlight">Hermes Brain Template</th>
-              <th>Raw Chat Logs</th>
-              <th>Vector-DB (Mem0 / Pinecone)</th>
-              <th>Generic Obsidian Vault</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Human Review Before Memory</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ Staged in Kanban (Zero auto-pollute)</span></td>
-              <td><span class="check-no">✗ No review (unstructured)</span></td>
-              <td><span class="check-no">✗ Auto-embedded, opaque black box</span></td>
-              <td><span class="check-no">— No agent pipeline</span></td>
-            </tr>
-            <tr>
-              <td><strong>Plain Markdown Transparency</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ 100% standard .md files</span></td>
-              <td><span class="check-yes">✓ Raw JSON/text</span></td>
-              <td><span class="check-no">✗ Requires vendor API/portal</span></td>
-              <td><span class="check-yes">✓ Standard .md</span></td>
-            </tr>
-            <tr>
-              <td><strong>Portability & Git Versioning</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ Fully local, your private git repo</span></td>
-              <td><span class="check-yes">✓ Local files</span></td>
-              <td><span class="check-no">✗ Locked into SaaS service</span></td>
-              <td><span class="check-yes">✓ Git portable</span></td>
-            </tr>
-            <tr>
-              <td><strong>Token Telemetry & Auditing</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ Built-in Dataview & Token log</span></td>
-              <td><span class="check-no">✗ None</span></td>
-              <td><span class="check-no">△ Varies / proprietary billing</span></td>
-              <td><span class="check-no">✗ None</span></td>
-            </tr>
-            <tr>
-              <td><strong>Model Context Protocol (MCP)</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ Native MCP server (JSON-RPC)</span></td>
-              <td><span class="check-no">✗ None</span></td>
-              <td><span class="check-no">△ Custom API wrapper</span></td>
-              <td><span class="check-no">✗ Requires custom bridge</span></td>
-            </tr>
-            <tr>
-              <td><strong>Agent-Ready Setup Effort</strong></td>
-              <td class="col-highlight"><span class="check-yes">✓ 1-paste chat prompt or 1-liner</span></td>
-              <td><span class="check-yes">✓ Default stdout</span></td>
-              <td><span class="check-no">✗ Complex API key & SDK setup</span></td>
-              <td><span class="check-no">✗ Manual folder creation</span></td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </section>
@@ -476,69 +856,6 @@
             <button id="mcp-run-btn" class="btn-primary" style="padding: 4px 12px; font-size: 0.8rem;">Re-run Query</button>
           </div>
           <div id="mcp-term-output" class="mcp-term-output"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Capabilities & Automation Features Grid -->
-  <section id="features">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Production-Grade Tooling</span>
-        <h2 class="section-title">Everything Included in the Vault</h2>
-        <p class="section-desc">
-          More than just folders — an entire cross-platform automation and cognitive framework.
-        </p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-purple">🛡️</div>
-          <h3 class="feature-title">Automatic Secret Scrubbing</h3>
-          <p class="feature-desc">
-            Session archivers scan for API keys, passwords, bearer tokens, SSH private keys, and connection strings, replacing them with <code>[REDACTED]</code> before any text touches disk.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-cyan">📊</div>
-          <h3 class="feature-title">Token Usage Telemetry</h3>
-          <p class="feature-desc">
-            Tracks prompt and completion tokens per chat session. Automatically aggregates daily totals into <code>Token-Usage.log</code> and visualizes them on your Obsidian Dashboard.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-emerald">🌙</div>
-          <h3 class="feature-title">Nocturnal Dream Cycle</h3>
-          <p class="feature-desc">
-            Run <code>dream_cycle.py</code> to consolidate cross-session themes, distill learnings, and update Maps of Content (MOCs) while you sleep, using local Ollama or Python embeddings.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-amber">📑</div>
-          <h3 class="feature-title">Multi-Agent ADRs</h3>
-          <p class="feature-desc">
-            Architecture Decision Records with built-in multi-agent review personas: Argus (Security), Codex (Code), Ledger (Token efficiency), and Vox (Alignment).
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-cyan">🔍</div>
-          <h3 class="feature-title">Local Semantic Search</h3>
-          <p class="feature-desc">
-            Index notes and chat transcripts into a local semantic vector store powered by <code>sentence-transformers</code> or Ollama embeddings. Zero cloud queries required.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrap icon-purple">🎭</div>
-          <h3 class="feature-title">Personality Judgment Matrix</h3>
-          <p class="feature-desc">
-            An 11-dimension cognitive framework to analyze communication patterns, detect tone anomalies, and keep multi-agent squads aligned with your style.
-          </p>
         </div>
       </div>
     </div>
@@ -745,9 +1062,10 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
           <h5>Architecture</h5>
           <ul>
             <li><a href="#pipeline">Memory Pipeline</a></li>
-            <li><a href="#para">PARA Vault Hierarchy</a></li>
+            <li><a href="#adr-sim">ADR Review Squad</a></li>
+            <li><a href="#personality">Personality Matrix</a></li>
+            <li><a href="#graph-view">Knowledge Graph</a></li>
             <li><a href="#mcp">MCP Server (JSON-RPC)</a></li>
-            <li><a href="#comparison">Feature Comparison</a></li>
           </ul>
         </div>
 
@@ -782,6 +1100,26 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
       </div>
     </div>
   </footer>
+
+  <!-- Global Command Palette Modal (Ctrl+K) -->
+  <div id="cmd-backdrop" class="cmd-palette-backdrop">
+    <div class="cmd-palette-modal">
+      <div class="cmd-input-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="cmd-input" class="cmd-search-input" placeholder="Type a section, tool, or shortcut (e.g. 'ADR', 'Graph', 'Install')...">
+        <span class="kbd-badge">ESC to close</span>
+      </div>
+      <ul id="cmd-results" class="cmd-results-list"></ul>
+      <div class="cmd-footer">
+        <span>Navigation: <strong style="color: #fff;">↑ / ↓</strong></span>
+        <span>Select: <strong style="color: #fff;">Enter</strong></span>
+        <span>Quick Toggle: <strong style="color: #fff;">Ctrl + K</strong> or <strong style="color: #fff;">/</strong></span>
+      </div>
+    </div>
+  </div>
 
   <script src="./app.js"></script>
 </body>
