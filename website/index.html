@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes Brain — Persistent Memory Architecture for AI Agents</title>
+  <meta name="description" content="Give your Hermes and OpenClaw AI agents a permanent memory they can't forget — and you can actually read. Human-reviewed, 100% plain Markdown Obsidian vault with automated secret scrubbing and MCP integration.">
+  <meta name="keywords" content="Hermes Agent, OpenClaw, Obsidian Vault, AI Memory, Agent Memory, MCP Server, Model Context Protocol, Dataview, PKM, AI Agent">
+  <meta name="author" content="Siddh Mistry (@mistrysiddh)">
+
+  <!-- Open Graph / Social Meta -->
+  <meta property="og:title" content="Hermes Brain — Persistent Memory Architecture for AI Agents">
+  <meta property="og:description" content="Give your AI agent a memory it can't forget — and you can actually read. No vendor lock-in, human-reviewed, and automated.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./assets/graph-view-screenshot.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237c3aed'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- Background Canvas & Ambient Orbs -->
+  <canvas id="neural-canvas"></canvas>
+  <div class="ambient-glow glow-purple"></div>
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-emerald"></div>
+
+  <!-- Header Navigation -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#" class="brand-link">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </div>
+        <span class="brand-text">Hermes Brain</span>
+        <span class="brand-badge">v1.22.20</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#pipeline">Memory Pipeline</a></li>
+        <li><a href="#para">PARA Vault</a></li>
+        <li><a href="#comparison">Why This?</a></li>
+        <li><a href="#mcp">MCP Server</a></li>
+        <li><a href="#features">Capabilities</a></li>
+        <li><a href="#install">Install Guide</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer" class="btn-icon" title="View Source on GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </a>
+        <a href="#install" class="btn-primary">
+          <span>Get Started</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Engineered for Hermes Agent & OpenClaw</span>
+      </div>
+
+      <h1 class="hero-title">
+        Give Your AI Agent a Memory It Can't Forget — <br>
+        <span class="gradient-text">And You Can Actually Read.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Every conversation session archived as clean Markdown, automatically secret-scrubbed,
+        tracked for token telemetry, and staged for human review. No black boxes. No vendor lock-in.
+        Native Obsidian power with built-in MCP server support.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#install" class="btn-primary">
+          <span>Install in One Paste</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+            <polyline points="7 11 12 16 17 11"></polyline>
+            <line x1="12" y1="4" x2="12" y2="16"></line>
+          </svg>
+        </a>
+        <a href="#pipeline" class="btn-secondary">
+          <span>Explore Pipeline Simulator</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+          </svg>
+        </a>
+        <a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+          <span>GitHub (⭐ Star)</span>
+        </a>
+      </div>
+
+      <!-- Quick Terminal Bar -->
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="dot-red"></span>
+            <span class="dot-yellow"></span>
+            <span class="dot-green"></span>
+          </div>
+          <div class="terminal-tabs">
+            <button class="tab-btn active" data-term="powershell">Windows (PowerShell)</button>
+            <button class="tab-btn" data-term="bash">Linux / macOS</button>
+            <button class="tab-btn" data-term="hermes">Hermes Chat Prompt</button>
+          </div>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-cmd">
+            <span class="prompt" id="hero-terminal-prompt">PS &gt;</span>
+            <span id="hero-terminal-cmd">irm https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.ps1 | iex</span>
+          </div>
+          <button class="copy-btn" title="Copy command">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero Mockup Frame -->
+      <div class="hero-mockup-wrapper">
+        <div class="hero-mockup-frame">
+          <div class="mockup-bar">
+            <div class="terminal-dots">
+              <span class="dot-red"></span>
+              <span class="dot-yellow"></span>
+              <span class="dot-green"></span>
+            </div>
+            <div class="mockup-tabs">
+              <button class="mockup-tab active" data-view="graph">Obsidian Graph View</button>
+              <button class="mockup-tab" data-view="terminal">One-Line Installer</button>
+              <button class="mockup-tab" data-view="dashboard">Live Dashboard Beta</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); font-family: monospace;">Obsidian v1.8+ · Tokyo Night</div>
+          </div>
+
+          <img id="mockup-display-img" src="./assets/graph-view-screenshot.png" alt="Hermes Brain Obsidian Graph View" class="mockup-img">
+
+          <!-- Simulated Live Dashboard View -->
+          <div id="mockup-live-preview" style="display: none; background: #0c101d; padding: 28px; border-radius: 8px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 1.4rem; color: #fff;">Hermes Brain Operations Center</h3>
+                <span style="font-size: 0.8rem; color: var(--accent-emerald);">● Archiver Active (Last run 12m ago) · Tokyo Night Edition</span>
+              </div>
+              <span style="background: rgba(124,58,237,0.2); color: var(--accent-purple-light); font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;">DataviewJS Enabled</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+              <div style="background: #13192b; padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.75rem; color: var(--text-dim);">TOTAL ARCHIVED CHATS</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">248</div>
+              </div>
+              <div style="background: #13192b; padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.75rem; color: var(--text-dim);">PENDING REVIEWS</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-amber);">3 candidates</div>
+              </div>
+              <div style="background: #13192b; padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.75rem; color: var(--text-dim);">ACTIVE PROJECTS</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-emerald);">4 ongoing</div>
+              </div>
+              <div style="background: #13192b; padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.75rem; color: var(--text-dim);">TOKEN EFFICIENCY</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-purple-light);">98.4% clean</div>
+              </div>
+            </div>
+            <div style="background: #080c16; padding: 14px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #94a3b8;">
+              <span style="color: var(--accent-purple-light);">🔔 Delta since last visit:</span> 2 new sessions archived, 1 memory candidate staged for triage in <code>04-Archives/Memory-Review/</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Memory Pipeline Simulator -->
+  <section id="pipeline">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Architecture Simulator</span>
+        <h2 class="section-title">The 4-Stage Memory Pipeline</h2>
+        <p class="section-desc">
+          How volatile agent conversations transform into durable, human-verified knowledge without hallucinating or leaking secrets.
+        </p>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="pipeline-stepper">
+          <button class="step-btn active" data-step="0">
+            <span class="step-num">STAGE 01</span>
+            <span class="step-name">Session Archiving</span>
+            <span class="step-desc">Hourly cron or real-time hooks</span>
+          </button>
+          <button class="step-btn" data-step="1">
+            <span class="step-num">STAGE 02</span>
+            <span class="step-name">Candidate Staging</span>
+            <span class="step-desc">4-criteria fact extraction</span>
+          </button>
+          <button class="step-btn" data-step="2">
+            <span class="step-num">STAGE 03</span>
+            <span class="step-name">Human-in-the-Loop</span>
+            <span class="step-desc">Obsidian visual Kanban triage</span>
+          </button>
+          <button class="step-btn" data-step="3">
+            <span class="step-num">STAGE 04</span>
+            <span class="step-name">Durable Memory</span>
+            <span class="step-desc">MEMORY.md injection & Dream Cycle</span>
+          </button>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <h3 id="pipeline-step-title" style="font-size: 1.25rem;">1. Hourly / Instant Session Archiving</h3>
+        </div>
+
+        <div class="pipeline-view-pane">
+          <div class="pane-col">
+            <h4>
+              <span>Input / Source</span>
+              <span id="pipeline-left-badge" class="pane-badge badge-raw">RAW AGENT SESSION</span>
+            </h4>
+            <div id="pipeline-left-code" class="code-window"></div>
+          </div>
+          <div class="pane-col">
+            <h4>
+              <span>Pipeline Output / Transformation</span>
+              <span id="pipeline-right-badge" class="pane-badge badge-clean">AUTO-SCRUBBED ARCHIVE (.md)</span>
+            </h4>
+            <div id="pipeline-right-code" class="code-window"></div>
+          </div>
+        </div>
+
+        <div class="pipeline-actions">
+          <button id="pipeline-prev-btn" class="btn-secondary" disabled>← Previous Stage</button>
+          <div style="font-size: 0.85rem; color: var(--text-dim);">
+            Click any stage above or use buttons to navigate
+          </div>
+          <button id="pipeline-next-btn" class="btn-primary">Next Stage →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARA Vault Structure Explorer -->
+  <section id="para">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Information Architecture</span>
+        <h2 class="section-title">Built on the Proven PARA Method</h2>
+        <p class="section-desc">
+          Organized for discoverability, speed, and effortless agent context ingestion.
+          Explore the directory hierarchy below.
+        </p>
+      </div>
+
+      <div class="para-grid">
+        <div class="para-tree">
+          <div class="tree-title">Vault Root Hierarchy</div>
+          <ul class="tree-list">
+            <li class="tree-item active" data-para="01-Projects">
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>01-Projects/</span>
+            </li>
+            <li class="tree-item" data-para="02-Areas">
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>02-Areas/</span>
+            </li>
+            <li class="tree-item" data-para="03-Resources">
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>03-Resources/</span>
+            </li>
+            <li class="tree-item" data-para="04-Archives">
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>04-Archives/</span>
+            </li>
+            <li class="tree-item" data-para="_System">
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>_System/</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="para-detail-panel">
+          <div class="detail-header">
+            <div>
+              <h3 id="para-detail-title" class="detail-title">01-Projects — Active Charters & ADRs</h3>
+            </div>
+            <span id="para-detail-path" class="detail-path">01-Projects/</span>
+          </div>
+
+          <p id="para-detail-desc" class="detail-content">
+            Contains active initiatives with concrete deadlines and deliverables. Includes Architectural Decision Records (ADR) with 4-agent peer review personas (Argus for security, Codex for code, Ledger for token efficiency, Vox for human alignment).
+          </p>
+
+          <div>
+            <h4 style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">Key Files & Artifacts</h4>
+            <div id="para-detail-files" class="detail-files-grid">
+              <div class="file-pill">
+                <span class="file-pill-name">📄 Hermes-Agent-Vault-Setup.md</span>
+                <span class="file-pill-desc">Master hub note and deployment charter</span>
+              </div>
+              <div class="file-pill">
+                <span class="file-pill-name">📄 ADR/ADR-001-Memory-Pipeline.md</span>
+                <span class="file-pill-desc">Architectural record of staging protocol</span>
+              </div>
+              <div class="file-pill">
+                <span class="file-pill-name">📄 Projects.base</span>
+                <span class="file-pill-desc">Obsidian Dataview live database of active projects</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Matrix -->
+  <section id="comparison">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Unbiased Evaluation</span>
+        <h2 class="section-title">Why Hermes Brain vs Alternatives?</h2>
+        <p class="section-desc">
+          Compare architectural trade-offs between human-curated local vaults, raw chat logs, and opaque vector memory APIs.
+        </p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Evaluation Criterion</th>
+              <th class="col-highlight">Hermes Brain Template</th>
+              <th>Raw Chat Logs</th>
+              <th>Vector-DB (Mem0 / Pinecone)</th>
+              <th>Generic Obsidian Vault</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Human Review Before Memory</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ Staged in Kanban (Zero auto-pollute)</span></td>
+              <td><span class="check-no">✗ No review (unstructured)</span></td>
+              <td><span class="check-no">✗ Auto-embedded, opaque black box</span></td>
+              <td><span class="check-no">— No agent pipeline</span></td>
+            </tr>
+            <tr>
+              <td><strong>Plain Markdown Transparency</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ 100% standard .md files</span></td>
+              <td><span class="check-yes">✓ Raw JSON/text</span></td>
+              <td><span class="check-no">✗ Requires vendor API/portal</span></td>
+              <td><span class="check-yes">✓ Standard .md</span></td>
+            </tr>
+            <tr>
+              <td><strong>Portability & Git Versioning</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ Fully local, your private git repo</span></td>
+              <td><span class="check-yes">✓ Local files</span></td>
+              <td><span class="check-no">✗ Locked into SaaS service</span></td>
+              <td><span class="check-yes">✓ Git portable</span></td>
+            </tr>
+            <tr>
+              <td><strong>Token Telemetry & Auditing</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ Built-in Dataview & Token log</span></td>
+              <td><span class="check-no">✗ None</span></td>
+              <td><span class="check-no">△ Varies / proprietary billing</span></td>
+              <td><span class="check-no">✗ None</span></td>
+            </tr>
+            <tr>
+              <td><strong>Model Context Protocol (MCP)</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ Native MCP server (JSON-RPC)</span></td>
+              <td><span class="check-no">✗ None</span></td>
+              <td><span class="check-no">△ Custom API wrapper</span></td>
+              <td><span class="check-no">✗ Requires custom bridge</span></td>
+            </tr>
+            <tr>
+              <td><strong>Agent-Ready Setup Effort</strong></td>
+              <td class="col-highlight"><span class="check-yes">✓ 1-paste chat prompt or 1-liner</span></td>
+              <td><span class="check-yes">✓ Default stdout</span></td>
+              <td><span class="check-no">✗ Complex API key & SDK setup</span></td>
+              <td><span class="check-no">✗ Manual folder creation</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Built-In MCP Server Showcase -->
+  <section id="mcp">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Model Context Protocol</span>
+        <h2 class="section-title">Built-In MCP Server (<code>hermes_brain_mcp.py</code>)</h2>
+        <p class="section-desc">
+          Expose your Obsidian second brain directly to Claude Desktop, Cursor, OpenClaw, and any MCP-compatible client over stdio.
+        </p>
+      </div>
+
+      <div class="mcp-container">
+        <div class="mcp-info-box">
+          <div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 12px; color: #fff;">Exposed Agent Tools & Resources</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">
+              Click any tool below to test the simulated stdio JSON-RPC request and see the real-time response payload:
+            </p>
+
+            <div class="mcp-tools-list">
+              <div class="mcp-tool-item active" data-tool="vault_search">
+                <div>
+                  <div class="tool-name">vault_search(query, tags)</div>
+                  <div class="tool-desc">Keyword, regex, and frontmatter tag search across the entire vault.</div>
+                </div>
+              </div>
+              <div class="mcp-tool-item" data-tool="read_note">
+                <div>
+                  <div class="tool-name">read_note(path)</div>
+                  <div class="tool-desc">Safely fetch Markdown note content, frontmatter, and headings.</div>
+                </div>
+              </div>
+              <div class="mcp-tool-item" data-tool="get_user_profile">
+                <div>
+                  <div class="tool-name">get_user_profile()</div>
+                  <div class="tool-desc">Fetch operator operating parameters, boundaries, and tone guidelines.</div>
+                </div>
+              </div>
+              <div class="mcp-tool-item" data-tool="stage_memory_candidate">
+                <div>
+                  <div class="tool-name">stage_memory_candidate(fact, category)</div>
+                  <div class="tool-desc">Stage candidate facts directly into the Kanban queue for human review.</div>
+                </div>
+              </div>
+              <div class="mcp-tool-item" data-tool="vault_stats">
+                <div>
+                  <div class="tool-name">vault_stats()</div>
+                  <div class="tool-desc">Telemetry metrics on sessions, token usage, projects, and archiver health.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px;">Claude Desktop / Cursor Config Snippet:</div>
+            <pre style="background: #080c16; padding: 10px; border-radius: 6px; font-size: 0.78rem; color: var(--accent-cyan); overflow-x: auto;">"hermes-brain": {
+  "command": "python",
+  "args": ["&lt;vault_path&gt;/_System/Scripts/hermes_brain_mcp.py"]
+}</pre>
+          </div>
+        </div>
+
+        <div class="mcp-interactive-terminal">
+          <div class="mcp-term-top">
+            <div class="terminal-dots">
+              <span class="dot-red"></span>
+              <span class="dot-yellow"></span>
+              <span class="dot-green"></span>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-dim); font-family: monospace;">stdio JSON-RPC Inspector</span>
+            <button id="mcp-run-btn" class="btn-primary" style="padding: 4px 12px; font-size: 0.8rem;">Re-run Query</button>
+          </div>
+          <div id="mcp-term-output" class="mcp-term-output"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities & Automation Features Grid -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Production-Grade Tooling</span>
+        <h2 class="section-title">Everything Included in the Vault</h2>
+        <p class="section-desc">
+          More than just folders — an entire cross-platform automation and cognitive framework.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-purple">🛡️</div>
+          <h3 class="feature-title">Automatic Secret Scrubbing</h3>
+          <p class="feature-desc">
+            Session archivers scan for API keys, passwords, bearer tokens, SSH private keys, and connection strings, replacing them with <code>[REDACTED]</code> before any text touches disk.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-cyan">📊</div>
+          <h3 class="feature-title">Token Usage Telemetry</h3>
+          <p class="feature-desc">
+            Tracks prompt and completion tokens per chat session. Automatically aggregates daily totals into <code>Token-Usage.log</code> and visualizes them on your Obsidian Dashboard.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-emerald">🌙</div>
+          <h3 class="feature-title">Nocturnal Dream Cycle</h3>
+          <p class="feature-desc">
+            Run <code>dream_cycle.py</code> to consolidate cross-session themes, distill learnings, and update Maps of Content (MOCs) while you sleep, using local Ollama or Python embeddings.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-amber">📑</div>
+          <h3 class="feature-title">Multi-Agent ADRs</h3>
+          <p class="feature-desc">
+            Architecture Decision Records with built-in multi-agent review personas: Argus (Security), Codex (Code), Ledger (Token efficiency), and Vox (Alignment).
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-cyan">🔍</div>
+          <h3 class="feature-title">Local Semantic Search</h3>
+          <p class="feature-desc">
+            Index notes and chat transcripts into a local semantic vector store powered by <code>sentence-transformers</code> or Ollama embeddings. Zero cloud queries required.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-purple">🎭</div>
+          <h3 class="feature-title">Personality Judgment Matrix</h3>
+          <p class="feature-desc">
+            An 11-dimension cognitive framework to analyze communication patterns, detect tone anomalies, and keep multi-agent squads aligned with your style.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Wizard -->
+  <section id="install">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Quick Start</span>
+        <h2 class="section-title">5 Flexible Ways to Get Started</h2>
+        <p class="section-desc">
+          Choose the setup option that fits your workflow — from a 1-paste chat prompt to an interactive terminal script.
+        </p>
+      </div>
+
+      <div class="install-wizard">
+        <div class="wizard-nav">
+          <button class="wizard-tab active" data-wizard="tab-terminal">🚀 1. Terminal One-Liner</button>
+          <button class="wizard-tab" data-wizard="tab-prompt">🤖 2. Hermes Chat Prompt</button>
+          <button class="wizard-tab" data-wizard="tab-clone">📦 3. GitHub Template / Clone</button>
+          <button class="wizard-tab" data-wizard="tab-trial">🧪 4. Scratch Vault Trial</button>
+          <button class="wizard-tab" data-wizard="tab-codespaces">🌐 5. GitHub Codespaces</button>
+        </div>
+
+        <div class="wizard-content">
+          <!-- Pane 1: Terminal One-Liner -->
+          <div id="tab-terminal" class="wizard-pane active">
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Fastest: Run the automated installer directly in your terminal</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">
+              Downloads the latest template, asks where you want your vault, checks for Obsidian, and registers <code>HERMES_VAULT_PATH</code>.
+            </p>
+
+            <div style="margin-top: 18px;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-purple-light);">Windows (PowerShell):</span>
+              <div class="wizard-code-block">
+                <button class="copy-btn" data-target="code-win-term">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy</span>
+                </button>
+                <pre id="code-win-term">irm https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.ps1 | iex</pre>
+              </div>
+            </div>
+
+            <div style="margin-top: 14px;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-cyan);">Linux / macOS / WSL (Bash):</span>
+              <div class="wizard-code-block">
+                <button class="copy-btn" data-target="code-nix-term">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy</span>
+                </button>
+                <pre id="code-nix-term">curl -fsSL https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/_System/Scripts/Installers/install.sh | bash</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 2: Hermes Chat Prompt -->
+          <div id="tab-prompt" class="wizard-pane">
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Zero Manual Terminal Work: Paste directly into your Hermes / OpenClaw chat</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">
+              Hermes will clone the repo, run the installer, configure the environment, and wire up the hourly archiving cron job automatically.
+            </p>
+
+            <div class="wizard-code-block">
+              <button class="copy-btn" data-target="code-hermes-prompt">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy Prompt</span>
+              </button>
+              <pre id="code-hermes-prompt">Clone https://github.com/mistrysiddh/hermes-brain-template into a new "Hermes Brain" vault for me. Steps:
+1. Ask me where I want the vault folder to live (default: ~/Hermes Brain on Linux/macOS, or %USERPROFILE%\Hermes Brain on Windows).
+2. Clone the repo into that location.
+3. Run the platform-appropriate installer (_System/Scripts/Installers/install.sh or install.ps1).
+4. Relay any questions to me and confirm env.HERMES_VAULT_PATH is set.
+5. Create an hourly session-archiving cron job named "hermes-brain-archive-hourly" pointing to &lt;vault&gt;/_System/Scripts/hourly_archive.py.</pre>
+            </div>
+          </div>
+
+          <!-- Pane 3: GitHub Template / Clone -->
+          <div id="tab-clone" class="wizard-pane">
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Own Your Private Git Repo with Full Version History</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">
+              Use GitHub's green "Use this template" button to fork the repository privately into your GitHub account, then clone it locally:
+            </p>
+
+            <div class="wizard-code-block">
+              <button class="copy-btn" data-target="code-git-clone">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+              <pre id="code-git-clone">git clone https://github.com/mistrysiddh/hermes-brain-template.git "Hermes Brain"
+cd "Hermes Brain"
+# Windows:
+powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\install.ps1
+# Linux/macOS:
+chmod +x _System/Scripts/Installers/install.sh && ./_System/Scripts/Installers/install.sh</pre>
+            </div>
+          </div>
+
+          <!-- Pane 4: Scratch Vault Trial -->
+          <div id="tab-trial" class="wizard-pane">
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Zero Commitment: Test in a disposable sandbox</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">
+              Creates a temporary copy in <code>%TEMP%</code> or <code>/tmp</code> without touching your real Hermes config or permanent directories:
+            </p>
+
+            <div class="wizard-code-block">
+              <button class="copy-btn" data-target="code-scratch">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+              <pre id="code-scratch"># Linux / macOS:
+./_System/Scripts/Installers/try.sh
+
+# Windows (PowerShell):
+powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</pre>
+            </div>
+          </div>
+
+          <!-- Pane 5: GitHub Codespaces -->
+          <div id="tab-codespaces" class="wizard-pane">
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Instant Browser Sandbox (60 Free Hours / Month)</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px;">
+              Spin up a fully configured Linux container in your browser with zero local installs:
+            </p>
+            <a href="https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368" target="_blank" rel="noopener noreferrer" class="btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              <span>Launch Codespaces Sandbox</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Frequently Asked Questions</span>
+        <h2 class="section-title">Everything You Need to Know</h2>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>Do I need to run a local LLM (like Ollama)?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            No! The core vault, session archiver, and memory-review pipeline work with any Hermes / OpenClaw agent without requiring local models. Only the optional trend-digest and nocturnal dream cycle scripts use Ollama or sentence-transformers for local semantic embeddings.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>Is my chat history and personal data private?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            100% private. Everything lives in your local vault directory (or private GitHub fork). All session archives in <code>04-Archives/Daily/</code>, candidate reviews in <code>04-Archives/Memory-Review/</code>, and plugin configs are strictly git-ignored so you never accidentally commit personal data.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>Can I use this vault without Hermes or OpenClaw?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            Yes. The vault structure, Dataview queries, Kanban boards, and templates make an outstanding standalone Obsidian "Second Brain" for developers and engineers. The Hermes automation simply adds automated session harvesting on top.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>How do I update the template without overwriting my notes?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            Run <code>./_System/Scripts/Installers/update.sh</code> (or <code>update.ps1</code> on Windows). It pulls the latest scripts, templates, and bug fixes without touching your existing personal notes, daily logs, or user profiles.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="brand-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </div>
+            <strong style="font-size: 1.1rem; color: #fff;">Hermes Brain</strong>
+          </div>
+          <p>
+            An open-source persistent memory architecture for Hermes Agent & OpenClaw. Built with ❤️ for builders, researchers, and self-hosters.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h5>Architecture</h5>
+          <ul>
+            <li><a href="#pipeline">Memory Pipeline</a></li>
+            <li><a href="#para">PARA Vault Hierarchy</a></li>
+            <li><a href="#mcp">MCP Server (JSON-RPC)</a></li>
+            <li><a href="#comparison">Feature Comparison</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Community & Support</h5>
+          <ul>
+            <li><a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+            <li><a href="https://github.com/mistrysiddh/hermes-brain-template/discussions" target="_blank" rel="noopener noreferrer">Discussions & Q&A</a></li>
+            <li><a href="https://github.com/sponsors/mistrysiddh" target="_blank" rel="noopener noreferrer">Sponsor on GitHub ❤️</a></li>
+            <li><a href="https://matrix.to/#/#hermes-brain-general:matrix.org" target="_blank" rel="noopener noreferrer">Matrix Space</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Author</h5>
+          <ul>
+            <li><strong style="color: #fff;">Siddh Mistry</strong></li>
+            <li><span style="color: var(--text-dim);">Technical Trainer & AI Builder</span></li>
+            <li><a href="https://github.com/mistrysiddh" target="_blank" rel="noopener noreferrer">@mistrysiddh on GitHub</a></li>
+            <li><a href="https://youtu.be/2cXrS1IWsSw" target="_blank" rel="noopener noreferrer">YouTube Tutorials</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Released under the <strong>MIT License</strong>. Free to use, adapt, and fork.
+        </div>
+        <div>
+          Template Version <strong>v1.22.20</strong> · Built for Obsidian & Hermes Agent
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
