@@ -16,7 +16,7 @@ topic_behavior: []
 
 # Personality Judgment Analysis Template
 
-Use this template to conduct a structured personality judgment analysis following the framework in [[Skills-Notes/Personality-Judgment-Framework.md]].
+Use this template to conduct a structured personality judgment analysis following the framework in [[02-Areas/Skills/Personality-Judgment-Framework|Personality Judgment Framework]].
 
 ## 📋 Instructions
 1. Duplicate this template for each new analysis
@@ -339,10 +339,10 @@ For each significant pattern observed, complete this template:
 - 
 
 ### Linked Resources:
-- [[Daily/YYYY/MM/DD/]] - Session exports
-- [[Skills-Notes/Skill-to-Chat-Links.md]] - Skill usage data
-- [[Memory-Review/]] - Promoted durable knowledge
-- [[MOC]] - Map of content for navigation
+- [[04-Archives/Daily/README|04-Archives/Daily/YYYY/MM/DD/]] - Session exports
+- [[02-Areas/Skills/Skill-to-Chat-Links|Skill-to-Chat-Links]] - Skill usage data
+- [[04-Archives/Memory-Review/README|04-Archives/Memory-Review/]] - Promoted durable knowledge
+- [[MOC|Map of Content (MOC)]] - High-level navigation hub
 
 ---
-*Analysis conducted using Personality Judgment Framework v1.0 | Completed: {{date}} | Next review suggested: {{date + 7 days}}*
+*Analysis conducted using Personality Judgment Framework v1.0 | Completed: {{date}} | Next review suggested: 7 days from completion*

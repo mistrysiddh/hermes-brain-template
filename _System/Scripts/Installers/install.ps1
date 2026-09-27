@@ -95,21 +95,31 @@ if ($isRemote) {
   } catch {}
 
   if ($sameLocation) {
-    Write-Info "Configuring in place at $Dest"
-  } else {
-    if (Test-Path $Dest) {
-      $confirm = Read-Host "  $Dest already exists. Overwrite/merge into it? [y/N]"
-      if ($confirm -notmatch '^[Yy]') { Write-Host "Aborted."; exit 1 }
+      Write-Info "Configuring in place at $Dest"
     } else {
-      New-Item -ItemType Directory -Path $Dest -Force | Out-Null
+      if (Test-Path $Dest) {
+        $confirm = Read-Host "  $Dest already exists. Overwrite/merge into it? [y/N]"
+        if ($confirm -notmatch '^[Yy]') { Write-Host "Aborted."; exit 1 }
+      } else {
+        New-Item -ItemType Directory -Path $Dest -Force | Out-Null
+      }
+      Write-Info "Copying template to $Dest ..."
+      # Preserve User-Profile.md if it already exists and has content (not just template)
+      $userProfilePath = Join-Path $Dest "02-Areas\User-Profile.md"
+      $shouldPreserve = (Test-Path $userProfilePath -PathType Leaf) -and ((Get-Item $userProfilePath).Length -gt 0)
+      if ($shouldPreserve) {
+        Write-Info "Preserving existing User-Profile.md (skipping template copy)"
+        Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" -and -not ($_.Name -eq "02-Areas" -and (Test-Path (Join-Path $_.FullName "User-Profile.md") -PathType Leaf)) } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
+        }
+      } else {
+        Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
+        }
+      }
+      Write-Ok "Copied."
     }
-    Write-Info "Copying template to $Dest ..."
-    Get-ChildItem -Path $TemplateRoot -Force | Where-Object { $_.Name -ne ".git" } | ForEach-Object {
-      Copy-Item -Path $_.FullName -Destination $Dest -Recurse -Force
-    }
-    Write-Ok "Copied."
   }
-}
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +222,55 @@ if ($hermes) {
           Write-Ok "Created hourly archiving cron job 'hermes-brain-archive-hourly'."
         } else {
           Write-Warn "Could not create cron job automatically -- see INSTALL_PROMPT.md."
+        }
+      }
+    }
+
+    Write-Host ""
+    Write-Host "Real-time session syncing hooks" -ForegroundColor Cyan
+    $setupHooks = Read-Host "  Set up real-time session archiving hooks in Hermes now (syncs chats on start and every turn)? [Y/n]"
+    if ($setupHooks -notmatch '^[Nn]') {
+      $hookCmd = Join-Path $Dest "_System\Scripts\hermes_session_sync.cmd"
+      $pySetup = @"
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+hermes_cfg = os.path.expandvars(r'%LOCALAPPDATA%\hermes\config.yaml')
+if not os.path.exists(hermes_cfg):
+    hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception:
+        cfg = {}
+    
+    hooks = cfg.setdefault('hooks', {})
+    hook_script = r'$hookCmd'
+    
+    for evt in ['on_session_start', 'post_llm_call', 'on_session_end', 'on_session_finalize']:
+        entries = hooks.setdefault(evt, [])
+        cmd_str = f'\"{hook_script}\" --hook --event {evt}'
+        if not any(e.get('command') == cmd_str for e in entries if isinstance(e, dict)):
+            entries.append({'command': cmd_str, 'timeout': 30, '_hermes_brain': True})
+            
+    cfg['hooks_auto_accept'] = True
+    with open(hermes_cfg, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+    print('HOOKS_CONFIGURED')
+"@
+      $py = Get-Command python -ErrorAction SilentlyContinue
+      if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+      if ($py) {
+        $res = & $py.Source -c $pySetup 2>&1
+        if ($res -match "HOOKS_CONFIGURED") {
+          Write-Ok "Configured real-time session lifecycle hooks in Hermes config.yaml."
+        } else {
+          Write-Warn "Could not update config.yaml automatically -- see INSTALL_PROMPT.md."
         }
       }
     }

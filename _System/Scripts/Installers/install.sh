@@ -122,7 +122,16 @@ if [ "$IS_REMOTE" = true ]; then
   mkdir -p "$DEST"
   if command -v git >/dev/null 2>&1; then
     info "Cloning template from GitHub ($REPO_URL)..."
-    git clone "$REPO_URL" "$DEST"
+    # Clone to temp dir first, then copy preserving User-Profile.md
+    TMP_CLONE="$(mktemp -d -t hermes-brain-clone.XXXXXX)"
+    git clone "$REPO_URL" "$TMP_CLONE"
+    # Preserve User-Profile.md if it already exists and has content
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      rm -f "$TMP_CLONE/02-Areas/User-Profile.md"
+    fi
+    cp -R "$TMP_CLONE/"* "$DEST/"
+    rm -rf "$TMP_CLONE"
     ok "Cloned."
   else
     info "Downloading template archive from GitHub..."
@@ -130,6 +139,11 @@ if [ "$IS_REMOTE" = true ]; then
     TMP_EXTRACT="$(mktemp -d -t hermes-brain-extract.XXXXXX 2>/dev/null || mktemp -d /tmp/hermes-brain-extract.XXXXXX)"
     curl -fsSL "$ZIP_URL" -o "$TMP_ZIP"
     unzip -q "$TMP_ZIP" -d "$TMP_EXTRACT"
+    # Preserve User-Profile.md if it already exists and has content
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      rm -f "$TMP_EXTRACT/hermes-brain-template-main/02-Areas/User-Profile.md"
+    fi
     cp -R "$TMP_EXTRACT/hermes-brain-template-main/"* "$DEST/"
     rm -rf "$TMP_ZIP" "$TMP_EXTRACT"
     ok "Downloaded and extracted."
@@ -145,7 +159,13 @@ else
     fi
     mkdir -p "$DEST"
     info "Copying template to $DEST ..."
-    (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' .) | (cd "$DEST" && tar xf -)
+    # Preserve User-Profile.md if it already exists and has content (not just template)
+    if [ -f "$DEST/02-Areas/User-Profile.md" ] && [ -s "$DEST/02-Areas/User-Profile.md" ]; then
+      info "Preserving existing User-Profile.md (skipping template copy)"
+      (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' --exclude='02-Areas/User-Profile.md' .) | (cd "$DEST" && tar xf -)
+    else
+      (cd "$TEMPLATE_ROOT" && tar cf - --exclude='.git' .) | (cd "$DEST" && tar xf -)
+    fi
     ok "Copied."
   fi
 fi
@@ -244,6 +264,44 @@ if command -v hermes >/dev/null 2>&1; then
         hermes cron create "0 * * * *" "$ARCHIVE_PROMPT" --name "hermes-brain-archive-hourly" \
           && ok "Created hourly archiving cron job 'hermes-brain-archive-hourly'." \
           || warn "Could not create cron job automatically — see INSTALL_PROMPT.md."
+      fi
+    fi
+
+    echo
+    bold "Real-time session syncing hooks"
+    read -rp "  Set up real-time session archiving hooks in Hermes now (syncs chats on start and every turn)? [Y/n]: " SETUP_HOOKS
+    if [ "${SETUP_HOOKS,,}" != "n" ]; then
+      HOOK_CMD="$DEST/_System/Scripts/hermes_session_sync.sh"
+      chmod +x "$HOOK_CMD" 2>/dev/null || true
+      PY=$(find_python || true)
+      if [ -n "$PY" ]; then
+        "$PY" -c "
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception:
+        cfg = {}
+    hooks = cfg.setdefault('hooks', {})
+    hook_script = '$HOOK_CMD'
+    for evt in ['on_session_start', 'post_llm_call', 'on_session_end', 'on_session_finalize']:
+        entries = hooks.setdefault(evt, [])
+        cmd_str = f'\"{hook_script}\" --hook --event {evt}'
+        if not any(e.get('command') == cmd_str for e in entries if isinstance(e, dict)):
+            entries.append({'command': cmd_str, 'timeout': 30, '_hermes_brain': True})
+    cfg['hooks_auto_accept'] = True
+    with open(hermes_cfg, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+    print('HOOKS_CONFIGURED')
+" 2>&1 | grep -q "HOOKS_CONFIGURED" \
+          && ok "Configured real-time session lifecycle hooks in ~/.hermes/config.yaml." \
+          || warn "Could not update config.yaml automatically — see INSTALL_PROMPT.md."
       fi
     fi
   else

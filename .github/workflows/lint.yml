@@ -85,7 +85,7 @@ jobs:
         run: |
           set -e
           python3 _System/Scripts/vault_audit.py
-          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Vault-Audit-Report.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Vault-Audit-Report.md
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Vault-Audit-Report.md
           echo "vault_audit.py: OK, report generated"
       - name: Run agent_performance.py against fixture
         env:
@@ -93,7 +93,7 @@ jobs:
         run: |
           set -e
           python3 _System/Scripts/agent_performance.py
-          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Agent-Performance.md || test -f /tmp/hermes-brain-fixture/Skills-Notes/Agent-Performance.md
+          test -f /tmp/hermes-brain-fixture/04-Archives/Audit-Reports/Agent-Performance.md
           echo "agent_performance.py: OK, report generated"
       - name: Run hourly_archive.py against fixture (no-new-sessions path)
         env:

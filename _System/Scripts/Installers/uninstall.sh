@@ -51,10 +51,10 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 3. Cron job cleanup
+# 3. Cron job & hooks cleanup
 # ---------------------------------------------------------------------------
 echo
-bold "Cron job cleanup"
+bold "Cron job & hooks cleanup"
 if command -v hermes >/dev/null 2>&1; then
   if hermes cron list 2>/dev/null | grep -q "hermes-brain-archive-hourly"; then
     read -rp "  Found 'hermes-brain-archive-hourly' cron job. Remove it now? [Y/n]: " RM_CRON
@@ -68,6 +68,38 @@ if command -v hermes >/dev/null 2>&1; then
   fi
 else
   info "Hermes CLI not found — if you had an hourly cron job set up, remove it via Hermes chat or CLI."
+fi
+
+# Clean up hooks from config.yaml if they reference this vault
+PY=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)
+if [ -n "$PY" ]; then
+  "$PY" -c "
+import os, sys
+try:
+    import yaml
+except ImportError:
+    yaml = None
+hermes_cfg = os.path.expanduser('~/.hermes/config.yaml')
+if os.path.exists(hermes_cfg) and yaml:
+    try:
+        with open(hermes_cfg, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f) or {}
+        hooks = cfg.get('hooks', {})
+        dest_norm = os.path.normpath('$DEST').lower()
+        modified = False
+        for evt in list(hooks.keys()):
+            if isinstance(hooks[evt], list):
+                new_list = [e for e in hooks[evt] if not (isinstance(e, dict) and dest_norm in os.path.normpath(e.get('command', '')).lower())]
+                if len(new_list) != len(hooks[evt]):
+                    hooks[evt] = new_list
+                    modified = True
+        if modified:
+            with open(hermes_cfg, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(cfg, f, default_flow_style=False, sort_keys=False)
+            print('HOOKS_REMOVED')
+    except Exception:
+        pass
+" 2>&1 | grep -q "HOOKS_REMOVED" && ok "Removed vault hooks from ~/.hermes/config.yaml." || true
 fi
 
 # ---------------------------------------------------------------------------
