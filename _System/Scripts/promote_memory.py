@@ -334,11 +334,96 @@ def main():
     parser.add_argument("--target", choices=["hermes", "profile", "dismiss"], help="Promotion target destination")
     parser.add_argument("--category", type=str, default="general", help="Category for fact")
     parser.add_argument("--test", action="store_true", help="Run automated self-tests")
+    parser.add_argument("--review", action="store_true", help="Interactively review and promote/dismiss memory candidates")
     args = parser.parse_args()
 
     if args.test:
         run_self_test()
         sys.exit(0)
+
+    if args.review:
+        # Interactive review mode
+        cands = promoter.list_candidates()
+        if not cands:
+            print("No pending memory candidates to review.")
+            sys.exit(0)
+        
+        print("Found {} pending memory candidate(s):".format(len(cands)))
+        print("-" * 60)
+        for i, cand in enumerate(cands, 1):
+            fact_display = cand['fact'][:80] + ('...' if len(cand['fact']) > 80 else '')
+            print("{}. [{}] {}".format(i, cand['category'], fact_display))
+            print("   File: {} | Source: {}".format(cand['filename'], cand['source']))
+            print()
+        
+        while True:
+            try:
+                choice = input("Select candidate to review (1-{}, or 'q' to quit): ".format(len(cands))).strip()
+                if choice.lower() == 'q':
+                    print("Review cancelled.")
+                    sys.exit(0)
+                
+                idx = int(choice) - 1
+                if 0 <= idx < len(cands):
+                    cand = cands[idx]
+                    break
+                else:
+                    print("Please enter a number between 1 and {}".format(len(cands)))
+            except ValueError:
+                print("Please enter a valid number or 'q' to quit")
+        
+        print("\nReviewing candidate {}:".format(idx + 1))
+        print("Fact: {}".format(cand['fact']))
+        print("Category: {}".format(cand['category']))
+        print("Source: {}".format(cand['source']))
+        print("File: {}".format(cand['full_path']))
+        print("-" * 60)
+        
+        # Show the full candidate note for context
+        try:
+            with open(cand['full_path'], 'r', encoding='utf-8') as f:
+                note_content = f.read()
+            print("Full note content:")
+            print("=" * 40)
+            print(note_content)
+            print("=" * 40)
+        except Exception as e:
+            print("Could not read candidate file: {}".format(e))
+        
+        print("\nWhat would you like to do?")
+        print("  [h] Promote to Hermes MEMORY.md")
+        print("  [p] Promote to User-Profile.md")
+        print("  [d] Dismiss / Reject")
+        print("  [s] Skip (leave pending)")
+        print("  [q] Quit review")
+        
+        while True:
+            action = input("Choose action (h/p/s/d/q): ").strip().lower()
+            if action in ['h', 'p', 's', 'd', 'q']:
+                break
+            print("Please choose h, p, s, d, or q")
+        
+        if action == 'q':
+            print("Review cancelled.")
+            sys.exit(0)
+        elif action == 's':
+            print("Candidate left pending for later review.")
+            sys.exit(0)
+        elif action == 'h':
+            # Promote to Hermes MEMORY.md
+            res = promoter.promote_to_hermes(cand['fact'], cand['category'], Path(cand['full_path']))
+            fact_display = cand['fact'][:60] + ('...' if len(cand['fact']) > 60 else '')
+            print("✅ Promoted to Hermes MEMORY.md: {}".format(fact_display))
+        elif action == 'p':
+            # Promote to User-Profile.md
+            res = promoter.promote_to_profile(cand['fact'], Path(cand['full_path']))
+            fact_display = cand['fact'][:60] + ('...' if len(cand['fact']) > 60 else '')
+            print("✅ Promoted to User-Profile.md: {}".format(fact_display))
+        elif action == 'd':
+            # Dismiss
+            res = promoter.dismiss(cand['fact'], Path(cand['full_path']))
+            fact_display = cand['fact'][:60] + ('...' if len(cand['fact']) > 60 else '')
+            print("🗑️ Dismissed candidate: {}".format(fact_display))
 
     vault_path = get_vault_path(args.vault)
     hermes_mem = get_hermes_memory_path(args.hermes_memory)
