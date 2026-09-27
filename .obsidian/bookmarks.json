@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "type": "file",
+      "title": "🧭 Map of Content (MOC)",
+      "path": "MOC.md"
+    },
+    {
+      "type": "file",
+      "title": "📊 Dashboard",
+      "path": "Dashboard.md"
+    },
+    {
+      "type": "file",
+      "title": "🚀 Hermes Agent Vault Setup",
+      "path": "01-Projects/Hermes-Agent-Vault-Setup.md"
+    },
+    {
+      "type": "group",
+      "title": "🌐 Saved Graph Presets",
+      "items": [
+        {
+          "type": "search",
+          "title": "🧠 Core Knowledge (Excludes Daily Archives)",
+          "query": "-path:04-Archives/Daily"
+        },
+        {
+          "type": "search",
+          "title": "🚀 Active Projects & Areas",
+          "query": "path:01-Projects OR path:02-Areas"
+        },
+        {
+          "type": "search",
+          "title": "🔬 Domain Resources & MOCs",
+          "query": "path:03-Resources"
+        },
+        {
+          "type": "search",
+          "title": "⚙️ Memory Review & System Architecture",
+          "query": "path:_System OR path:04-Archives/Memory-Review"
+        }
+      ]
+    }
+  ]
+}

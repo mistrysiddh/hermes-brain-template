@@ -23,19 +23,25 @@ from datetime import datetime, timedelta
 from collections import Counter, defaultdict
 
 def get_vault():
+    # 1. Check command line argument (explicit argument always takes precedence)
     for arg in sys.argv[1:]:
         if not arg.startswith("--") and os.path.isdir(arg):
             return os.path.abspath(arg)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
-    cand = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
+
+    # 2. Check environment variable
     env_vault = os.environ.get("HERMES_VAULT_PATH")
     if env_vault and os.path.exists(env_vault):
-        return env_vault
+        return os.path.abspath(env_vault)
+
+    # 3. Heuristic: look for .obsidian or 01-Projects in parent directories
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    for cand in [
+        os.path.abspath(os.path.join(script_dir, "..", "..")),
+        os.path.abspath(os.path.join(script_dir, ".."))
+    ]:
+        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
+            return cand
+
     return None
 
 VAULT = get_vault()
@@ -43,8 +49,10 @@ if not VAULT:
     print("Could not resolve vault path — set HERMES_VAULT_PATH or pass vault directory as argument.")
     sys.exit(1)
 
-rep_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Agent-Performance.md")
-REPORT_PATH = rep_cand if os.path.exists(os.path.dirname(rep_cand)) else os.path.join(VAULT, "Skills-Notes", "Agent-Performance.md")
+# Always write the report inside the resolved vault - never fall back to a different location
+report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+os.makedirs(report_dir, exist_ok=True)
+REPORT_PATH = os.path.join(report_dir, "Agent-Performance.md")
 
 daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
 DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")

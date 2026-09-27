@@ -12,8 +12,10 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 - [[Welcome]] — orientation & system overview
 - [[Dashboard]] — live linear view: active projects, open memory candidates, recent sessions, installed skills
 - [[_System/Canvases/Dashboard-Beta|Dashboard-Beta]] — responsive widescreen card layout (KPI strip, activity heatmap, session calendar, weather, quick actions)
+- [[03-Resources/Research/Interactive-Knowledge-Map|Interactive Knowledge Map]] — high-performance WebGL graph (community detection & god-nodes)
 - [[01-Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]] — master hub note: vault architecture, memory pipeline, and status
 - [[01-Projects/README|01-Projects Index]] — active goals, deliverables, and ADRs
+
 
 ## 🌐 Specialized MOCs (Knowledge Domain Hubs)
 - [[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack MOC]] — Linux, Docker, Kubernetes, self-hosting, automation
@@ -27,7 +29,9 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 - [[04-Archives/Daily/Timeline|Daily Timeline]] — live chronological session browse (Dataview)
 - [[04-Archives/Daily/Chat-Correlation|Chat Correlation]] — live pattern/agent profile breakdown (Dataview)
 - [[04-Archives/Memory-Review/TEMPLATE|Memory Review Criteria]] — durable / non-sensitive / verified / actionable standards
+- [[04-Archives/Memory-Review/Promotion-Candidates|Memory Promotion Candidates]] — active checklist of staged facts awaiting review
 - [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]] — 3-stage visual promotion Kanban board
+- [[04-Archives/Memory-Review/Consolidation-Log|Memory Consolidation Log]] — nocturnal memory distillation & synthesis log
 - [[03-Resources/Guides/Dataview-Query-Library|Dataview Query Library]] — copy-paste Dataview queries for this vault
 - [[03-Resources/Guides/Kanban-Usage|Kanban Usage Guide]] — board workflow, card/project note links
 
@@ -46,6 +50,8 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 ## 🔬 Research & Inquiries
 - [[03-Resources/Research/README|Research Inquiries Index]] — technical investigations and synthesis
 - [[03-Resources/Research/Weekly-Synthesis-2026-W39|Weekly Synthesis Sample]] — sample weekly synthesis and findings
+- [[03-Resources/Research/Supermemory/hermes-memories|Supermemory Memory Archive]] — 480+ historical extracted memory chunks
+
 
 ## ⚙️ System & Templates
 - [[_System/README|System Architecture Index]] — templates, automation scripts, and visual canvases

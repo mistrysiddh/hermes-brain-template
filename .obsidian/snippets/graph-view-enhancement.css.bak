@@ -1,0 +1,41 @@
+/* Graph View Controls and Visual Polish */
+
+.graph-controls {
+  background: rgba(20, 22, 32, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+  padding: 10px 14px !important;
+}
+
+.graph-controls:hover {
+  border-color: rgba(99, 102, 241, 0.35) !important;
+}
+
+.graph-controls .setting-item-heading {
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-accent, #6366f1) !important;
+}
+
+/* Color Group items styling */
+.graph-controls .color-group-item {
+  border-radius: 6px !important;
+  padding: 4px 6px !important;
+  margin-bottom: 4px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.graph-controls .color-group-item:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Local graph leaf polish */
+.workspace-leaf-content[data-type="localgraph"] {
+  background-color: var(--background-primary) !important;
+}

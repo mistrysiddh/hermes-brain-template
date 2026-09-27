@@ -2,6 +2,7 @@
   "theme": "obsidian",
   "cssTheme": "Nemoclaw",
   "enabledCssSnippets": [
-    "dashboard-beta"
+    "dashboard-beta",
+    "graph-view-enhancement"
   ]
 }

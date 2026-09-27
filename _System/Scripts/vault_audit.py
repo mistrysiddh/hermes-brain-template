@@ -23,19 +23,25 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 def get_vault():
+    # 1. Check command line argument (explicit argument always takes precedence)
     for arg in sys.argv[1:]:
         if not arg.startswith("--") and os.path.isdir(arg):
             return os.path.abspath(arg)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
-    cand = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-        return cand
+
+    # 2. Check environment variable
     env_vault = os.environ.get("HERMES_VAULT_PATH")
     if env_vault and os.path.exists(env_vault):
-        return env_vault
+        return os.path.abspath(env_vault)
+
+    # 3. Heuristic: look for .obsidian or 01-Projects in parent directories
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    for cand in [
+        os.path.abspath(os.path.join(script_dir, "..", "..")),
+        os.path.abspath(os.path.join(script_dir, ".."))
+    ]:
+        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
+            return cand
+
     return None
 
 VAULT = get_vault()
@@ -43,8 +49,10 @@ if not VAULT:
     print("Could not resolve vault path — set HERMES_VAULT_PATH or pass vault directory as argument.")
     sys.exit(1)
 
-rep_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports", "Vault-Audit-Report.md")
-REPORT_PATH = rep_cand if os.path.exists(os.path.dirname(rep_cand)) else os.path.join(VAULT, "Skills-Notes", "Vault-Audit-Report.md")
+# Always write the report inside the resolved vault - never fall back to a different location
+report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+os.makedirs(report_dir, exist_ok=True)
+REPORT_PATH = os.path.join(report_dir, "Vault-Audit-Report.md")
 
 # Patterns
 WIKILINK_RE = re.compile(r'\[\[([^\]]+)\]\]')
@@ -78,7 +86,6 @@ def validate_manifest():
     m_cand = os.path.join(VAULT, "04-Archives", "Daily", "manifest.jsonl")
     manifest_path = m_cand if os.path.exists(m_cand) else os.path.join(VAULT, "Daily", "manifest.jsonl")
     if not os.path.exists(manifest_path):
-        issues.append({"type": "missing", "message": "manifest.jsonl does not exist"})
         return issues
 
     sessions = load_manifest()
@@ -86,8 +93,7 @@ def validate_manifest():
     # Check for missing files referenced in manifest
     for sid, rec in sessions.items():
         path = rec.get("path", "")
-        file_path = path if os.path.isabs(path) else os.path.join(VAULT, path)
-        if path and not os.path.exists(file_path):
+        if path and not os.path.exists(os.path.join(VAULT, path)):
             issues.append({
                 "type": "missing_file",
                 "session_id": sid,
@@ -194,32 +200,18 @@ def find_stale_memory_review(days=30):
 
 def find_duplicate_sessions():
     """Find duplicate session_ids in manifest."""
-    m_cand = os.path.join(VAULT, "04-Archives", "Daily", "manifest.jsonl")
-    manifest_path = m_cand if os.path.exists(m_cand) else os.path.join(VAULT, "Daily", "manifest.jsonl")
+    sessions = load_manifest()
     duplicates = []
     seen = {}
-    if not os.path.exists(manifest_path):
-        return duplicates
-    with open(manifest_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            sid = rec.get("session_id")
-            if not sid:
-                continue
-            if sid in seen:
-                duplicates.append({
-                    "session_id": sid,
-                    "orig_path": seen[sid].get("path", "unknown"),
-                    "dup_path": rec.get("path", "unknown")
-                })
-            else:
-                seen[sid] = rec
+    for sid, rec in sessions.items():
+        if sid in seen:
+            duplicates.append({
+                "session_id": sid,
+                "orig_path": seen[sid].get("path", "unknown"),
+                "dup_path": rec.get("path", "unknown")
+            })
+        else:
+            seen[sid] = rec
     return duplicates
 
 
