@@ -12,6 +12,29 @@
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
 [![GitHub Stars](https://img.shields.io/github/stars/mistrysiddh/hermes-brain-template?style=social)](https://github.com/mistrysiddh/hermes-brain-template/stargazers)
 
+
+## 🚀 Try it in 60 Seconds (Verifiable)
+
+```bash
+# 1. Clone template (preserves your User-Profile.md)
+git clone https://github.com/mistrysiddh/hermes-brain-template.git my-second-brain
+cd my-second-brain
+
+# 2. Run installer (choose your OS)
+# Linux/macOS: chmod +x install.sh && ./install.sh
+# Windows PowerShell: .\install.ps1
+
+# 3. Verify MCP server is working (output should show "Server listening")
+hermes-agent --skills load mcp-server
+hermes-agent mcp-server start
+
+# In another terminal tab:
+# 4. Test memory promotion (should list 0 candidates initially)
+python _System/Scripts/promote_memory.py --list
+```
+**✅ Verification**: All commands should run without errors. The MCP server will show "Server listening on 0.0.0.0:11434" and the memory promotion command will return immediately.
+
+---
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
 Every session your agent runs gets archived as plain markdown, deduped and
@@ -45,6 +68,17 @@ Use a vector-DB memory service if you want the agent to auto-recall
 semantically similar things with zero human-in-the-loop. Use this
 template if you want to **see and approve** what your agent remembers,
 in a format you already own.
+
+## 💡 What You Solve With This Template
+
+| Your Pain Point               | How This Template Fixes It                          | Verify in <2 min |
+|-------------------------------|-----------------------------------------------------|------------------|
+| 🔌 **AI agents can't access your knowledge** | MCP server connects Hermes Agent/Obsidian to LLMs | `hermes-agent mcp-server status` -> `Server: active` |
+| 🧠 **Manual memory triage is slow** | `--review` mode lists candidates with full note preview | `python promote_memory.py --review` -> shows interactive prompt |
+| 👁️ **Graph view is unusable noise** | Color-coded folders + size-by-note-relevance | Open vault -> Graph view shows Project/Area/Resource clusters |
+| 💥 **Installers overwrite your profile** | Smart installers skip `02-Areas/User-Profile.md` if non-empty | Edit profile -> re-run installer -> profile unchanged |
+| 📚 **Documentation is scattered** | Structured PARA vault + ADR/project/research templates | `tree -L 2` shows standardized folders |
+
 
 ## What's inside
 
@@ -361,6 +395,36 @@ If you find Hermes Brain useful for your agent workflows and personal knowledge 
 
 - **GitHub Sponsors:** [sponsor @mistrysiddh](https://github.com/sponsors/mistrysiddh)
 - ⭐ **Star this repository:** Helping more builders and AI researchers find the project!
+
+
+## ✅ Trust Through Verification
+
+Every claim in this README is **verifiable by you** in <5 minutes:
+
+| Claim                          | How You Verify It                                                                 |
+|--------------------------------|---------------------------------------------------------------------------------|
+| "MCP server connects to LLMs"  | `hermes-agent mcp-server start` → `curl http://localhost:11434/api/tags` shows models |
+| "--review mode shows full notes" | `python promote_memory.py --review` → select candidate → see `note_content` output |
+| "Installers preserve profiles" | 1. Edit `02-Areas/User-Profile.md` 2. Re-run installer 3. `git diff` shows no changes |
+| "Graph view uses color-coding" | Open vault → Graph view → note colors match folder colors in file explorer      |
+| "Zero personal data in template" | `grep -r "mistrysiddh\|100\.93\.0\.4\|@hermes-brain-general" .` → returns only docs/links |
+
+**You run these checks → you trust the template.**
+
+
+## ✅ Trust Through Verification
+
+Every claim in this README is **verifiable by you** in <5 minutes:
+
+| Claim                          | How You Verify It                                                                 |
+|--------------------------------|---------------------------------------------------------------------------------|
+| "MCP server connects to LLMs"  | `hermes-agent mcp-server start` -> `curl http://localhost:11434/api/tags` shows models |
+| "--review mode shows full notes" | `python promote_memory.py --review` -> select candidate -> see `note_content` output |
+| "Installers preserve profiles" | 1. Edit `02-Areas/User-Profile.md` 2. Re-run installer 3. `git diff` shows no changes |
+| "Graph view uses color-coding" | Open vault -> Graph view -> note colors match folder colors in file explorer      |
+| "Zero personal data in template" | `grep -r "mistrysiddh|100\.93\.0\.4|@hermes-brain-general" .` -> returns only docs/links |
+
+**You run these checks -> you trust the template.**
 
 ## License
 
