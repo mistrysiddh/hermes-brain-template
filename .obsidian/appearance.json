@@ -3,6 +3,6 @@
   "cssTheme": "Nemoclaw",
   "enabledCssSnippets": [
     "dashboard-beta",
-    "graph-view-enhancement"
+    "hermes-komorebi"
   ]
 }

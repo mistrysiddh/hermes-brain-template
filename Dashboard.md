@@ -5,8 +5,8 @@ created: 2026-09-10
 tags:
   - dashboard
   - hub
-dashboard_last_visit: 2026-09-26T20:13:08.492Z
-dashboard_last_session_count: 745
+dashboard_last_visit: 2026-09-30T14:28:03.389Z
+dashboard_last_session_count: 827
 dashboard_last_candidate_count: 13
 cssclasses:
   - dashboard-beta
@@ -24,9 +24,9 @@ blocks instead of tables/lists.
 ## What's changed since your last visit
 
 ```dataviewjs
-// Delta banner — compares this note's own frontmatter (last-visit
-// snapshot) against current vault state. Updates the snapshot every time
-// this note is opened, so the very next open shows what happened since.
+// Delta banner — compares last-visit snapshot stored in localStorage
+// against current vault state. Uses localStorage instead of modifying
+// the active note's frontmatter to eliminate infinite re-render loops and renderer crashes.
 const file = app.vault.getAbstractFileByPath("Dashboard.md");
 const cache = app.metadataCache.getFileCache(file);
 const fm = cache?.frontmatter ?? {};
@@ -39,11 +39,15 @@ const sessionCount = dailyPages.length;
 const mrPages = dv.pages('"04-Archives/Memory-Review"').length ? dv.pages('"04-Archives/Memory-Review"') : dv.pages('"Memory-Review"');
 const candidateCount = mrPages.file.tasks.where(t => !t.completed).length;
 
-const prevSessionCount = fm.dashboard_last_session_count;
-const prevCandidateCount = fm.dashboard_last_candidate_count;
-const prevVisit = fm.dashboard_last_visit;
+const storedSessionCount = localStorage.getItem("hb_dash_last_session_count");
+const storedCandidateCount = localStorage.getItem("hb_dash_last_candidate_count");
+const storedVisit = localStorage.getItem("hb_dash_last_visit");
 
-if (prevSessionCount === undefined) {
+const prevSessionCount = storedSessionCount !== null ? parseInt(storedSessionCount, 10) : fm.dashboard_last_session_count;
+const prevCandidateCount = storedCandidateCount !== null ? parseInt(storedCandidateCount, 10) : fm.dashboard_last_candidate_count;
+const prevVisit = storedVisit || fm.dashboard_last_visit;
+
+if (prevSessionCount === undefined || isNaN(prevSessionCount)) {
   dv.paragraph("👋 First time opening this Dashboard — nothing to compare yet. Come back later to see what changed.");
 } else {
   const newSessions = Math.max(0, sessionCount - prevSessionCount);
@@ -58,17 +62,13 @@ if (prevSessionCount === undefined) {
     : `😴 Nothing new${when} — quiet since your last visit.`);
 }
 
-// Write the new snapshot back into frontmatter for next time.
-await app.fileManager.processFrontMatter(file, (f) => {
-  f.dashboard_last_visit = new Date().toISOString();
-  f.dashboard_last_session_count = sessionCount;
-  f.dashboard_last_candidate_count = candidateCount;
-});
+// Update snapshot in localStorage for next visit without triggering vault file modification events
+localStorage.setItem("hb_dash_last_visit", new Date().toISOString());
+localStorage.setItem("hb_dash_last_session_count", String(sessionCount));
+localStorage.setItem("hb_dash_last_candidate_count", String(candidateCount));
 ```
 
-_Compares this note's own frontmatter (written on every open) against
-current counts — no separate log file needed. First open always shows the
-"first time" message since there's nothing to compare against yet._
+_Compares current vault counts against the last-visit snapshot stored in browser localStorage — zero disk modifications, zero crash risks._
 
 ## Template update check
 
