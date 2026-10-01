@@ -434,6 +434,15 @@ fi
 
 
 echo
+
+# ---------------------------------------------------------------------------
+# 8. Run verification script (if not in test mode)
+# ---------------------------------------------------------------------------
+if [ "$TEST_MODE" = false ]; then
+  info "Running verification script..."
+  "$DEST/_System/Scripts/Installers/verify_install.sh"
+fi
+
 bold "Done."
 info "Vault: $DEST"
 info "Read $DEST/SETUP.md and $DEST/Welcome.md for the rest."

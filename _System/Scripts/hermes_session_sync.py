@@ -69,8 +69,13 @@ def init_vault_paths(vault_path):
     else:
         token_log = os.path.join(vault_path, "Skills-Notes", "Token-Usage.log")
 
-    lock_file = os.path.join(daily, ".hourly_archive.lock")
-    return vault_path, daily, manifest, token_log, lock_file
+    # Cron metadata goes in separate Cron/ folder
+    cron_dir = os.path.join(vault_path, "04-Archives", "Cron")
+    os.makedirs(cron_dir, exist_ok=True)
+    lock_file = os.path.join(cron_dir, ".hourly_archive.lock")
+    cron_log = os.path.join(cron_dir, "cron-runs.log")
+    cron_error_log = os.path.join(cron_dir, "cron-errors.log")
+    return vault_path, daily, manifest, token_log, lock_file, cron_log, cron_error_log
 
 
 def acquire_lock(lock_file, timeout_seconds=5.0):
@@ -238,6 +243,28 @@ def update_token_log(token_log_path, daily_total, session_count):
     os.makedirs(os.path.dirname(token_log_path), exist_ok=True)
     with open(token_log_path, "a", encoding="utf-8") as f:
         f.write(line)
+def log_cron_run(cron_log_path, success, duration_seconds, sessions_processed, tokens_total, error_msg=None):
+    """Log a cron run result to the cron runs log."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    status = "SUCCESS" if success else "FAILED"
+    line = f"{timestamp} | {status} | {duration_seconds:.1f}s | {sessions_processed} sessions | {tokens_total} tokens"
+    if error_msg:
+        line += f" | ERROR: {error_msg}"
+    line += "\n"
+    os.makedirs(os.path.dirname(cron_log_path), exist_ok=True)
+    with open(cron_log_path, "a", encoding="utf-8") as f:
+        f.write(line)
+
+def log_cron_error(cron_error_log_path, error_msg, traceback_str=None):
+    """Log a cron error to the cron errors log."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"{timestamp} | {error_msg}\n"
+    if traceback_str:
+        line += f"  Traceback: {traceback_str}\n"
+    os.makedirs(os.path.dirname(cron_error_log_path), exist_ok=True)
+    with open(cron_error_log_path, "a", encoding="utf-8") as f:
+        f.write(line)
+
 
 
 def parse_since_arg(since_str):
@@ -269,13 +296,17 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
     Exports from Hermes, reorganizes into Daily/YYYY/MM/DD/,
     updates existing session notes, and maintains manifest.jsonl.
     """
+    import time
+    start_time = time.time()
+    is_cron_run = (session_id is None and since is None)  # Detect cron vs manual
+    
     vault = resolve_vault(vault_path)
     if not vault:
         if verbose:
             print("Could not resolve vault path.")
         return False
 
-    vault, daily, manifest, token_log, lock_file = init_vault_paths(vault)
+    vault, daily, manifest, token_log, lock_file, cron_log, cron_error_log = init_vault_paths(vault)
 
     if not acquire_lock(lock_file, timeout_seconds=5.0):
         if verbose:
@@ -502,7 +533,20 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
             if os.path.exists(tagger_script):
                 subprocess.run([sys.executable, tagger_script], capture_output=True, timeout=120)
 
+        # Log cron run if this was a cron execution
+        if is_cron_run:
+            duration = time.time() - start_time
+            log_cron_run(cron_log, True, duration, len(records), total_tokens)
+        
         return True
+    except Exception as e:
+        # Log error for cron runs
+        if is_cron_run:
+            duration = time.time() - start_time
+            import traceback
+            log_cron_run(cron_log, False, duration, 0, 0, str(e))
+            log_cron_error(cron_error_log, str(e), traceback.format_exc())
+        raise
     finally:
         release_lock()
 
