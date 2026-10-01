@@ -1,40 +1,5 @@
 # Hermes Brain — Obsidian Vault Template for Hermes Agent (including OpenClaw)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](docs/LICENSE)
-[![Made for Obsidian](https://img.shields.io/badge/Made%20for-Obsidian-7C3AED.svg)](https://obsidian.md)
-[![Works with Hermes](https://img.shields.io/badge/Works%20with-Hermes%20Agent-1DA1F2.svg)](https://claude-code.nousresearch.com/docs)
-[![Works with OpenClaw](https://img.shields.io/badge/Works%20with-OpenClaw-FF6B35.svg)](https://claude-code.nousresearch.com/docs)
-[![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
-[![Changelog](https://img.shields.io/badge/Changelog-latest-blue.svg)](docs/CHANGELOG.md)
-[![User Profile](https://img.shields.io/badge/User%20Profile-documented-2EA043.svg)](02-Areas/User-Profile.md)
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/mistrysiddh)
-[![Website](https://img.shields.io/badge/Showcase-Live%20Website-7C3AED.svg)](website/index.html)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
-[![GitHub Stars](https://img.shields.io/github/stars/mistrysiddh/hermes-brain-template?style=social)](https://github.com/mistrysiddh/hermes-brain-template/stargazers)
-
-
-## 🚀 Try it in 60 Seconds (Verifiable)
-
-```bash
-# 1. Clone template (preserves your User-Profile.md)
-git clone https://github.com/mistrysiddh/hermes-brain-template.git my-second-brain
-cd my-second-brain
-
-# 2. Run installer (choose your OS)
-# Linux/macOS: chmod +x install.sh && ./install.sh
-# Windows PowerShell: .\install.ps1
-
-# 3. Verify MCP server is working (output should show "Server listening")
-hermes-agent --skills load mcp-server
-hermes-agent mcp-server start
-
-# In another terminal tab:
-# 4. Test memory promotion (should list 0 candidates initially)
-python _System/Scripts/promote_memory.py --list
-```
-**✅ Verification**: All commands should run without errors. The MCP server will show "Server listening on 0.0.0.0:11434" and the memory promotion command will return immediately.
-
----
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
 Every session your agent runs gets archived as plain markdown, deduped and
@@ -43,9 +8,35 @@ becomes permanent. No black box, no vendor lock-in — it's just an Obsidian
 vault, so you can search it, link it, graph it, and back it up like any
 other notes.
 
+[![Use this template](https://img.shields.io/badge/Use%20this-template-2EA043.svg?logo=github)](https://github.com/mistrysiddh/hermes-brain-template/generate)
+[![Live Website](https://img.shields.io/badge/Showcase-Live%20Website-7C3AED.svg)](https://mistrysiddh.github.io/hermes-brain-template/)
+[![Lint Scripts](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml/badge.svg)](https://github.com/mistrysiddh/hermes-brain-template/actions/workflows/lint.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/mistrysiddh/hermes-brain-template?style=social)](https://github.com/mistrysiddh/hermes-brain-template/stargazers)
+
 ![Hermes Brain graph view](assets/graph-view-screenshot.png)
 
 [![Hermes Brain Install Video](https://img.youtube.com/vi/2cXrS1IWsSw/0.jpg)](https://youtu.be/2cXrS1IWsSw?si=hktew9KHCpGdLgE7)
+
+## 🚀 Try it in 60 Seconds (Verifiable)
+
+```bash
+# 1. Clone the template
+git clone https://github.com/mistrysiddh/hermes-brain-template.git my-second-brain
+cd my-second-brain
+
+# 2. Run the installer (choose your OS)
+#    Linux/macOS:        ./_System/Scripts/Installers/install.sh
+#    Windows PowerShell: powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\install.ps1
+
+# 3. Self-test the bundled MCP server (vault_search, read_note, stage_memory_candidate, ...)
+python _System/Scripts/hermes_brain_mcp.py --test
+
+# 4. List pending memory candidates (prints [] on a fresh vault)
+python _System/Scripts/promote_memory.py --list
+```
+**✅ Verification**: step 3 ends with "All hermes-brain-mcp self-tests PASSED" and step 4 prints `[]`. No Hermes install is needed for either check.
+
 
 ## Why this instead of nothing?
 
@@ -73,8 +64,8 @@ in a format you already own.
 
 | Your Pain Point               | How This Template Fixes It                          | Verify in <2 min |
 |-------------------------------|-----------------------------------------------------|------------------|
-| 🔌 **AI agents can't access your knowledge** | MCP server connects Hermes Agent/Obsidian to LLMs | `hermes-agent mcp-server status` -> `Server: active` |
-| 🧠 **Manual memory triage is slow** | `--review` mode lists candidates with full note preview | `python promote_memory.py --review` -> shows interactive prompt |
+| 🔌 **AI agents can't access your knowledge** | MCP server connects Hermes Agent/Obsidian to LLMs | `python _System/Scripts/hermes_brain_mcp.py --test` -> all self-tests PASSED |
+| 🧠 **Manual memory triage is slow** | `--review` mode lists candidates with full note preview | `python _System/Scripts/promote_memory.py --review` -> shows interactive prompt |
 | 👁️ **Graph view is unusable noise** | Color-coded folders + size-by-note-relevance | Open vault -> Graph view shows Project/Area/Resource clusters |
 | 💥 **Installers overwrite your profile** | Smart installers skip `02-Areas/User-Profile.md` if non-empty | Edit profile -> re-run installer -> profile unchanged |
 | 📚 **Documentation is scattered** | Structured PARA vault + ADR/project/research templates | `tree -L 2` shows standardized folders |
@@ -104,7 +95,7 @@ what was intentionally left out.
 
 ## Quick start
 
-> 🌐 **Interactive Web Tour:** Explore the memory pipeline simulator, live architecture explorer, and MCP tool tester on the [Hermes Brain Showcase Website](website/index.html).
+> 🌐 **Interactive Web Tour:** Explore the memory pipeline simulator, live architecture explorer, and MCP tool tester on the [Hermes Brain Showcase Website](https://mistrysiddh.github.io/hermes-brain-template/).
 
 ### 🚀 Option 1 — One-Line Terminal Install (Fastest, directly from GitHub)
 
@@ -130,8 +121,8 @@ If you want your own private/custom git repository:
 1. Click the green **[Use this template](https://github.com/mistrysiddh/hermes-brain-template/generate)** button on GitHub to create your personal vault repository.
 2. Clone your repository:
    ```bash
-   git clone https://github.com/mistrysiddh/hermes-brain-template.git
-   cd hermes-brain-template
+   git clone https://github.com/<your-username>/<your-vault-repo>.git
+   cd <your-vault-repo>
    ```
 3. Run the interactive installer from inside the cloned folder:
    - **Linux / macOS:**
@@ -188,7 +179,7 @@ Prefer configuring everything by hand? Follow **[SETUP.md](SETUP.md)** step by s
 
 ### 🌐 Option 6 — GitHub Codespaces (Zero-Local-Setup Trial)
 
-No local install needed. Click the badge above or use this link to spin up a ready-to-run environment in your browser:
+No local install needed. Click the badge below to spin up a ready-to-run environment in your browser:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1359420368)
 
@@ -229,7 +220,7 @@ This creates a temporary vault at `/tmp/hermes-brain-trial` that you can open in
 ## Requirements
 
 - [Obsidian](https://obsidian.md) (free)
-- A [Hermes](https://claude-code.nousresearch.com/docs) agent install (e.g., via [OpenClaw](https://openclaw.nousresearch.com/)), if you want the automated session-archive/memory pipeline
+- A [Hermes Agent](https://hermes-agent.nousresearch.com/docs) install (or [OpenClaw](https://github.com/openclaw/openclaw)), if you want the automated session-archive/memory pipeline
 - Optional, for the trend-digest scripts: [Ollama](https://ollama.com) *or* Python 3 with `sentence-transformers`
 
 ## FAQ
@@ -403,32 +394,18 @@ Every claim in this README is **verifiable by you** in <5 minutes:
 
 | Claim                          | How You Verify It                                                                 |
 |--------------------------------|---------------------------------------------------------------------------------|
-| "MCP server connects to LLMs"  | `hermes-agent mcp-server start` → `curl http://localhost:11434/api/tags` shows models |
-| "--review mode shows full notes" | `python promote_memory.py --review` → select candidate → see `note_content` output |
+| "MCP server exposes the vault to agents" | `python _System/Scripts/hermes_brain_mcp.py --test` → all self-tests PASSED |
+| "--review mode shows full notes" | `python _System/Scripts/promote_memory.py --review` → select candidate → see `note_content` output |
 | "Installers preserve profiles" | 1. Edit `02-Areas/User-Profile.md` 2. Re-run installer 3. `git diff` shows no changes |
+| "Install is healthy" | `./_System/Scripts/Installers/verify_install.sh` (Windows: `verify_install.ps1`) → all checks pass |
 | "Graph view uses color-coding" | Open vault → Graph view → note colors match folder colors in file explorer      |
 | "Zero personal data in template" | `grep -r "mistrysiddh\|100\.93\.0\.4\|@hermes-brain-general" .` → returns only docs/links |
 
 **You run these checks → you trust the template.**
 
-
-## ✅ Trust Through Verification
-
-Every claim in this README is **verifiable by you** in <5 minutes:
-
-| Claim                          | How You Verify It                                                                 |
-|--------------------------------|---------------------------------------------------------------------------------|
-| "MCP server connects to LLMs"  | `hermes-agent mcp-server start` -> `curl http://localhost:11434/api/tags` shows models |
-| "--review mode shows full notes" | `python promote_memory.py --review` -> select candidate -> see `note_content` output |
-| "Installers preserve profiles" | 1. Edit `02-Areas/User-Profile.md` 2. Re-run installer 3. `git diff` shows no changes |
-| "Graph view uses color-coding" | Open vault -> Graph view -> note colors match folder colors in file explorer      |
-| "Zero personal data in template" | `grep -r "mistrysiddh|100\.93\.0\.4|@hermes-brain-general" .` -> returns only docs/links |
-
-**You run these checks -> you trust the template.**
-
 ## License
 
-MIT — see [LICENSE](docs/LICENSE). Use, fork, and adapt freely.
+MIT — see [LICENSE](LICENSE). Use, fork, and adapt freely.
 
 
 ## Contributing
