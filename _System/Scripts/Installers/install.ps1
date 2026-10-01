@@ -390,6 +390,15 @@ else:
 
 
 Write-Host ""
+
+# ---------------------------------------------------------------------------
+# 8. Run verification script (if not in test mode)
+# ---------------------------------------------------------------------------
+if (-not $Test) {
+    Write-Host "Running verification script..." -ForegroundColor Cyan
+    & "$Dest/_System/Scripts/Installers/verify_install.ps1"
+}
+
 Write-Host "Done." -ForegroundColor Cyan
 Write-Info "Vault: $Dest"
 Write-Info "Read $Dest\SETUP.md and $Dest\Welcome.md for the rest."
