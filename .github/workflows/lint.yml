@@ -117,3 +117,12 @@ jobs:
         run: |
           set -e
           python3 _System/Scripts/ci/test_consolidate_memory.py
+
+  generate-changelog-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run generate_changelog.py tests
+        run: |
+          set -e
+          python3 _System/Scripts/ci/test_generate_changelog.py
