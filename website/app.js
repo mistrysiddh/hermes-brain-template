@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMcpSimulator();
   initInstallWizard();
   initFaqAccordion();
+  initVersionStamp();
 });
 
 /* ==========================================================================
@@ -107,6 +108,7 @@ function initMobileMenu() {
    ========================================================================== */
 const COMMAND_INDEX = [
   { title: "Memory Pipeline Simulator", subtitle: "4-stage session-to-durable memory pipeline", url: "#pipeline", type: "Section" },
+  { title: "What's New in v1.24", subtitle: "Decisions/Principles/Axioms, git safety net, cron separation", url: "#whats-new", type: "Release" },
   { title: "Multi-Agent ADR Simulator", subtitle: "Argus, Codex, Ledger & Vox architecture review", url: "#adr-sim", type: "Interactive" },
   { title: "11-Dimension Personality Matrix", subtitle: "Interactive slider generator for User-Profile.md", url: "#personality", type: "Interactive" },
   { title: "Obsidian Template Gallery", subtitle: "Raw Markdown sources for ADR, Charter, Lessons", url: "#templates", type: "Templates" },
@@ -236,7 +238,7 @@ const ADR_PRESETS = [
     argus: { verdict: "BLOCK", text: "Critical hazard. Even with regex redaction, zero-day token leakage to public GitHub commits is an irreversible security boundary breach. Prohibited under User-Profile rules." },
     codex: { verdict: "PASS", text: "Technically straightforward git push operation via cron, but lacks atomic rollback mechanisms if an upstream push fails mid-write." },
     ledger: { verdict: "PASS", text: "Minimal token consumption. Plain git command execution adds negligible overhead to context window." },
-    vox: { verdict: "BLOCK", text: "Direct violation of Siddh's User-Profile boundary: 'Never make commits/pushes to git from cron jobs (local file edits only)'." },
+    vox: { verdict: "BLOCK", text: "Direct violation of the operator's User-Profile boundary: 'Never make commits/pushes to git from cron jobs (local file edits only)'." },
     consensus: { status: "REJECTED (3-1)", note: "Proposal rejected due to explicit operator boundary violations and credential exposure risk. Local archiving only." }
   },
   {
@@ -245,7 +247,7 @@ const ADR_PRESETS = [
     argus: { verdict: "PASS", text: "Approved with condition: must bind strictly to 127.0.0.1 or wireguard subnet with 'protected-mode yes' enabled and strong auth token." },
     codex: { verdict: "PASS", text: "Excellent upgrade for high-frequency chat sync hooks. Key-value TTLs align cleanly with session life cycles." },
     ledger: { verdict: "PASS", text: "Fast in-memory reads reduce prompt indexing latency from 180ms to 4ms. Zero token penalty." },
-    vox: { verdict: "PASS", text: "Aligns with Siddh's technical stack preferences (Linux/HermesPi/Docker self-hosted services)." },
+    vox: { verdict: "PASS", text: "Aligns with the operator's technical stack preferences (Linux/HermesPi/Docker self-hosted services)." },
     consensus: { status: "APPROVED (UNANIMOUS)", note: "Architectural decision accepted. Proceed with ADR-005: Redis Session Cache with protected-mode yes." }
   },
   {
@@ -823,7 +825,7 @@ Staged to: 04-Archives/Memory-Review/Candidate-20260927-Redis-Standard.md`
 [v] Promote to User Operating Profile (02-Areas/User-Profile.md)
 [ ] Reject & Purge
 
-Verdict: APPROVED by Siddh Mistry.
+Verdict: APPROVED by vault operator.
 Reason: Established core infrastructure policy.`
   },
   {
@@ -934,10 +936,13 @@ const PARA_DETAILS = {
     ]
   },
   "03-Resources": {
-    title: "03-Resources — Knowledge Hubs & MOCs",
+    title: "03-Resources — Decisions, Knowledge Hubs & MOCs",
     path: "03-Resources/",
-    desc: "Domain knowledge libraries, technical reference guides, and curated Maps of Content (MOCs) covering Tech Stack, Cybersecurity, AI/ML Workflows, and Agentic Multi-Agent Architecture.",
+    desc: "Your reasoning layer and reference library. Axioms are the few beliefs everything derives from, Principles are standing rules distilled from repeated decisions, and the Decision log records hard-to-reverse choices with the alternatives you rejected, so agents stop re-proposing them. Alongside sit curated Maps of Content (MOCs).",
     files: [
+      { name: "Axioms.md", desc: "Foundational beliefs (ships empty, yours to fill)" },
+      { name: "Principles/README.md", desc: "Standing behavioral rules derived from Axioms" },
+      { name: "Decisions/TEMPLATE.md", desc: "Decision record with mandatory Alternatives Rejected" },
       { name: "MOCs/Technology-Stack-MOC.md", desc: "Linux, Docker, Kubernetes, self-hosting, automation" },
       { name: "MOCs/Cybersecurity-MOC.md", desc: "Hardening, threat modeling, privacy tooling" },
       { name: "MOCs/AI-ML-MOC.md", desc: "Local LLM inference, Ollama, MLOps patterns" },
@@ -947,9 +952,11 @@ const PARA_DETAILS = {
   "04-Archives": {
     title: "04-Archives — Chronological Sessions & Staging",
     path: "04-Archives/",
-    desc: "Completed initiatives, historical logs, and the 3-stage memory triage pipeline. Includes chronological Daily timeline, chat correlation logs, and the visual Memory Review Kanban board.",
+    desc: "Completed initiatives, historical logs, and the 3-stage memory triage pipeline. Real chats go to the Daily timeline; cron runs, their logs and git-snapshot history are kept separately in Cron/ so they never pollute your queries.",
     files: [
-      { name: "Daily/YYYY/MM/DD/*.md", desc: "Redacted raw chat session exports" },
+      { name: "Daily/YYYY/MM/DD/*.md", desc: "Redacted real chat session exports" },
+      { name: "Cron/sessions/YYYY/MM/DD/*.md", desc: "Cron-run session notes, kept out of Daily/" },
+      { name: "Cron/cron-runs.log · git-snapshot.log", desc: "Cron run history and session snapshot log" },
       { name: "Daily/Timeline.md", desc: "Dataview chronological session browser" },
       { name: "Memory-Review/Memory-Board.kanban", desc: "Interactive 3-stage visual promotion Kanban board" },
       { name: "Audit-Reports/Token-Usage.log", desc: "Live prompt and completion token accounting" }
@@ -963,6 +970,9 @@ const PARA_DETAILS = {
       { name: "Scripts/hermes_brain_mcp.py", desc: "Model Context Protocol (MCP) server for Claude & Cursor" },
       { name: "Scripts/hourly_archive.py", desc: "Automated session harvester with secret scrubbing" },
       { name: "Scripts/dream_cycle.py", desc: "Nocturnal memory consolidation and distillation engine" },
+      { name: "Scripts/session_git_snapshot.py", desc: "Local-only per-session git snapshot with secret gate" },
+      { name: "Scripts/template_drift.py", desc: "Compare your vault against the latest template release" },
+      { name: "Scripts/features/", desc: "Opt-in beginner / analyst / poweruser / experimental packs" },
       { name: "Canvases/Memory-Pipeline.canvas", desc: "Visual interactive Obsidian canvas" }
     ]
   }
@@ -1035,13 +1045,13 @@ const MCP_SIMULATIONS = {
     "status": "active",
     "updated": "2026-09-27"
   },
-  "content": "# User Profile & Alignment Boundaries\\n\\n- Operator: Siddh Mistry (@mistrysiddh)\\n- Communication: Commands first, explain only if asked\\n- Security Rule: Never leak API keys or credentials; replace with [REDACTED]\\n- Infrastructure: HermesPi (RPi 4B+ 8GB), Linux, Docker"
+  "content": "# User Profile & Alignment Boundaries\\n\\n- Operator: Demo Operator\\n- Communication: Commands first, explain only if asked\\n- Security Rule: Never leak API keys or credentials; replace with [REDACTED]\\n- Infrastructure: HermesPi (RPi 4B+ 8GB), Linux, Docker"
 }`
   },
   get_user_profile: {
     command: `tools/call: get_user_profile()`,
     response: `{
-  "operator": "Siddh Mistry",
+  "operator": "Demo Operator",
   "preferred_tone": "Concise and practical, with occasional warmth and playful banter",
   "do_not_do": [
     "Never commit API keys, secrets, or passwords",
@@ -1064,7 +1074,7 @@ const MCP_SIMULATIONS = {
   vault_stats: {
     command: `tools/call: vault_stats()`,
     response: `{
-  "vault_version": "1.22.20",
+  "vault_version": "1.24.0",
   "total_sessions_archived": 248,
   "pending_memory_candidates": 3,
   "active_projects": 4,
@@ -1233,4 +1243,27 @@ function initNeuralCanvas() {
   }
 
   draw();
+}
+
+/* ==========================================================================
+   Version Stamp — keeps the badge/footer in sync with the repo's VERSION file
+   ========================================================================== */
+const VERSION_URL = "https://raw.githubusercontent.com/mistrysiddh/hermes-brain-template/main/VERSION";
+
+function initVersionStamp() {
+  const targets = document.querySelectorAll(".js-version");
+  if (!targets.length) return;
+  fetch(VERSION_URL, { cache: "no-cache" })
+    .then((res) => (res.ok ? res.text() : Promise.reject(res.status)))
+    .then((text) => {
+      // VERSION file format is "<schema>|<semver>", e.g. "1|1.24.0"
+      const version = text.trim().split("|").pop();
+      if (!/^\d+\.\d+\.\d+$/.test(version)) return;
+      targets.forEach((el) => {
+        el.textContent = `v${version}`;
+      });
+    })
+    .catch(() => {
+      // Offline or rate-limited: keep the version baked into the HTML.
+    });
 }
