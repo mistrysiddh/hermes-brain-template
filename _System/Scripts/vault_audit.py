@@ -264,6 +264,14 @@ def find_orphaned_files():
             # Also ignore files in .obsidian, Daily/ manifest, etc.
             if f.startswith(".obsidian/") or ("Daily/" in f and ("manifest" in f or "README" in f)):
                 continue
+            # Dated session notes (chat archives in Daily/YYYY/MM/DD/ and cron
+            # session notes in Cron/sessions/YYYY/MM/DD/) are a timeline, not a
+            # linked knowledge graph — nothing is expected to wikilink into an
+            # individual session note, so don't count them as orphans
+            # (issue #10: this was previously inflating orphan counts by
+            # hundreds of entries).
+            if re.search(r"(Daily|Cron/sessions)/\d{4}/\d{2}/\d{2}/", f):
+                continue
             orphans.append(f)
     return orphans
 

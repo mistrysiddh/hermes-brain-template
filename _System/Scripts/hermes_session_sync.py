@@ -39,6 +39,81 @@ except ImportError:
 _lock_handle = None
 CREATED_RE = re.compile(r'created_at:\s*"(\d{4})-(\d{2})-(\d{2})')
 
+# Oversized transcripts make Obsidian/Dataview run out of memory ("Paused before
+# potential out-of-memory crash"). Notes above this size get their full text moved
+# outside the vault and are replaced by a lightweight stub in Daily/.
+# Override with HERMES_MAX_NOTE_KB (0 disables) and HERMES_TRANSCRIPTS_DIR.
+DEFAULT_MAX_NOTE_KB = 200
+STUB_PREVIEW_BYTES = 16 * 1024
+
+
+def resolve_transcripts_dir(vault_path):
+    env_dir = os.environ.get("HERMES_TRANSCRIPTS_DIR")
+    if env_dir:
+        return os.path.abspath(env_dir)
+    vault_path = os.path.abspath(vault_path)
+    return os.path.join(os.path.dirname(vault_path), os.path.basename(vault_path) + "-Transcripts")
+
+
+def offload_large_transcript(note_path, vault_path, rel_dir):
+    """If note_path exceeds the size cap, move its full text outside the vault and
+    leave a stub (original frontmatter + preview + pointer). Returns the external
+    path when offloaded, else None. Safe to re-run: each sync re-exports the full
+    note, so the external copy is simply refreshed."""
+    try:
+        max_kb = int(os.environ.get("HERMES_MAX_NOTE_KB", DEFAULT_MAX_NOTE_KB))
+    except ValueError:
+        max_kb = DEFAULT_MAX_NOTE_KB
+    if max_kb <= 0:
+        return None
+    size = os.path.getsize(note_path)
+    if size <= max_kb * 1024:
+        return None
+
+    with open(note_path, encoding="utf-8", errors="replace") as f:
+        content = f.read()
+    if "\ntruncated: true\n" in content[:4000]:
+        return None  # already a stub
+
+    ext_dir = os.path.join(resolve_transcripts_dir(vault_path), rel_dir)
+    os.makedirs(ext_dir, exist_ok=True)
+    ext_path = os.path.normpath(os.path.join(ext_dir, os.path.basename(note_path)))
+    with open(ext_path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    frontmatter, body = "", content
+    if content.startswith("---"):
+        end = content.find("\n---", 3)
+        if end != -1:
+            frontmatter = content[:end].rstrip("\n")
+            body = content[end + 4:].lstrip("\n")
+
+    preview = body[:STUB_PREVIEW_BYTES]
+    cut = preview.rfind("\n")
+    if cut > 0:
+        preview = preview[:cut]
+    if preview.count("```") % 2:
+        preview += "\n```"
+
+    ext_posix = ext_path.replace("\\", "/")
+    meta = [
+        "truncated: true",
+        f"original_size_kb: {size // 1024}",
+        f'full_transcript: "{ext_posix}"',
+    ]
+    if frontmatter:
+        header = frontmatter + "\n" + "\n".join(meta) + "\n---\n\n"
+    else:
+        header = "---\n" + "\n".join(meta) + "\n---\n\n"
+    notice = (
+        f"> [!info] Large transcript ({size // 1024} KB) stored outside the vault\n"
+        f"> Kept out of Obsidian to avoid out-of-memory crashes. Full text: "
+        f"[{os.path.basename(ext_path)}](<file:///{ext_posix}>)\n\n"
+    )
+    with open(note_path, "w", encoding="utf-8") as f:
+        f.write(header + notice + preview + "\n\n_… transcript truncated …_\n")
+    return ext_path
+
 
 def resolve_vault(explicit_vault=None):
     """Resolve vault root path from parameter, environment, or relative directory traversal."""
@@ -75,7 +150,22 @@ def init_vault_paths(vault_path):
     lock_file = os.path.join(cron_dir, ".hourly_archive.lock")
     cron_log = os.path.join(cron_dir, "cron-runs.log")
     cron_error_log = os.path.join(cron_dir, "cron-errors.log")
-    return vault_path, daily, manifest, token_log, lock_file, cron_log, cron_error_log
+    # Cron-run SESSION NOTES (the agent session that performed the cron job
+    # itself) also get routed out of Daily/ and into Cron/sessions/ so they
+    # never mix with the user's real chat history (see issue #10).
+    cron_sessions_dir = os.path.join(cron_dir, "sessions")
+    os.makedirs(cron_sessions_dir, exist_ok=True)
+    return vault_path, daily, manifest, token_log, lock_file, cron_log, cron_error_log, cron_sessions_dir
+
+
+def _safe_getmtime(path, default=None):
+    """os.path.getmtime that tolerates the file vanishing mid-run — seen on
+    OneDrive-synced vaults where the file can be moved/renamed by the sync
+    client between our write and this read (issue #10)."""
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return default if default is not None else time.time()
 
 
 def acquire_lock(lock_file, timeout_seconds=5.0):
@@ -306,7 +396,7 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
             print("Could not resolve vault path.")
         return False
 
-    vault, daily, manifest, token_log, lock_file, cron_log, cron_error_log = init_vault_paths(vault)
+    vault, daily, manifest, token_log, lock_file, cron_log, cron_error_log, cron_sessions_dir = init_vault_paths(vault)
 
     if not acquire_lock(lock_file, timeout_seconds=5.0):
         if verbose:
@@ -463,7 +553,13 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
             sid_m = re.search(r'session_id:\s*"([^"]+)"', head)
             sid = sid_m.group(1) if sid_m else None
 
-            destdir = os.path.join(daily, y, mo, d)
+            # Cron-run sessions (the agent session that performed the cron
+            # job itself) get routed to Cron/sessions/ instead of Daily/ so
+            # they never mix with the user's real chat history (issue #10).
+            is_cron_session = fname.startswith("cron_") or (sid and sid.startswith("cron_"))
+            base_dir = cron_sessions_dir if is_cron_session else daily
+
+            destdir = os.path.join(base_dir, y, mo, d)
             os.makedirs(destdir, exist_ok=True)
             destpath = os.path.join(destdir, fname)
 
@@ -499,6 +595,13 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
                     shutil.move(fpath, destpath)
                 moved_count += 1
 
+            try:
+                full_transcript = offload_large_transcript(destpath, vault, os.path.join(y, mo, d))
+            except OSError as e:
+                full_transcript = None
+                if verbose:
+                    print(f"Could not offload large transcript {fname}: {e}")
+
             # Update manifest record
             if sid:
                 title_m = re.search(r'title:\s*"([^"]*)"', head)
@@ -509,8 +612,10 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
                     "path": destpath,
                     "format": "md",
                     "message_count": int(msgcount_m.group(1)) if msgcount_m else None,
-                    "exported_at": os.path.getmtime(destpath),
+                    "exported_at": _safe_getmtime(destpath),
                 }
+                if full_transcript:
+                    existing[sid]["full_transcript"] = full_transcript
 
         # 5. Rewrite manifest sorted by exported_at
         records = sorted(existing.values(), key=lambda r: r.get("exported_at") or 0)
