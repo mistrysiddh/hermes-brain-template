@@ -5,6 +5,12 @@ Hermes session, exported automatically by Hermes lifecycle hooks, your archiving
 `manifest.jsonl` indexes every exported session and keeps track of message counts and export timestamps.
 When an existing chat session is continued, its archive file is automatically updated in-place with all new turns.
 
+> [!NOTE]
+> This folder is **your chat sessions only.** The housekeeping session that
+> performs the hourly archiving job itself is routed to
+> [[../Cron/README|04-Archives/Cron/sessions/]] instead, so it never mixes
+> into your real conversation history (see that README for why).
+
 ## Auto-archiving options
 
 You have **three complementary ways** to get sessions from Hermes into your vault:
@@ -20,6 +26,9 @@ All archiving triggers:
 - Update the deduplicated `manifest.jsonl`
 - Append to `04-Archives/Audit-Reports/Token-Usage.log`
 - Use the shared `.hourly_archive.lock` file so concurrent executions never conflict
+- Move oversized transcripts out of the vault (see below)
+
+**Large transcripts stay out of the vault** – Very long sessions can make Obsidian run out of memory (DevTools shows *"Paused before potential out-of-memory crash"*, or the window goes blank). Any exported note over **200 KB** has its full text moved to a sibling folder outside the vault (`<vault-name>-Transcripts/YYYY/MM/DD/`). A small stub stays here with the original frontmatter, a preview, and `truncated: true` / `full_transcript:` fields, so dashboards still count the session. Set `HERMES_MAX_NOTE_KB` to change the limit (`0` turns it off) or `HERMES_TRANSCRIPTS_DIR` to pick another location.
 
 **Optional session enrichment** – After archiving, you can run `_System/Scripts/enrich_session.py` (or `.ps1`) to add a simple summary frontmatter to session markdown files that don't already have one.
 

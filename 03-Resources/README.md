@@ -42,6 +42,16 @@ Topics of ongoing interest, domain references, maps of content (MOCs), and opera
 
 <div class="dashboard-card">
 
+### 🧭 Decisions, Principles & Axioms
+
+- **[[03-Resources/Decisions/README|Decision Log]]:** Hard-to-reverse choices with mandatory "Alternatives Rejected" — stops agents from re-proposing ideas already considered and rejected.
+- **[[03-Resources/Principles/README|Principles]]:** Standing behavioral rules distilled from repeated decisions.
+- **[[03-Resources/Axioms|Axioms]]:** The small set of foundational beliefs everything else derives from.
+
+</div>
+
+<div class="dashboard-card">
+
 ### 🗺️ Maps of Content (MOCs)
 
 - **[[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture MOC]]:** Patterns for autonomous agents, memory topologies, and tool use.
