@@ -39,14 +39,15 @@
           </svg>
         </div>
         <span class="brand-text">Hermes Brain</span>
-        <span class="brand-badge">v1.22</span>
+        <span class="brand-badge js-version">v1.24.0</span>
       </a>
 
       <!-- Grouped Nav Links -->
       <nav class="nav-menu">
         <ul class="nav-links">
           <li><a href="#pipeline" class="nav-item-link">Pipeline</a></li>
-          
+          <li><a href="#whats-new" class="nav-item-link">What's New</a></li>
+
           <!-- Simulators Dropdown -->
           <li class="nav-dropdown-wrap">
             <button class="nav-dropdown-trigger" type="button">
@@ -167,6 +168,7 @@
         <div class="mobile-drawer-group">
           <span class="drawer-group-title">Core</span>
           <a href="#pipeline" class="drawer-link">Memory Pipeline</a>
+          <a href="#whats-new" class="drawer-link">What's New in v1.24</a>
           <a href="#install" class="drawer-link">Installation Guide</a>
           <a href="#faq" class="drawer-link">FAQ</a>
         </div>
@@ -190,6 +192,7 @@
     </div>
   </header>
 
+  <main id="main">
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="container">
@@ -377,6 +380,86 @@
     </div>
   </section>
 
+  <!-- What's New -->
+  <section id="whats-new">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Release Highlights · <span class="js-version">v1.24.0</span></span>
+        <h2 class="section-title">What's New in the Template</h2>
+        <p class="section-desc">
+          Your agent now remembers <em>why</em> you decided things, your vault has a local undo history, and cron noise stays out of your real chat logs.
+        </p>
+      </div>
+
+      <div class="hierarchy-strip" aria-label="Decision hierarchy: Axioms lead to Principles, which lead to Decisions">
+        <div class="hierarchy-node">
+          <span class="hierarchy-label">Axioms</span>
+          <code>03-Resources/Axioms.md</code>
+          <small>The few beliefs everything else derives from</small>
+        </div>
+        <span class="hierarchy-arrow" aria-hidden="true">→</span>
+        <div class="hierarchy-node">
+          <span class="hierarchy-label">Principles</span>
+          <code>03-Resources/Principles/</code>
+          <small>Standing rules distilled from repeated decisions</small>
+        </div>
+        <span class="hierarchy-arrow" aria-hidden="true">→</span>
+        <div class="hierarchy-node">
+          <span class="hierarchy-label">Decisions</span>
+          <code>03-Resources/Decisions/</code>
+          <small>Hard-to-reverse choices, with alternatives rejected</small>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🧭</span><span class="feature-ver">v1.24</span></div>
+          <h3>Decisions, Principles &amp; Axioms</h3>
+          <p>Log hard-to-reverse choices from <code>Decisions/TEMPLATE.md</code>. The <strong>Alternatives Rejected</strong> section is mandatory, so agents stop re-proposing ideas you already ruled out. <code>Axioms.md</code> ships empty on purpose: it should hold your beliefs, not generic filler.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🛟</span><span class="feature-ver">v1.24</span></div>
+          <h3>Local Git Safety Net</h3>
+          <p>Hook <code>session_git_snapshot.py</code> into Hermes' <code>on_session_end</code> and every session gets its own commit you can <code>git diff</code> or revert. Local history only: it never pushes or fetches. A secret-scanning gate blocks the commit if anything looks like an API key or private key, and logs only the file path, never the content.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🗂️</span><span class="feature-ver">v1.23.1</span></div>
+          <h3>Cron Runs Kept Separate</h3>
+          <p>Cron logs, lock files and cron-run session notes now live in <code>04-Archives/Cron/</code>, so <code>Daily/</code> holds only your real chats. Upgrading? <code>migrate_cron_sessions.py</code> moves old cron notes over and is safe to re-run.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">✅</span><span class="feature-ver">v1.23</span></div>
+          <h3>Post-Install Verification</h3>
+          <p>The installers now finish by running <code>verify_install</code>, which sanity-checks vault structure, plugins, the MCP server and the memory pipeline, so problems show up on day one instead of week three.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🎚️</span><span class="feature-ver">v1.23</span></div>
+          <h3>Opt-In Feature Packs</h3>
+          <p>Scripts are grouped into <code>beginner</code>, <code>analyst</code>, <code>poweruser</code> and <code>experimental</code> packs under <code>_System/Scripts/features/</code>. Start with the core and copy in more when you're ready.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🔍</span><span class="feature-ver">v1.23</span></div>
+          <h3>Template Drift Checker</h3>
+          <p><code>template_drift.py</code> compares your vault to the latest template release by SHA-256 and sorts every file into safe, customized, outdated or missing, so you know exactly what an update will touch.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🗳️</span><span class="feature-ver">v1.22</span></div>
+          <h3>Interactive Memory Review</h3>
+          <p><code>promote_memory.py --review</code> walks you through pending candidates one by one: promote to <code>MEMORY.md</code> or your User Profile, dismiss, or skip. Every action lands in the consolidation audit log.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🌙</span><span class="feature-ver">v1.22</span></div>
+          <h3>Dream Cycle v2</h3>
+          <p><code>dream_cycle.py</code> was rebuilt as an autonomous reflection engine that consolidates memories between sessions, and now ships with its own test suite.</p>
+        </article>
+      </div>
+
+      <div class="feature-footnote">
+        Full history in the <a href="https://github.com/mistrysiddh/hermes-brain-template/releases" target="_blank" rel="noopener noreferrer">release notes on GitHub</a>.
+      </div>
+    </div>
+  </section>
+
   <!-- Multi-Agent Squad ADR Simulator -->
   <section id="adr-sim">
     <div class="container">
@@ -390,7 +473,7 @@
 
       <div class="adr-sim-container">
         <div class="adr-input-bar">
-          <input type="text" id="adr-proposal-input" class="adr-proposal-input" placeholder="Type an architecture dilemma or proposal (e.g. 'Switch SQLite to Redis' or 'Auto-commit to public git')...">
+          <input type="text" id="adr-proposal-input" aria-label="Architecture proposal to evaluate" class="adr-proposal-input" placeholder="Type an architecture dilemma or proposal (e.g. 'Switch SQLite to Redis' or 'Auto-commit to public git')...">
           <button id="adr-eval-btn" class="btn-primary">
             <span>Evaluate with Squad</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -480,7 +563,7 @@
               <span class="slider-label">Autonomy vs Confirmation</span>
               <span id="tag-autonomy" class="slider-val-tag">6/10</span>
             </div>
-            <input type="range" id="slider-autonomy" class="matrix-slider" min="1" max="10" value="6">
+            <input type="range" id="slider-autonomy" aria-label="Autonomy vs Confirmation" class="matrix-slider" min="1" max="10" value="6">
             <div class="slider-ends">
               <span>1: Ask before every action</span>
               <span>10: Autonomous self-directed</span>
@@ -493,7 +576,7 @@
               <span class="slider-label">Verbosity & Preamble</span>
               <span id="tag-verbosity" class="slider-val-tag">2/10</span>
             </div>
-            <input type="range" id="slider-verbosity" class="matrix-slider" min="1" max="10" value="2">
+            <input type="range" id="slider-verbosity" aria-label="Verbosity & Preamble" class="matrix-slider" min="1" max="10" value="2">
             <div class="slider-ends">
               <span>1: Commands only, 0 fluff</span>
               <span>10: Deep explanatory prose</span>
@@ -506,7 +589,7 @@
               <span class="slider-label">Fact Verification & Skepticism</span>
               <span id="tag-skepticism" class="slider-val-tag">8/10</span>
             </div>
-            <input type="range" id="slider-skepticism" class="matrix-slider" min="1" max="10" value="8">
+            <input type="range" id="slider-skepticism" aria-label="Fact Verification & Skepticism" class="matrix-slider" min="1" max="10" value="8">
             <div class="slider-ends">
               <span>1: Blindly trust claims</span>
               <span>10: Strict empirical citations</span>
@@ -519,7 +602,7 @@
               <span class="slider-label">Tone: Formality vs Banter</span>
               <span id="tag-formality" class="slider-val-tag">4/10</span>
             </div>
-            <input type="range" id="slider-formality" class="matrix-slider" min="1" max="10" value="4">
+            <input type="range" id="slider-formality" aria-label="Tone: Formality vs Banter" class="matrix-slider" min="1" max="10" value="4">
             <div class="slider-ends">
               <span>1: Ultra-formal corporate</span>
               <span>10: Playful developer banter</span>
@@ -532,7 +615,7 @@
               <span class="slider-label">Tool & MCP Proactivity</span>
               <span id="tag-tools" class="slider-val-tag">7/10</span>
             </div>
-            <input type="range" id="slider-tools" class="matrix-slider" min="1" max="10" value="7">
+            <input type="range" id="slider-tools" aria-label="Tool & MCP Proactivity" class="matrix-slider" min="1" max="10" value="7">
             <div class="slider-ends">
               <span>1: Wait for instructions</span>
               <span>10: Proactively search vault</span>
@@ -656,7 +739,7 @@
                 <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">Daily Agent Sessions</span>
                 <span id="calc-val-sessions" class="slider-val-tag">10 chats/day</span>
               </div>
-              <input type="range" id="calc-sessions" class="matrix-slider" min="1" max="40" value="10">
+              <input type="range" id="calc-sessions" aria-label="Daily Agent Sessions" class="matrix-slider" min="1" max="40" value="10">
               <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
                 <span>1 session</span>
                 <span>40 sessions/day</span>
@@ -668,7 +751,7 @@
                 <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">Avg Tokens per Session</span>
                 <span id="calc-val-length" class="slider-val-tag">4,000 tokens</span>
               </div>
-              <input type="range" id="calc-length" class="matrix-slider" min="1000" max="12000" step="500" value="4000">
+              <input type="range" id="calc-length" aria-label="Avg Tokens per Session" class="matrix-slider" min="1000" max="12000" step="500" value="4000">
               <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
                 <span>1k tokens (short)</span>
                 <span>12k tokens (deep spike)</span>
@@ -886,7 +969,7 @@
           <div id="tab-terminal" class="wizard-pane active">
             <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">Fastest: Run the automated installer directly in your terminal</h3>
             <p style="font-size: 0.95rem; color: var(--text-muted);">
-              Downloads the latest template, asks where you want your vault, checks for Obsidian, and registers <code>HERMES_VAULT_PATH</code>.
+              Downloads the latest template, asks where you want your vault, checks for Obsidian, registers <code>HERMES_VAULT_PATH</code>, then runs <code>verify_install</code> to confirm the vault structure, plugins, MCP server and memory pipeline are all wired up.
             </p>
 
             <div style="margin-top: 18px;">
@@ -929,7 +1012,8 @@
 2. Clone the repo into that location.
 3. Run the platform-appropriate installer (_System/Scripts/Installers/install.sh or install.ps1).
 4. Relay any questions to me and confirm env.HERMES_VAULT_PATH is set.
-5. Create an hourly session-archiving cron job named "hermes-brain-archive-hourly" pointing to &lt;vault&gt;/_System/Scripts/hourly_archive.py.</pre>
+5. Create an hourly session-archiving cron job named "hermes-brain-archive-hourly" pointing to &lt;vault&gt;/_System/Scripts/hourly_archive.py.
+6. Show me the verify_install results and fix anything it flags.</pre>
             </div>
           </div>
 
@@ -1035,12 +1119,33 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
             <span class="faq-arrow">▼</span>
           </button>
           <div class="faq-content">
-            Run <code>./_System/Scripts/Installers/update.sh</code> (or <code>update.ps1</code> on Windows). It pulls the latest scripts, templates, and bug fixes without touching your existing personal notes, daily logs, or user profiles.
+            Run <code>./_System/Scripts/Installers/update.sh</code> (or <code>update.ps1</code> on Windows). It pulls the latest scripts, templates, and bug fixes without touching your existing personal notes, daily logs, or user profiles. Want to see what would change first? Run <code>python _System/Scripts/template_drift.py "&lt;vault-path&gt;"</code> to get a report of which files are safe, customized, outdated or missing.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>What if my agent breaks something in the vault?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            Since v1.24, you can wire <code>_System/Scripts/session_git_snapshot.py</code> in as a Hermes <code>on_session_end</code> hook. It commits a local snapshot of the vault after every session (creating a local-only repo on first run), so a bad multi-file edit is one <code>git revert</code> away. It never pushes or fetches, and it refuses to commit if it spots something that looks like a secret.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger">
+            <span>Why do cron runs no longer show up in my Daily timeline?</span>
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-content">
+            Since v1.23.1, cron-run session notes are filed under <code>04-Archives/Cron/sessions/</code> so <code>Daily/</code> only holds real conversations and your Dataview queries stay clean. Upgrading from an older vault? Run <code>python _System/Scripts/migrate_cron_sessions.py --vault "&lt;vault-path&gt;"</code> once (add <code>--dry-run</code> to preview) to move the existing ones.
           </div>
         </div>
       </div>
     </div>
   </section>
+  </main>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -1059,9 +1164,10 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
         </div>
 
         <div class="footer-col">
-          <h5>Architecture</h5>
+          <h3>Architecture</h3>
           <ul>
             <li><a href="#pipeline">Memory Pipeline</a></li>
+            <li><a href="#whats-new">What's New</a></li>
             <li><a href="#adr-sim">ADR Review Squad</a></li>
             <li><a href="#personality">Personality Matrix</a></li>
             <li><a href="#graph-view">Knowledge Graph</a></li>
@@ -1070,7 +1176,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
         </div>
 
         <div class="footer-col">
-          <h5>Community & Support</h5>
+          <h3>Community & Support</h3>
           <ul>
             <li><a href="https://github.com/mistrysiddh/hermes-brain-template" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
             <li><a href="https://github.com/mistrysiddh/hermes-brain-template/discussions" target="_blank" rel="noopener noreferrer">Discussions & Q&A</a></li>
@@ -1080,7 +1186,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
         </div>
 
         <div class="footer-col">
-          <h5>Author</h5>
+          <h3>Author</h3>
           <ul>
             <li><strong style="color: #fff;">Siddh Mistry</strong></li>
             <li><span style="color: var(--text-dim);">Technical Trainer & AI Builder</span></li>
@@ -1095,7 +1201,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
           Released under the <strong>MIT License</strong>. Free to use, adapt, and fork.
         </div>
         <div>
-          Template Version <strong>v1.22.20</strong> · Built for Obsidian & Hermes Agent
+          Template Version <strong class="js-version">v1.24.0</strong> · Built for Obsidian & Hermes Agent
         </div>
       </div>
     </div>
@@ -1109,7 +1215,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" id="cmd-input" class="cmd-search-input" placeholder="Type a section, tool, or shortcut (e.g. 'ADR', 'Graph', 'Install')...">
+        <input type="text" id="cmd-input" aria-label="Search the site" class="cmd-search-input" placeholder="Type a section, tool, or shortcut (e.g. 'ADR', 'Graph', 'Install')...">
         <span class="kbd-badge">ESC to close</span>
       </div>
       <ul id="cmd-results" class="cmd-results-list"></ul>
