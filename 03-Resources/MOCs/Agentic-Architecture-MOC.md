@@ -86,7 +86,7 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 ### Active
 - **Agentic OS Repository** — Multi-agent framework setup
 - **Hermes Skill Pipeline** — Automated skill development → testing → publishing
-- **Local Agent Swarm** — HermesPi + desktop agents collaboration
+- **Local Agent Swarm** — Home-server + desktop agents collaboration
 
 ### Planned
 - [[01-Projects/Self-Healing-Infrastructure.md|Self-Healing Agent Ops]]

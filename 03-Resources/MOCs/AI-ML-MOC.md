@@ -69,7 +69,7 @@ Central map of content for AI/ML research, LLM integration, prompt engineering, 
 ### Active Exploration
 - **Gemini API integration** for prompt optimization
 - **Agentic OS repository** setup with multi-agent workflows
-- **Local inference** on HermesPi (phi3:mini, llama3.2:3b)
+- **Local inference** on a home server (phi3:mini, llama3.2:3b)
 - **Hermes skill development** pipeline
 
 ### Skill Targets

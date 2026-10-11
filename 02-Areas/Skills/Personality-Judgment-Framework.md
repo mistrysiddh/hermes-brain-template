@@ -26,12 +26,12 @@ Raw message → Observable feature → Pattern → Context → Hypothesis → Co
 
 | Element | Description | Example |
 |---------|-------------|---------|
-| **Subject ID/name** | Unique identifier | "Siddh (Mistry Siddh)" |
+| **Subject ID/name** | Unique identifier | "Alex (example user)" |
 | **Analysis period** | Timeframe covered | "2026-09-01 to 2026-09-19" |
 | **Platform** | Communication medium | "Hermes Agent chat interface" |
 | **Number of messages** | Total communications analyzed | 147 |
 | **Number of conversations** | Distinct interaction threads | 23 |
-| **Participants** | Other parties involved | "Nisha (AI), Codex, Ledger, Vox, Argus" |
+| **Participants** | Other parties involved | "Assistant (AI), Codex, Ledger, Vox, Argus" |
 | **Data quality** | Reliability assessment | "High - direct chat logs, no editing" |
 | **Missing periods** | Gaps in data | "None significant; occasional brief pauses" |
 | **Context** | Relevant background | "Technical collaborator in AI/Linux/cybersecurity domains" |
@@ -349,7 +349,7 @@ For each significant observation, complete this template:
 ## Example Analysis Entry
 
 ### Observation
-> "In today's 3PM chat, after I asked about the Docker build failure, Siddh replied 42 minutes later with: 'Yeah I saw that. Been swamped with the Jenkins pipeline stuff. Check the logs in /var/log/jenkins/ - it's probably just a timeout thing. Let me know if you need help interpreting.'"
+> "In today's 3PM chat, after I asked about the Docker build failure, Alex replied 42 minutes later with: 'Yeah I saw that. Been swamped with the Jenkins pipeline stuff. Check the logs in /var/log/jenkins/ - it's probably just a timeout thing. Let me know if you need help interpreting.'"
 
 ### Observable Feature
 > "Response time: 42 minutes (baseline: 8-15 minutes for technical queries)"

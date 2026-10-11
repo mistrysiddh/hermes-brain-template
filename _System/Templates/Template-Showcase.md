@@ -53,7 +53,7 @@ cssclasses:
 
 ### 1. Project Dashboard
 
-> **File:** [`Project.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Project.md) | **Target:** `01-Projects/<Project-Name>.md` | **Insert:** `Ctrl+T → Select 'Project'`
+> **File:** [`Project.md`](../../_System/Templates/Project.md) | **Target:** `01-Projects/<Project-Name>.md` | **Insert:** `Ctrl+T → Select 'Project'`
 
 *Responsive 2-column project dashboard with KPI strip, executive goal, tech stack, multi-agent squad roles (Codex, Argus, Ledger, Vox), and action checklist.*
 
@@ -205,7 +205,7 @@ cssclasses:
 
 ### 2. Architecture Decision Record (ADR)
 
-> **File:** [`Architecture-Decision-Record.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Architecture-Decision-Record.md) | **Target:** `01-Projects/ADR/ADR-<Number>-<Title>.md` | **Insert:** `Ctrl+T → Select 'Architecture-Decision-Record'`
+> **File:** [`Architecture-Decision-Record.md`](../../_System/Templates/Architecture-Decision-Record.md) | **Target:** `01-Projects/ADR/ADR-<Number>-<Title>.md` | **Insert:** `Ctrl+T → Select 'Architecture-Decision-Record'`
 
 *Formal engineering decision record featuring 4-persona multi-agent review (Argus security, Codex technical, Ledger token efficiency, Vox alignment).*
 
@@ -265,7 +265,7 @@ cssclasses:
 
 ### 3. Lesson Learned
 
-> **File:** [`Lesson-Learned.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Lesson-Learned.md) | **Target:** `02-Areas/Skills/Lessons-Learned/<Topic>.md` | **Insert:** `Ctrl+T → Select 'Lesson-Learned'`
+> **File:** [`Lesson-Learned.md`](../../_System/Templates/Lesson-Learned.md) | **Target:** `02-Areas/Skills/Lessons-Learned/<Topic>.md` | **Insert:** `Ctrl+T → Select 'Lesson-Learned'`
 
 *Self-correction template capturing triggers, root cause analysis, human corrections, and standing preventative directives to prevent recurring agent mistakes.*
 
@@ -310,7 +310,7 @@ cssclasses:
 
 ### 4. Daily Review
 
-> **File:** [`Daily-Review.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Daily-Review.md) | **Target:** `04-Archives/Daily/YYYY/MM/YYYY-MM-DD-Review.md` | **Insert:** `Alt+D (or ribbon Daily Note icon)`
+> **File:** [`Daily-Review.md`](../../_System/Templates/Daily-Review.md) | **Target:** `04-Archives/Daily/YYYY/MM/YYYY-MM-DD-Review.md` | **Insert:** `Alt+D (or ribbon Daily Note icon)`
 
 *Daily reflection schema configured with Obsidian Daily Notes plugin. Includes automated Dataview query auditing all chat sessions archived during that day.*
 
@@ -355,7 +355,7 @@ cssclasses:
 
 ### 5. Research Note
 
-> **File:** [`Research-Note.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Research-Note.md) | **Target:** `03-Resources/Research/<Topic>.md` | **Insert:** `Ctrl+T → Select 'Research-Note'`
+> **File:** [`Research-Note.md`](../../_System/Templates/Research-Note.md) | **Target:** `03-Resources/Research/<Topic>.md` | **Insert:** `Ctrl+T → Select 'Research-Note'`
 
 *Structured research investigation brief with explicit sections for research question/goal, empirical findings, cited sources, and open inquiry threads.*
 
@@ -393,7 +393,7 @@ cssclasses:
 
 ### 6. Personality Judgment Analysis
 
-> **File:** [`Personality-Judgment-Analysis.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Personality-Judgment-Analysis.md) | **Target:** `02-Areas/ or 04-Archives/Daily/YYYY/MM/DD/` | **Insert:** `Ctrl+T → Select 'Personality-Judgment-Analysis'`
+> **File:** [`Personality-Judgment-Analysis.md`](../../_System/Templates/Personality-Judgment-Analysis.md) | **Target:** `02-Areas/ or 04-Archives/Daily/YYYY/MM/DD/` | **Insert:** `Ctrl+T → Select 'Personality-Judgment-Analysis'`
 
 *Deep 7-dimension behavioral and communication evaluation analyzing baseline communication, cognitive style, collaboration, tone, and behavioral anomalies.*
 
@@ -753,7 +753,7 @@ cssclasses:
 
 ### 7. Personality Judgment Dashboard
 
-> **File:** [`Personality-Judgment-Dashboard.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/_System/Templates/Personality-Judgment-Dashboard.md) | **Target:** `02-Areas/ or 04-Archives/Daily/YYYY/MM/DD/` | **Insert:** `Ctrl+T → Select 'Personality-Judgment-Dashboard'`
+> **File:** [`Personality-Judgment-Dashboard.md`](../../_System/Templates/Personality-Judgment-Dashboard.md) | **Target:** `02-Areas/ or 04-Archives/Daily/YYYY/MM/DD/` | **Insert:** `Ctrl+T → Select 'Personality-Judgment-Dashboard'`
 
 *Dataview and DataviewJS telemetry dashboard aggregating cross-session analyses, confidence levels, anomalies, and active behavioral hypotheses.*
 
@@ -892,7 +892,7 @@ cssclasses:
 
 ### 8. Memory Review Candidate
 
-> **File:** [`TEMPLATE.md`](file:///C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Hermes-Brain-Template/04-Archives/Memory-Review/TEMPLATE.md) | **Target:** `04-Archives/Memory-Review/<Candidate-Name>.md` | **Insert:** `Manual duplicate / Kanban card creation`
+> **File:** [`TEMPLATE.md`](../../04-Archives/Memory-Review/TEMPLATE.md) | **Target:** `04-Archives/Memory-Review/<Candidate-Name>.md` | **Insert:** `Manual duplicate / Kanban card creation`
 
 *Memory promotion rubric enforcing durability, security, and verification gates before facts are promoted into long-term agent memory or user profile.*
 

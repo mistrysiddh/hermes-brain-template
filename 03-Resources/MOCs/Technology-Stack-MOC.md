@@ -30,7 +30,7 @@ Central map of content for infrastructure, containerization, and self-hosting te
 
 ### Projects
 - [[01-Projects/Local-AI-Stack.md|Local AI Inference Stack]] (Ollama, OpenWebUI, etc.)
-- [[01-Projects/HermesPi-Setup.md|HermesPi Raspberry Pi Setup]]
+- [[01-Projects/Home-Server-Setup.md|Home Server Setup]]
 
 ## ☸️ Kubernetes (Learning)
 
@@ -47,11 +47,10 @@ Central map of content for infrastructure, containerization, and self-hosting te
 ## 🏠 Self-Hosting
 
 ### Current Stack
-- **HermesPi** (Raspberry Pi 4B+ 8GB) — Local Ollama endpoint
+- **Home server** (e.g. a Raspberry Pi) — Local Ollama endpoint
   - Models: phi3:mini (2.2GB), llama3.2:3b (2.0GB)
-  - OpenWebUI at `http://100.93.0.4:3000`
-  - Argon40 fan, temps ~55-60°C
-- **Tailscale** — Secure networking (IP 100.93.0.4)
+  - OpenWebUI at `http://<your-server-ip>:3000`
+- **Tailscale** — Secure networking (private mesh VPN)
 - **ntfy** — Push notifications
 
 ### Planned Services

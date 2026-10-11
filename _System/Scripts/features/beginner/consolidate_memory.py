@@ -243,7 +243,7 @@ def main():
     if newly_archived:
         with open(log_path, "a", encoding="utf-8") as f:
             if os.path.getsize(log_path) == 0 if os.path.exists(log_path) else True:
-                f.write("# Consolidation Log\n\nAudit trail of candidates Sid has already decided on. "
+                f.write("# Consolidation Log\n\nAudit trail of candidates you have already decided on. "
                         "Appended automatically by Scripts/consolidate_memory.py — never edited by hand.\n\n")
             f.write(f"## Run {datetime.now(timezone.utc).isoformat()}\n")
             for line in newly_archived:
