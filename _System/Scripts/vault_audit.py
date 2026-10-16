@@ -80,6 +80,21 @@ def load_manifest():
     return sessions
 
 
+def _manifest_path_exists(path):
+    """Resolve a manifest path that may be absolute, from another OS, or moved (e.g. cron notes)."""
+    norm = path.replace('\\', '/')
+    cands = [norm]
+    if '04-Archives/' in norm:
+        rel = norm[norm.index('04-Archives/'):]
+        cands.append(rel)
+        if os.path.basename(rel).startswith('cron_'):
+            cands.append(rel.replace('04-Archives/Daily/', '04-Archives/Cron/sessions/', 1))
+    for c in cands:
+        if os.path.exists(c if os.path.isabs(c) and os.path.exists(c) else os.path.join(VAULT, c)):
+            return True
+    return False
+
+
 def validate_manifest():
     """Validate manifest.jsonl for consistency and completeness."""
     issues = []
@@ -93,7 +108,7 @@ def validate_manifest():
     # Check for missing files referenced in manifest
     for sid, rec in sessions.items():
         path = rec.get("path", "")
-        if path and not os.path.exists(os.path.join(VAULT, path)):
+        if path and not _manifest_path_exists(path):
             issues.append({
                 "type": "missing_file",
                 "session_id": sid,
