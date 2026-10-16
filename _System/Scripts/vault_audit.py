@@ -170,6 +170,9 @@ def find_broken_wikilinks():
                 link = raw_link.replace(r'\|', '|').replace(r'\]', ']').split('|')[0].split('#')[0].strip().rstrip('\\')
                 if not link or link.startswith("http://") or link.startswith("https://"):
                     continue
+                # Shell tests like [[ -e "$x" ]] and code symbols are not wikilinks
+                if re.search(r'[$"]', link) or link.startswith(('-', '!', '&', '_COMMUNITY_')):
+                    continue
                 norm_link = link.replace('\\', '/')
                 if norm_link.startswith(('./', '../')):
                     # Resolve relative links against the containing file's folder
@@ -276,13 +279,14 @@ def find_orphaned_files():
         "manifest.jsonl", "Token-Usage.log", "Vault-Audit-Report.md",
         "Installed-Skills-Index.md", "Team-Profiles-Index.md",
         "Skill-to-Chat-Links.md", "Dataview-Query-Library.md",
+        "SECURITY.md", "INSTALL_PROMPT.md", "release_notes.md",
     ]
 
     orphans = []
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
             # Also ignore files in .obsidian, Daily/ manifest, etc.
-            if f.startswith(".obsidian/") or ("Daily/" in f and ("manifest" in f or "README" in f)):
+            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or ("Daily/" in f and ("manifest" in f or "README" in f)):
                 continue
             # Dated session notes (chat archives in Daily/YYYY/MM/DD/ and cron
             # session notes in Cron/sessions/YYYY/MM/DD/) are a timeline, not a

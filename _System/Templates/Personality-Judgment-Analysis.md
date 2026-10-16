@@ -341,7 +341,7 @@ For each significant pattern observed, complete this template:
 ### Linked Resources:
 - [[04-Archives/Daily/README|04-Archives/Daily/YYYY/MM/DD/]] - Session exports
 - [[02-Areas/Skills/Skill-to-Chat-Links|Skill-to-Chat-Links]] - Skill usage data
-- [[04-Archives/Memory-Review/README|04-Archives/Memory-Review/]] - Promoted durable knowledge
+- [[04-Archives/Memory-Review/Promotion-Candidates|04-Archives/Memory-Review/]] - Promoted durable knowledge
 - [[MOC|Map of Content (MOC)]] - High-level navigation hub
 
 ---
