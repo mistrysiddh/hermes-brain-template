@@ -12,8 +12,8 @@ Central map of content for AI/ML research, LLM integration, prompt engineering, 
 ## 🧠 LLM Integration & Prompt Engineering
 
 ### Core Skills
-- [[hermes-plugin-discovery]] — Finding and evaluating Hermes plugins
-- [[hermes-desktop-plugin-dev]] — Building custom Hermes UI panes
+- [[02-Areas/Skills/Installed-Skills-Index|hermes-plugin-discovery]] — Finding and evaluating Hermes plugins
+- [[02-Areas/Skills/Installed-Skills-Index|hermes-desktop-plugin-dev]] — Building custom Hermes UI panes
 
 ### Patterns
 - [[../Research/Prompt-Optimization.md|Prompt Optimization Techniques]]
@@ -29,8 +29,8 @@ Central map of content for AI/ML research, LLM integration, prompt engineering, 
 ## 🤖 Agentic Workflows
 
 ### Multi-Agent Patterns
-- [[agentic-architecture]] — Design patterns for agentic OS
-- [[multi-agent-groupchat-collaboration]] — Bot group chats with verification
+- [[02-Areas/Skills/Installed-Skills-Index|agentic-architecture]] — Design patterns for agentic OS
+- [[02-Areas/Skills/Installed-Skills-Index|multi-agent-groupchat-collaboration]] — Bot group chats with verification
 - [[../Research/Agent-Communication.md|Inter-Agent Protocols]]
 - [[../Research/Orchestration-Patterns.md|Supervisor vs. Peer-to-Peer]]
 
