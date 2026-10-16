@@ -156,6 +156,11 @@ def find_broken_wikilinks():
                 if not link or link.startswith("http://") or link.startswith("https://"):
                     continue
                 norm_link = link.replace('\\', '/')
+                if norm_link.startswith(('./', '../')):
+                    # Resolve relative links against the containing file's folder
+                    resolved = os.path.normpath(os.path.join(os.path.dirname(os.path.relpath(full, VAULT)), norm_link)).replace('\\', '/')
+                    if resolved in all_files or resolved + '.md' in all_files:
+                        continue
                 if norm_link not in all_files:
                     broken.append({
                         "file": os.path.relpath(full, VAULT).replace('\\', '/'),
