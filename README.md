@@ -1,4 +1,4 @@
-# Hermes Brain — Obsidian Vault Template for Hermes Agent (including OpenClaw)
+# Hermes Second Brain 🧠 — Obsidian Vault Template for Hermes Agent (including OpenClaw)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
 
