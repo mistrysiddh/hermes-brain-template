@@ -44,6 +44,7 @@ graphify-out/
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/plugins/*/data.json
+!.obsidian/plugins/dataview/data.json
 .obsidian/app.json
 .obsidian/graph.json
 
@@ -55,3 +56,5 @@ __pycache__/
 scratch/
 scratch_analysis.txt
 *.log
+# Understand-Anything analysis cache (contains local absolute paths)
+.ua/

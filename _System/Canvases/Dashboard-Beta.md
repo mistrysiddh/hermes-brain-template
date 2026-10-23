@@ -2,1020 +2,667 @@
 type: dashboard
 status: beta
 created: 2026-09-14
+updated: 2026-10-11
 tags: [dashboard, hub, beta]
-cssclasses: [dashboard-wide]
+cssclasses: [dashboard-wide, hb-app]
 ---
 
-# 🧭 Hermes Brain Dashboard (Widescreen View)
-
-> **Theme integration:** Styled via the `dashboard-beta` CSS snippet in **Settings → Appearance → CSS snippets** (toggle "dashboard-beta"). Frontmatter `cssclasses: [dashboard-wide]` activates responsive widescreen multi-column layouts. Requires Dataview plugin.
-
-```dataviewjs
-// === ROW 1: COMMAND CENTER & HUMAN-AGENT ALIGNMENT (2 COLUMNS) ===
-if (window._hbDashClock) {
-  clearInterval(window._hbDashClock);
-  window._hbDashClock = null;
-}
-
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: COMMAND CENTER ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-const LS = { title: "hb-dash-title", mantra: "hb-dash-mantra", focus: "hb-dash-focus" };
-
-const brandRow = leftCard.createEl("div", {
-  attr: { style: "display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;" }
-});
-
-const brand = brandRow.createEl("div");
-const titleEl = brand.createEl("div", {
-  text: localStorage.getItem(LS.title) || "HERMES BRAIN",
-  attr: { contenteditable: "true", spellcheck: "false", style: "font-size: 1.25em; font-weight: 700; letter-spacing: 0.04em; color: var(--text-accent); outline: none;" }
-});
-titleEl.addEventListener("blur", () => {
-  const v = titleEl.textContent.trim();
-  if (v) localStorage.setItem(LS.title, v);
-});
-
-const mantraEl = brand.createEl("div", {
-  text: localStorage.getItem(LS.mantra) || "agent memory & cognitive telemetry at a glance",
-  attr: { contenteditable: "true", spellcheck: "false", style: "font-size: 0.8em; color: var(--text-muted); margin-top: 2px; outline: none;" }
-});
-mantraEl.addEventListener("blur", () => {
-  const v = mantraEl.textContent.trim();
-  if (v) localStorage.setItem(LS.mantra, v);
-});
-
-const clockBlock = brandRow.createEl("div", { attr: { style: "text-align: right;" } });
-const timeEl = clockBlock.createEl("div", { attr: { style: "font-size: 1.45em; font-weight: 700; font-family: var(--font-monospace, monospace); color: var(--text-normal);" } });
-const dateEl = clockBlock.createEl("div", { attr: { style: "font-size: 0.8em; color: var(--text-muted);" } });
-
-function tick() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2, "0");
-  timeEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  dateEl.textContent = now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-}
-tick();
-window._hbDashClock = setInterval(tick, 1000);
-
-const subRow = leftCard.createEl("div", {
-  attr: { style: "display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding-top: 8px; border-top: 1px solid var(--background-modifier-border);" }
-});
-
-const HOUR = new Date().getHours();
-const GREETS = [
-  { h: [0, 5],  label: "🌙 Late night session. Keep it steady." },
-  { h: [5, 9],  label: "🌅 New day, new flow." },
-  { h: [9, 13], label: "⚡ Peak focus hours. Engage." },
-  { h: [13, 18],label: "☕ Afternoon momentum. Keep moving." },
-  { h: [18, 21],label: "🌆 Evening wind-down & review." },
-  { h: [21, 24],label: "🌌 Night review & memory consolidation." },
-];
-const G = GREETS.find(g => HOUR >= g.h[0] && HOUR < g.h[1]) || GREETS[5];
-subRow.createEl("div", { text: G.label, attr: { style: "font-size: 0.9em; color: var(--text-normal);" } });
-
-const today = new Date();
-const datePart = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, "0")}/${String(today.getDate()).padStart(2, "0")}`;
-const reviewNotes = dv.pages('"04-Archives/Daily" or "Daily"').where(p => p.file.path.includes(datePart) && (p.file.name.includes("Review") || p.file.name.includes("Daily-Review")));
-const hasReview = reviewNotes.length > 0;
-
-const reviewStatus = subRow.createEl("div", { attr: { style: "display: flex; align-items: center; gap: 6px;" } });
-if (hasReview) {
-  const badge = reviewStatus.createEl("span", { cls: "dashboard-badge dashboard-badge-ok", text: "✅ Daily Review Logged" });
-  badge.style.cursor = "pointer";
-  badge.addEventListener("click", () => app.workspace.openLinkText(reviewNotes[0].file.path, "", false));
-} else {
-  const badge = reviewStatus.createEl("span", { cls: "dashboard-badge dashboard-badge-warn", text: "⏳ Daily Review Pending" });
-  badge.title = "Click to start today's Daily Review";
-  badge.style.cursor = "pointer";
-  badge.addEventListener("click", async () => {
-    const tpl = app.vault.getAbstractFileByPath("_System/Templates/Daily-Review.md") || app.vault.getAbstractFileByPath("Templates/Daily-Review.md");
-    if (!tpl) { new Notice("Daily-Review template not found"); return; }
-    try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); }
-    catch (e) { app.workspace.openLinkText(tpl.path, "", false); }
-  });
-}
-
-const focusContainer = leftCard.createEl("div", {
-  attr: { style: "margin-top: 10px; padding: 10px 12px; background: var(--background-primary); border-radius: 6px; border: 1px solid var(--background-modifier-border);" }
-});
-focusContainer.createEl("div", {
-  text: "🎯 TODAY'S FOCUS",
-  attr: { style: "font-size: 0.7em; font-weight: 700; color: var(--text-accent); letter-spacing: 0.05em; margin-bottom: 4px;" }
-});
-const focusEl = focusContainer.createEl("div", {
-  text: localStorage.getItem(LS.focus) || "Click here to set today's primary focus...",
-  attr: { contenteditable: "true", spellcheck: "false", style: "font-size: 0.95em; outline: none; min-height: 1.3em; color: var(--text-normal);" }
-});
-focusEl.addEventListener("blur", () => {
-  const v = focusEl.textContent.trim();
-  if (v) localStorage.setItem(LS.focus, v);
-});
-
-// --- RIGHT: HUMAN-AGENT ALIGNMENT BRIEFING ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-const header = rightCard.createEl("div", { cls: "dashboard-card-title" });
-header.createEl("span", { text: "👤 Human & Agent Alignment Parameters" });
-header.createEl("a", { text: "Edit Profile →", href: "02-Areas/User-Profile.md", cls: "internal-link", attr: { style: "font-size: 0.85em; text-transform: none; font-weight: normal;" } });
-
-const userFile = app.vault.getAbstractFileByPath("02-Areas/User-Profile.md") || app.vault.getAbstractFileByPath("User-Profile.md");
-if (!userFile) {
-  rightCard.createEl("div", { text: "02-Areas/User-Profile.md not found. Create it to document operational boundaries." });
-} else {
-  const userContent = await app.vault.read(userFile);
-  const toneMatch = userContent.match(/-\s+\*\*Tone:\*\*\s*([^\n]+)/);
-  const ruleMatch = userContent.match(/-\s+\*\*When in doubt:\*\*\s*([^\n]+)/);
-  const formatMatch = userContent.match(/-\s+\*\*Output format:\*\*\s*([^\n]+)/);
-  
-  const clean = val => {
-    if (!val) return "Not set";
-    const v = val.trim();
-    if (v.startsWith("_(") && v.endsWith(")_")) return "Default template — customize in User-Profile.md";
-    return v.replace(/^_\(/, "").replace(/\)_$/, "");
-  };
-
-  const alignGrid = rightCard.createEl("div", { attr: { style: "display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 4px;" } });
-  
-  const toneBox = alignGrid.createEl("div", { attr: { style: "padding: 8px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border);" } });
-  toneBox.createEl("div", { text: "PREFERRED TONE", attr: { style: "font-size: 0.7em; font-weight: 700; color: var(--text-accent); letter-spacing: 0.04em;" } });
-  toneBox.createEl("div", { text: clean(toneMatch?.[1]), attr: { style: "font-size: 0.85em; color: var(--text-normal); margin-top: 2px;" } });
-
-  const ruleBox = alignGrid.createEl("div", { attr: { style: "padding: 8px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border);" } });
-  ruleBox.createEl("div", { text: "WHEN IN DOUBT RULE", attr: { style: "font-size: 0.7em; font-weight: 700; color: var(--text-accent); letter-spacing: 0.04em;" } });
-  ruleBox.createEl("div", { text: clean(ruleMatch?.[1]), attr: { style: "font-size: 0.85em; color: var(--text-normal); margin-top: 2px;" } });
-
-  const formatBox = alignGrid.createEl("div", { attr: { style: "padding: 8px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border);" } });
-  formatBox.createEl("div", { text: "PREFERRED FORMAT", attr: { style: "font-size: 0.7em; font-weight: 700; color: var(--text-accent); letter-spacing: 0.04em;" } });
-  formatBox.createEl("div", { text: clean(formatMatch?.[1]), attr: { style: "font-size: 0.85em; color: var(--text-normal); margin-top: 2px;" } });
-}
-```
+%%
+Theme integration: styled by the `dashboard-beta` CSS snippet (Settings → Appearance → CSS snippets).
+Requires the Dataview plugin with JavaScript queries enabled. Best viewed in Reading view.
+Everything renders from the single dataviewjs block below; each widget is isolated, so one
+failing widget shows an inline error instead of breaking the whole dashboard.
+Original linear view: [[Dashboard]]
+%%
 
 ```dataviewjs
-// === ROW 2: QUICK ACTIONS & VISUAL CANVASES (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: QUICK ACTIONS & TOOLS ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "⚡ Quick Actions & Tools" });
-
-const ACTIONS = [
-  { lbl: "📝 Daily Review", action: async () => {
-      const tpl = app.vault.getAbstractFileByPath("_System/Templates/Daily-Review.md") || app.vault.getAbstractFileByPath("Templates/Daily-Review.md");
-      if (!tpl) { new Notice("Daily-Review template not found"); return; }
-      try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); }
-      catch (e) { app.workspace.openLinkText(tpl.path, "", false); }
-  }},
-  { lbl: "🧠 Memory Kanban", action: () => app.workspace.openLinkText("04-Archives/Memory-Review/Memory-Board.kanban", "", false) },
-  { lbl: "⚡ Context Preamble", action: () => app.workspace.openLinkText("04-Archives/Memory-Review/HERMES-PREAMBLE.md", "", false) },
-  { lbl: "⚠️ Log Lesson", action: () => app.workspace.openLinkText("_System/Templates/Lesson-Learned.md", "", false) },
-  { lbl: "📑 New ADR", action: () => app.workspace.openLinkText("_System/Templates/Architecture-Decision-Record.md", "", false) },
-  { lbl: "🔍 New Analysis", action: () => app.workspace.openLinkText("_System/Templates/Personality-Judgment-Analysis.md", "", false) },
-  { lbl: "✨ Smart Search", action: () => {
-      try { app.commands.executeCommandById("smart-connections:Smart Connections: Open connections view"); }
-      catch (e) { new Notice("Smart Connections view triggered"); }
-  }},
-  { lbl: "🛡️ Vault Audit", action: () => app.workspace.openLinkText("04-Archives/Audit-Reports/Vault-Audit-Report.md", "", false) },
-];
-
-const actionGrid = leftCard.createEl("div", { attr: { style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;" } });
-ACTIONS.forEach(a => {
-  const btn = actionGrid.createEl("div", { cls: "dashboard-btn", text: a.lbl });
-  btn.addEventListener("click", async () => {
-    try { await a.action(); } catch (e) { new Notice(`Failed: ${a.lbl}`); console.error(e); }
-  });
-});
-
-// --- RIGHT: VISUAL CANVASES (LAUNCHPAD) ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "🗺️ Visual Architecture Canvases" });
-
-const canvases = [
-  { name: "Memory Pipeline", path: "_System/Canvases/Memory-Pipeline.canvas", desc: "Cron export, staging & durable facts", color: "dashboard-badge-ok" },
-  { name: "Personality Judgment", path: "_System/Canvases/Personality-Judgment-Canvas.canvas", desc: "11-dimension behavioral analysis framework", color: "dashboard-badge-purple" }
-];
-
-const canvasGrid = rightCard.createEl("div", { attr: { style: "display: grid; grid-template-columns: 1fr; gap: 8px;" } });
-canvases.forEach(c => {
-  const row = canvasGrid.createEl("div", {
-    attr: { style: "display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border); cursor: pointer;" }
-  });
-  const left = row.createEl("div");
-  left.createEl("div", { text: c.name, attr: { style: "font-weight: 600; font-size: 0.9em; color: var(--text-accent);" } });
-  left.createEl("div", { text: c.desc, attr: { style: "font-size: 0.75em; color: var(--text-muted);" } });
-  row.createEl("span", { cls: `dashboard-badge ${c.color}`, text: "Canvas" });
-  row.addEventListener("click", () => app.workspace.openLinkText(c.path, "", false));
-});
-```
-
-```dataviewjs
-// === ROW 3: DOMAIN KNOWLEDGE HUBS (MOCS) & SESSION CALENDAR (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: DOMAIN KNOWLEDGE HUBS ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🌐 Domain Knowledge Hubs (MOCs)" });
-
-const mocs = [
-  { name: "Agentic Architecture", path: "03-Resources/MOCs/Agentic-Architecture-MOC.md", desc: "Multi-agent systems, swarms & orchestration" },
-  { name: "AI & Machine Learning", path: "03-Resources/MOCs/AI-ML-MOC.md", desc: "Foundational models, embeddings & evaluation" },
-  { name: "Cybersecurity", path: "03-Resources/MOCs/Cybersecurity-MOC.md", desc: "Threat hunting, defenses & compliance" },
-  { name: "Technology Stack", path: "03-Resources/MOCs/Technology-Stack-MOC.md", desc: "Frameworks, databases, infrastructure" },
-  { name: "Vault Master MOC", path: "MOC.md", desc: "Complete architectural index of the brain" }
-];
-
-const mocGrid = leftCard.createEl("div", { attr: { style: "display: grid; grid-template-columns: 1fr; gap: 7px;" } });
-mocs.forEach(m => {
-  const row = mocGrid.createEl("div", {
-    attr: { style: "display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border); cursor: pointer;" }
-  });
-  const l = row.createEl("div");
-  l.createEl("div", { text: m.name, attr: { style: "font-weight: 600; font-size: 0.85em; color: var(--text-normal);" } });
-  l.createEl("div", { text: m.desc, attr: { style: "font-size: 0.75em; color: var(--text-muted);" } });
-  row.createEl("span", { cls: "dashboard-badge dashboard-badge-blue", text: "MOC" });
-  row.addEventListener("click", () => app.workspace.openLinkText(m.path, "", false));
-});
-
-// --- RIGHT: SESSION CALENDAR ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "📅 Session Calendar" });
-
-let calY = new Date().getFullYear();
-let calM = new Date().getMonth();
-const calContainer = rightCard.createEl("div");
-
-function buildSessionIndex() {
-  const index = new Map();
-  const dailyPages = dv.pages('"04-Archives/Daily" or "Daily"')
-    .where(p => p.file.name !== "README" && p.file.name !== "manifest"
-      && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation");
-
-  const dailyArray = dailyPages.array ? dailyArray_pages(dailyPages) : Array.from(dailyPages);
-  for (const p of dailyArray) {
-    let dateStr = null;
-    const match = p.file.path.match(/(?:04-Archives\/)?Daily\/(\d{4})\/(\d{2})\/(\d{2})/);
-    if (match) {
-      dateStr = `${match[1]}-${match[2]}-${match[3]}`;
-    } else if (p.file.cday) {
-      dateStr = p.file.cday.toISODate();
-    }
-    if (dateStr) {
-      if (!index.has(dateStr)) index.set(dateStr, []);
-      index.get(dateStr).push(p);
-    }
-  }
-  return index;
-}
-
-function dailyArray_pages(pages) {
-  return pages.array ? pages.array() : Array.from(pages);
-}
-
-const sessionIndex = buildSessionIndex();
-
-function renderCal() {
-  calContainer.innerHTML = "";
-
-  const nav = calContainer.createEl("div", {
-    attr: { style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;" }
-  });
-  const prev = nav.createEl("span", { text: "‹", attr: { style: "cursor: pointer; padding: 2px 10px; font-size: 1.2em; color: var(--text-muted);" } });
-  nav.createEl("span", {
-    text: new Date(calY, calM).toLocaleDateString(undefined, { year: "numeric", month: "long" }),
-    attr: { style: "font-weight: 600; font-size: 0.9em;" }
-  });
-  const next = nav.createEl("span", { text: "›", attr: { style: "cursor: pointer; padding: 2px 10px; font-size: 1.2em; color: var(--text-muted);" } });
-
-  prev.addEventListener("click", () => {
-    calM--;
-    if (calM < 0) { calM = 11; calY--; }
-    renderCal();
-  });
-  next.addEventListener("click", () => {
-    calM++;
-    if (calM > 11) { calM = 0; calY++; }
-    renderCal();
-  });
-
-  const tbl = calContainer.createEl("table", {
-    attr: { style: "width: 100%; border-collapse: collapse; text-align: center; font-size: 0.8em;" }
-  });
-  const hRow = tbl.createEl("tr");
-  ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach(d => {
-    hRow.createEl("th", { text: d, attr: { style: "padding: 2px; color: var(--text-muted); font-weight: normal;" } });
-  });
-
-  const firstDay = new Date(calY, calM, 1).getDay();
-  const daysInMonth = new Date(calY, calM + 1, 0).getDate();
-  const todayDate = new Date();
-  const isCurrentMonth = todayDate.getFullYear() === calY && todayDate.getMonth() === calM;
-
-  let cellRow = tbl.createEl("tr");
-  for (let i = 0; i < firstDay; i++) {
-    cellRow.createEl("td", { attr: { style: "padding: 3px;" } });
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const colIdx = (firstDay + d - 1) % 7;
-    if (colIdx === 0 && d > 1) cellRow = tbl.createEl("tr");
-
-    const dateStr = `${calY}-${String(calM + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const sessions = sessionIndex.get(dateStr) || [];
-    const isToday = isCurrentMonth && todayDate.getDate() === d;
-
-    const cell = cellRow.createEl("td", {
-      attr: { style: "padding: 3px; position: relative; cursor: pointer; border-radius: 4px;" }
-    });
-    if (isToday) {
-      cell.style.background = "var(--background-modifier-hover)";
-      cell.style.fontWeight = "700";
-    }
-    const numSpan = cell.createEl("div", { text: String(d) });
-    if (sessions.length > 0) {
-      const dot = cell.createEl("div", {
-        attr: { style: "width: 5px; height: 5px; border-radius: 50%; background: var(--text-accent); margin: 1px auto 0 auto;" }
-      });
-      if (sessions.length > 3) dot.style.background = "#ff8a00";
-    }
-    cell.addEventListener("click", () => showDay(dateStr, sessions));
-  }
-}
-
-const detailBox = rightCard.createEl("div", {
-  attr: { style: "margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--background-modifier-border); font-size: 0.85em;" }
-});
-
-function showDay(dateStr, sessions) {
-  detailBox.innerHTML = "";
-  detailBox.createEl("div", {
-    text: `Sessions on ${dateStr} (${sessions.length}):`,
-    attr: { style: "font-weight: 600; margin-bottom: 4px; color: var(--text-accent);" }
-  });
-  if (sessions.length === 0) {
-    detailBox.createEl("div", { text: "No sessions recorded.", attr: { style: "color: var(--text-muted); font-size: 0.85em;" } });
-  } else {
-    const ul = detailBox.createEl("ul", { attr: { style: "margin: 0; padding-left: 16px;" } });
-    for (const s of sessions) {
-      const li = ul.createEl("li");
-      li.createEl("a", { text: s.file.name, href: s.file.path, cls: "internal-link" });
-    }
-  }
-}
-
-renderCal();
-```
-
-## 📊 Telemetry & Overview
-
-```dataviewjs
-// === KPI STRIP (FULL WIDTH) ===
+// ============================================================
+//  HERMES BRAIN — APP-STYLE DASHBOARD (single 12-column grid)
+// ============================================================
 const vault = app.vault;
+const root = dv.el("div", "", { cls: "hb-dash" });
 
-let totalTokens = 0, todayTokens = 0, activeDays = 0, weekSessions = 0;
-const tokenLog = vault.getAbstractFileByPath("04-Archives/Audit-Reports/Token-Usage.log") || vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
-if (tokenLog) {
-  const content = await vault.read(tokenLog);
-  const lines = content.split("\n").map(l => l.trim())
-    .filter(l => l && !l.startsWith("#") && !l.startsWith("---") && !l.startsWith("<!--"));
-  const byDate = {};
-  for (const line of lines) {
-    const m = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)\s*tokens?\s*\((\d+)\s*session/);
-    if (m) {
-      const [, date, tokens, sessions] = m;
-      if (!byDate[date]) byDate[date] = { tokens: 0, sessions: 0 };
-      byDate[date].tokens += parseInt(tokens);
-      byDate[date].sessions += parseInt(sessions);
-    }
-  }
-  const today = new Date().toISOString().split("T")[0];
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-  for (const [date, d] of Object.entries(byDate)) {
-    totalTokens += d.tokens;
-    if (d.tokens > 0) activeDays++;
-    if (date === today) todayTokens = d.tokens;
-    if (date >= sevenDaysAgo) weekSessions += d.sessions;
-  }
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2, "0");
+const localISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const arr = x => !x ? [] : (x.array ? x.array() : Array.from(x));
+const getFile = (...paths) => paths.map(p => vault.getAbstractFileByPath(p)).find(Boolean);
+const open = path => app.workspace.openLinkText(path, "", false);
+const msOf = t => !t ? 0 : (t.toMillis ? t.toMillis() : new Date(t).getTime());
+const compact = n => new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(n);
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+};
+
+function link(parent, text, path, cls = "") {
+  const a = parent.createEl("a", { text, cls: `internal-link ${cls}`.trim(), href: path });
+  a.addEventListener("click", e => { e.preventDefault(); open(path); });
+  return a;
 }
 
-const memPages = dv.pages('"04-Archives/Memory-Review" or "Memory-Review"');
-const memTasks = memPages?.file?.tasks;
-const memTaskArray = memTasks ? (memTasks.array ? memTasks.array() : Array.from(memTasks)) : [];
-const openCandidates = memTaskArray.filter(t => !t.completed).length;
-
-const analysesCount = dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
-  .where(p => p.subject && p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md").length;
-
-const dailyPages = dv.pages('"04-Archives/Daily" or "Daily"')
-  .where(p => p.file.name !== "README" && p.file.name !== "manifest"
-    && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation");
-
-let healthLabel = "No data", healthClass = "dashboard-badge-info";
-if (dailyPages.length > 0) {
-  const sortedDaily = dailyPages.sort(p => p.file.mtime, 'desc');
-  const sortedArr = sortedDaily.array ? sortedDaily.array() : Array.from(sortedDaily);
-  const newest = sortedArr[0];
-  if (newest && newest.file && newest.file.mtime) {
-    const mtimeMs = newest.file.mtime.toMillis ? newest.file.mtime.toMillis() : new Date(newest.file.mtime).getTime();
-    const hoursAgo = (Date.now() - mtimeMs) / 3600000;
-    if (hoursAgo < 3) { healthLabel = "Healthy"; healthClass = "dashboard-badge-ok"; }
-    else if (hoursAgo < 48) { healthLabel = "Idle"; healthClass = "dashboard-badge-info"; }
-    else { healthLabel = "Stale"; healthClass = "dashboard-badge-warn"; }
-  }
-}
-
-const strip = dv.el("div", "", { cls: "dashboard-kpi-strip" });
-
-function kpi(value, label, customColor) {
-  const card = strip.createEl("div", { cls: "dashboard-kpi-card" });
-  const val = card.createEl("div", { cls: "dashboard-kpi-value", text: value });
-  if (customColor) val.style.color = customColor;
-  card.createEl("div", { cls: "dashboard-kpi-label", text: label });
-}
-
-kpi(totalTokens.toLocaleString(), "Total Tokens");
-kpi(todayTokens.toLocaleString(), "Tokens Today");
-kpi(String(activeDays), "Active Days");
-kpi(String(weekSessions), "Sessions (7d)");
-kpi(String(openCandidates), "Open Facts");
-kpi(String(analysesCount), "Analyses Run", "var(--text-accent)");
-
-const healthCard = strip.createEl("div", { cls: "dashboard-kpi-card" });
-healthCard.createEl("div", { cls: "dashboard-kpi-label", text: "Archiver Status" });
-const badge = healthCard.createEl("span", { cls: `dashboard-badge ${healthClass}`, text: healthLabel });
-badge.style.marginTop = "4px";
-```
-
-```dataviewjs
-// === ROW 4: VERSION CHECK & LOCAL WEATHER (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: VERSION & UPSTREAM CHECK ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🏷️ Vault Version & Upstream Release" });
-
-const versionFile = app.vault.getAbstractFileByPath("VERSION");
-if (!versionFile) {
-  leftCard.createEl("div", { text: "⚠️ No VERSION file found — unable to check upstream releases." });
-} else {
-  const local = (await app.vault.read(versionFile)).trim();
-  try {
-    const res = await fetch("https://api.github.com/repos/mistrysiddh/hermes-brain-template/releases/latest");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const latest = (data.tag_name || "").replace(/^v/, "");
-    if (!latest) throw new Error("no tag_name in response");
-    if (latest === local) {
-      const row = leftCard.createEl("div");
-      row.createEl("span", { cls: "dashboard-badge dashboard-badge-ok", text: `Up to date — v${local}` });
-    } else {
-      const row = leftCard.createEl("div");
-      row.createEl("span", { cls: "dashboard-badge dashboard-badge-warn", text: `Update available: v${latest}` });
-      const detail = leftCard.createEl("div", { attr: { style: "margin-top: 6px; color: var(--text-muted); font-size: 0.85em;" } });
-      detail.createEl("span", { text: `Installed: v${local}. ` });
-      detail.createEl("a", { text: "View Release Notes →", href: data.html_url, cls: "external-link" });
-    }
-  } catch (e) {
-    const row = leftCard.createEl("div");
-    row.createEl("span", { cls: "dashboard-badge dashboard-badge-info", text: `Installed: v${local}` });
-    const note = leftCard.createEl("div", { attr: { style: "margin-top: 4px; font-size: 0.8em; color: var(--text-faint);" } });
-    note.textContent = "Offline or rate-limited; displaying local version.";
-  }
-}
-
-// --- RIGHT: LOCAL WEATHER ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "⛅ Local Environment & Weather" });
-
-const W_LS = { city: "hb-weather-city", key: "hb-weather-key" };
-let savedCity = localStorage.getItem(W_LS.city) || "";
-let savedKey = localStorage.getItem(W_LS.key) || "";
-
-const wBody = rightCard.createEl("div");
-
-function renderWeatherConfig() {
-  wBody.innerHTML = "";
-  const form = wBody.createEl("div", { attr: { style: "display: flex; flex-direction: column; gap: 8px;" } });
-  form.createEl("div", { text: "Enter City & OpenWeatherMap API Key:", attr: { style: "font-size: 0.85em; color: var(--text-muted);" } });
-  
-  const cIn = form.createEl("input", { attr: { type: "text", placeholder: "e.g. London, UK", value: savedCity, style: "padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: 0.85em;" } });
-  const kIn = form.createEl("input", { attr: { type: "password", placeholder: "OpenWeatherMap API Key", value: savedKey, style: "padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: 0.85em;" } });
-  
-  const saveBtn = form.createEl("button", { text: "Save & Fetch Weather", cls: "dashboard-btn", attr: { style: "width: fit-content; padding: 4px 12px; font-size: 0.85em;" } });
-  saveBtn.addEventListener("click", () => {
-    savedCity = cIn.value.trim();
-    savedKey = kIn.value.trim();
-    localStorage.setItem(W_LS.city, savedCity);
-    localStorage.setItem(W_LS.key, savedKey);
-    fetchWeather();
-  });
-}
-
-async function fetchWeather() {
-  if (!savedCity || !savedKey) {
-    renderWeatherConfig();
-    return;
-  }
-  wBody.innerHTML = "Fetching current weather...";
-  try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(savedCity)}&appid=${savedKey}&units=metric`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    
-    wBody.innerHTML = "";
-    const row = wBody.createEl("div", { attr: { style: "display: flex; justify-content: space-between; align-items: center;" } });
-    const info = row.createEl("div");
-    info.createEl("div", { text: `${data.name}, ${data.sys?.country || ""}`, attr: { style: "font-weight: 600; font-size: 1em; color: var(--text-normal);" } });
-    info.createEl("div", { text: data.weather?.[0]?.description ? data.weather[0].description.toUpperCase() : "", attr: { style: "font-size: 0.75em; color: var(--text-muted); letter-spacing: 0.04em;" } });
-    
-    const tempBlock = row.createEl("div", { attr: { style: "text-align: right;" } });
-    tempBlock.createEl("div", { text: `${Math.round(data.main?.temp)}°C`, attr: { style: "font-size: 1.5em; font-weight: 700; color: var(--text-accent); font-family: var(--font-monospace, monospace);" } });
-    tempBlock.createEl("div", { text: `Humidity: ${data.main?.humidity}% · Wind: ${Math.round(data.wind?.speed || 0)} m/s`, attr: { style: "font-size: 0.75em; color: var(--text-muted);" } });
-    
-    const editBtn = wBody.createEl("div", { attr: { style: "margin-top: auto; padding-top: 8px; font-size: 0.75em; color: var(--text-faint); cursor: pointer;" }, text: "⚙️ Change location" });
-    editBtn.addEventListener("click", renderWeatherConfig);
-  } catch (err) {
-    wBody.innerHTML = "";
-    wBody.createEl("div", { text: `Weather unavailable: ${err.message}`, attr: { style: "color: var(--text-muted); font-size: 0.85em;" } });
-    const retry = wBody.createEl("div", { attr: { style: "margin-top: 4px; font-size: 0.8em; color: var(--text-accent); cursor: pointer;" }, text: "Reconfigure settings" });
-    retry.addEventListener("click", renderWeatherConfig);
-  }
-}
-
-fetchWeather();
-```
-
-## 📈 Activity Heatmap & Token Trends
-
-```dataviewjs
-// === TOKEN TRENDS & 18-WEEK HEATMAP (FULL WIDTH) ===
-const card = dv.el("div", "", { cls: "dashboard-card" });
-card.createEl("div", { cls: "dashboard-card-title", text: "📈 Token Activity Heatmap (Last 18 Weeks)" });
-
-const logFile = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Token-Usage.log") || app.vault.getAbstractFileByPath("Skills-Notes/Token-Usage.log");
-const dataByDay = {};
-
-if (logFile) {
-  const content = await app.vault.read(logFile);
-  const lines = content.split("\n").map(l => l.trim())
-    .filter(l => l && !l.startsWith("#") && !l.startsWith("---") && !l.startsWith("<!--"));
-  for (const line of lines) {
-    const m = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)/);
-    if (m) dataByDay[m[1]] = (dataByDay[m[1]] || 0) + parseInt(m[2]);
-  }
-}
-
-const WEEKS = 18;
-const today = new Date();
-const cells = [];
-for (let i = WEEKS * 7 - 1; i >= 0; i--) {
-  const d = new Date(today);
-  d.setDate(d.getDate() - i);
-  const key = d.toISOString().split("T")[0];
-  cells.push({ date: key, val: dataByDay[key] || 0, dayOfWeek: d.getDay() });
-}
-
-const maxTokens = Math.max(1, ...Object.values(dataByDay));
-
-const container = card.createEl("div", {
-  attr: { style: "display: flex; gap: 8px; align-items: flex-start; overflow-x: auto; padding: 6px 0;" }
-});
-
-const dayLabels = container.createEl("div", {
-  attr: { style: "display: flex; flex-direction: column; gap: 3px; font-size: 9px; color: var(--text-muted); line-height: 12px; margin-top: 1px;" }
-});
-["", "M", "", "W", "", "F", ""].forEach(label => {
-  dayLabels.createEl("div", { text: label, attr: { style: "height: 12px; width: 10px; text-align: center;" } });
-});
-
-const gridWrap = container.createEl("div", {
-  attr: { style: "display: flex; gap: 3px;" }
-});
-
-for (let w = 0; w < WEEKS; w++) {
-  const col = gridWrap.createEl("div", {
-    attr: { style: "display: flex; flex-direction: column; gap: 3px;" }
-  });
-  for (let d = 0; d < 7; d++) {
-    const idx = w * 7 + d;
-    const c = cells[idx];
-    const cell = col.createEl("div", {
-      attr: {
-        style: "width: 12px; height: 12px; border-radius: 2px; cursor: pointer; transition: transform 0.1s;",
-        title: `${c.date}: ${c.val.toLocaleString()} tokens`
-      }
-    });
-    if (c.val === 0) {
-      cell.style.background = "var(--background-modifier-border)";
-    } else {
-      const ratio = c.val / maxTokens;
-      const alpha = Math.max(0.25, Math.min(1.0, 0.2 + ratio * 0.8));
-      cell.style.background = `rgba(187, 134, 252, ${alpha.toFixed(2)})`;
-    }
-    cell.addEventListener("mouseenter", () => cell.style.transform = "scale(1.25)");
-    cell.addEventListener("mouseleave", () => cell.style.transform = "scale(1.0)");
-  }
-}
-
-const legend = card.createEl("div", {
-  attr: { style: "display: flex; justify-content: flex-end; align-items: center; gap: 6px; font-size: 0.75em; color: var(--text-muted); margin-top: 6px;" }
-});
-legend.createEl("span", { text: "Less" });
-[0, 0.25, 0.5, 0.75, 1.0].forEach(a => {
-  const b = legend.createEl("div", { attr: { style: "width: 10px; height: 10px; border-radius: 2px;" } });
-  b.style.background = a === 0 ? "var(--background-modifier-border)" : `rgba(187, 134, 252, ${a})`;
-});
-legend.createEl("span", { text: "More" });
-```
-
-## 📂 Active Workspace & Operations
-
-```dataviewjs
-// === ROW 5: ACTIVE PROJECTS & CONSOLIDATED ACTION ITEMS (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: ACTIVE PROJECTS ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🚀 Active Projects" });
-
-const activeProjects = dv.pages('"01-Projects" or "Projects"').where(p => p.type === "project" && p.status === "active").sort(p => p.created, 'desc');
-const projList = activeProjects.array ? activeProjects.array() : Array.from(activeProjects);
-
-if (projList.length === 0) {
-  leftCard.createEl("div", { text: "No active projects currently listed." });
-} else {
-  const table = leftCard.createEl("table", { attr: { style: "width: 100%; border-collapse: collapse;" } });
-  const headRow = table.createEl("tr");
-  ["Project", "Status", "Date"].forEach(h => {
-    headRow.createEl("th", { text: h, attr: { style: "text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;" } });
-  });
-  for (const p of projList) {
-    const row = table.createEl("tr");
-    const nameCell = row.createEl("td", { attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border);" } });
-    nameCell.createEl("a", { text: p.file.name, href: p.file.path, cls: "internal-link" });
-    row.createEl("td", { text: p.status ?? "active", attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border); font-size: 0.85em;" } });
-    
-    let createdDate = "Active";
-    if (p.created && typeof p.created === "string" && !p.created.includes("{{")) {
-      createdDate = p.created;
-    } else if (p.created && typeof p.created !== "string") {
-      createdDate = String(p.created);
-    } else if (p.file.cday) {
-      createdDate = p.file.cday.toISODate();
-    }
-    row.createEl("td", { text: createdDate, attr: { style: "padding: 5px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.85em;" } });
-  }
-}
-
-// --- RIGHT: CONSOLIDATED PROJECT ACTION ITEMS ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "✅ Project Action Items & Next Tasks" });
-
-const projPages = dv.pages('"01-Projects" or "Projects"');
-const projectTasks = projPages?.file?.tasks;
-const allTasks = projectTasks ? (projectTasks.array ? projectTasks.array() : Array.from(projectTasks)) : [];
-const taskList = allTasks.filter(t => !t.completed);
-
-if (taskList.length === 0) {
-  rightCard.createEl("div", { text: "No pending action items found across active projects." });
-} else {
-  const ul = rightCard.createEl("ul", { attr: { style: "margin: 0; padding-left: 18px;" } });
-  for (const t of taskList.slice(0, 7)) {
-    const li = ul.createEl("li", { attr: { style: "padding: 3px 0; font-size: 0.85em;" } });
-    const taskText = (t.text || String(t)).trim() || "Action item pending definition";
-    li.createEl("span", { text: taskText });
-    if (t.link) {
-      const pLink = li.createEl("span", { attr: { style: "margin-left: 8px; font-size: 0.8em;" } });
-      pLink.createEl("a", { text: `[${t.link.fileName || 'Project'}]`, href: t.link.path || "", cls: "internal-link" });
-    }
-  }
-  if (taskList.length > 7) {
-    rightCard.createEl("div", { text: `…and ${taskList.length - 7} more project action items.`, attr: { style: "color: var(--text-muted); font-size: 0.85em; margin-top: 6px;" } });
-  }
-}
-```
-
-## 🤖 Intelligence & Agent Roster
-
-```dataviewjs
-// === ROW 6: PERSONALITY JUDGMENT & MULTI-AGENT TEAM (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: PERSONALITY JUDGMENT ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🎭 Personality & Behavioral Analyses" });
-
-const analyses = dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
-  .where(p => p.subject && p.file.name !== "Personality-Judgment-Analysis.md" && p.file.name !== "Personality-Judgment-Dashboard.md")
-  .sort(p => p.file.mtime, 'desc');
-
-const list = analyses.array ? analyses.array() : Array.from(analyses);
-if (list.length === 0) {
-  leftCard.createEl("div", { text: "No personality analyses recorded yet. Launch one via Quick Actions." });
-} else {
-  const table = leftCard.createEl("table", { attr: { style: "width: 100%; border-collapse: collapse;" } });
-  const headRow = table.createEl("tr");
-  ["Subject", "Primary Style", "Confidence"].forEach(h => {
-    headRow.createEl("th", { text: h, attr: { style: "text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;" } });
-  });
-  for (const a of list.slice(0, 5)) {
-    const row = table.createEl("tr");
-    const nameCell = row.createEl("td", { attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border);" } });
-    nameCell.createEl("a", { text: a.subject, href: a.file.path, cls: "internal-link" });
-    row.createEl("td", { text: a.primary_style ?? "—", attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border); font-size: 0.85em;" } });
-    
-    const conf = a.confidence ? String(a.confidence).trim() : "Review";
-    let confBadge = "dashboard-badge-info";
-    if (conf.toLowerCase() === "high") confBadge = "dashboard-badge-ok";
-    else if (conf.toLowerCase() === "medium") confBadge = "dashboard-badge-warn";
-    
-    const confCell = row.createEl("td", { attr: { style: "padding: 5px 0; border-bottom: 1px solid var(--background-modifier-border);" } });
-    confCell.createEl("span", { cls: `dashboard-badge ${confBadge}`, text: conf });
-  }
-}
-const footerP = leftCard.createEl("div", { attr: { style: "margin-top: auto; padding-top: 8px; font-size: 0.85em;" } });
-footerP.createEl("a", { text: "Open Full Personality Dashboard →", href: "_System/Templates/Personality-Judgment-Dashboard.md", cls: "internal-link" });
-
-// --- RIGHT: MULTI-AGENT TEAM ROSTER ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "🤖 Multi-Agent Team Roster" });
-
-const teamFile = app.vault.getAbstractFileByPath("02-Areas/Skills/Team-Profiles-Index.md") || app.vault.getAbstractFileByPath("Skills-Notes/Team-Profiles-Index.md");
-if (!teamFile) {
-  rightCard.createEl("div", { text: "02-Areas/Skills/Team-Profiles-Index.md not found." });
-} else {
-  const content = await app.vault.read(teamFile);
-  const rows = content.split("\n")
-    .filter(l => l.trim().startsWith("|"))
-    .filter(l => !l.includes("---") && !l.toLowerCase().includes("profile |"));
-  
-  if (rows.length === 0) {
-    rightCard.createEl("div", { text: "No profiles configured in Team-Profiles-Index.md." });
-  } else {
-    const table = rightCard.createEl("table", { attr: { style: "width: 100%; border-collapse: collapse;" } });
-    const headRow = table.createEl("tr");
-    ["Profile", "Specialization"].forEach(h => {
-      headRow.createEl("th", { text: h, attr: { style: "text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;" } });
-    });
-    for (const r of rows) {
-      const cols = r.split("|").map(c => c.trim()).filter(c => c.length > 0);
-      if (cols.length >= 2) {
-        const row = table.createEl("tr");
-        const nameCell = row.createEl("td", { attr: { style: "padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); font-weight: 600; font-size: 0.85em; color: var(--text-accent);" } });
-        nameCell.textContent = cols[0];
-        const specCell = row.createEl("td", { attr: { style: "padding: 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.85em;" } });
-        specCell.textContent = cols[1];
-      }
-    }
-  }
-}
-const footerT = rightCard.createEl("div", { attr: { style: "margin-top: auto; padding-top: 8px; font-size: 0.85em;" } });
-footerT.createEl("a", { text: "Correlate Chats by Agent →", href: "04-Archives/Daily/Chat-Correlation.md", cls: "internal-link" });
-```
-
-## ⚡ Competency & Research
-
-```dataviewjs
-// === ROW 7: SKILL RADAR & ACTIVE RESEARCH (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: HERMES SKILL COMPETENCIES ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-const headerS = leftCard.createEl("div", { cls: "dashboard-card-title" });
-headerS.createEl("span", { text: "⚡ Hermes Skill Competencies" });
-headerS.createEl("a", { text: "Full Catalog →", href: "02-Areas/Skills/Installed-Skills-Index.md", cls: "internal-link", attr: { style: "font-size: 0.85em; text-transform: none; font-weight: normal;" } });
-
-const mapFile = app.vault.getAbstractFileByPath("_System/Scripts/tag_skill_map.json") || app.vault.getAbstractFileByPath("Scripts/tag_skill_map.json");
-if (mapFile) {
-  try {
-    const raw = await app.vault.read(mapFile);
-    const map = JSON.parse(raw);
-    const categories = Object.entries(map).filter(([_, skills]) => skills && skills.length > 0).slice(0, 6);
-    
-    const catGrid = leftCard.createEl("div", { attr: { style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;" } });
-    categories.forEach(([cat, skills]) => {
-      const box = catGrid.createEl("div", { attr: { style: "padding: 8px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border);" } });
-      box.createEl("div", { text: cat.toUpperCase(), attr: { style: "font-size: 0.7em; font-weight: 700; color: var(--text-accent); letter-spacing: 0.04em;" } });
-      const listStr = skills.map(s => s.replace(/-/g, " ")).join(", ");
-      box.createEl("div", { text: listStr, attr: { style: "font-size: 0.8em; color: var(--text-muted); margin-top: 3px; line-height: 1.3;" } });
-    });
-  } catch (e) {
-    leftCard.createEl("div", { text: "Skill mapping indexed in _System/Scripts/tag_skill_map.json" });
-  }
-} else {
-  leftCard.createEl("div", { text: "Maintain skills in 02-Areas/Skills/Installed-Skills-Index.md." });
-}
-
-// --- RIGHT: ACTIVE RESEARCH INVESTIGATIONS ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "🔬 Active Research & Inquiries" });
-
-const researchNotes = dv.pages('"03-Resources/Research" or "Research"')
-  .where(p => p.file.name !== "README")
-  .sort(p => p.file.mtime, 'desc');
-
-const resList = researchNotes.array ? researchNotes.array() : Array.from(researchNotes);
-if (resList.length === 0) {
-  rightCard.createEl("div", { text: "No research notes logged. Use 03-Resources/Research/ to organize technical investigations." });
-} else {
-  const ul = rightCard.createEl("ul", { attr: { style: "margin: 0; padding-left: 18px;" } });
-  for (const r of resList.slice(0, 6)) {
-    const li = ul.createEl("li", { attr: { style: "padding: 3px 0; font-size: 0.85em;" } });
-    li.createEl("a", { text: r.file.name, href: r.file.path, cls: "internal-link" });
-    if (r.tags && r.tags.length > 0) {
-      const tagSpan = li.createEl("span", { attr: { style: "color: var(--text-faint); font-size: 0.8em; margin-left: 6px;" } });
-      tagSpan.textContent = `(${r.tags.join(", ")})`;
-    }
-  }
-}
-```
-
-## 🧠 Memory Pipeline & Vault Pulse
-
-```dataviewjs
-// === ROW 8: MEMORY PIPELINE & GLOBAL VAULT PULSE (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
-
-// --- LEFT: MEMORY PIPELINE & PROMOTION ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🧠 Memory Pipeline & Promotion" });
-
-const memPages = dv.pages('"04-Archives/Memory-Review" or "Memory-Review"');
-const allTasks = memPages?.file?.tasks;
-const taskArray = allTasks ? (allTasks.array ? allTasks.array() : Array.from(allTasks)) : [];
-const completed = taskArray.filter(t => t.completed).length;
-const pending = taskArray.filter(t => !t.completed).length;
-const total = completed + pending;
-const pct = total > 0 ? Math.round((completed / total) * 100) : 100;
-
-const statsRow = leftCard.createEl("div", { attr: { style: "display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px;" } });
-statsRow.createEl("span", { text: `Durable Facts: ${completed} promoted` });
-statsRow.createEl("span", { text: `${pending} pending review (${pct}% complete)` });
-
-const track = leftCard.createEl("div", { cls: "dashboard-progress-track" });
-const fill = track.createEl("div", { cls: "dashboard-progress-fill" });
-fill.style.width = `${pct}%`;
-
-const note = leftCard.createEl("div", { attr: { style: "display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 8px; font-size: 0.8em; color: var(--text-faint);" } });
-note.createEl("span", { text: "Nightly: consolidate_memory.py & sync_to_hermes.py" });
-const boardLink = note.createEl("a", { text: "Open Kanban Board →", href: "04-Archives/Memory-Review/Memory-Board.kanban", cls: "internal-link" });
-
-// --- RIGHT: GLOBAL VAULT PULSE ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-const headerP = rightCard.createEl("div", { cls: "dashboard-card-title" });
-headerP.createEl("span", { text: "🌐 Global Vault Pulse (Non-Daily Edits)" });
-
-const allPages = dv.pages();
-const allPagesArr = allPages.array ? allPages.array() : Array.from(allPages);
-const allMd = allPagesArr.filter(p => p.file && p.file.extension === "md");
-const totalCanvases = allPagesArr.filter(p => p.file && p.file.extension === "canvas").length;
-
-headerP.createEl("span", {
-  text: `${allMd.length} notes · ${totalCanvases} canvases`,
-  attr: { style: "font-size: 0.85em; text-transform: none; color: var(--text-muted); font-weight: normal;" }
-});
-
-function timeAgo(mtime) {
-  if (!mtime) return "";
-  const ms = Date.now() - (mtime.toMillis ? mtime.toMillis() : new Date(mtime).getTime());
-  const min = Math.floor(ms / 60000);
+function timeAgo(t) {
+  const min = Math.floor((Date.now() - msOf(t)) / 60000);
   if (min < 1) return "just now";
   if (min < 60) return `${min}m ago`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const d = Math.floor(hr / 24);
-  return `${d}d ago`;
+  return hr < 24 ? `${hr}h ago` : `${Math.floor(hr / 24)}d ago`;
 }
 
-const recentQuery = dv.pages()
-  .where(p => p.file && p.file.extension === "md" && !p.file.path.startsWith("04-Archives/Daily/") && !p.file.path.startsWith("Daily/") && p.file.name !== "Dashboard-Beta")
-  .sort(p => p.file.mtime, 'desc');
-const recentArray = recentQuery.array ? recentQuery.array() : Array.from(recentQuery);
-const recentFiles = recentArray.slice(0, 6);
+function row(parent, { title, sub, badge, badgeCls = "hb-badge-info", path }) {
+  const r = parent.createEl("div", { cls: "hb-row" });
+  const main = r.createEl("div", { cls: "hb-row-main" });
+  main.createEl("div", { cls: "hb-row-title", text: title });
+  if (sub) main.createEl("div", { cls: "hb-row-sub", text: sub });
+  if (badge) r.createEl("span", { cls: `hb-badge ${badgeCls}`, text: badge });
+  if (path) { r.addClass("is-clickable"); r.addEventListener("click", () => open(path)); }
+  return r;
+}
 
-const table = rightCard.createEl("table", { attr: { style: "width: 100%; border-collapse: collapse; margin-top: 4px;" } });
-const headRow = table.createEl("tr");
-["Note", "Folder", "Edited"].forEach(h => {
-  headRow.createEl("th", { text: h, attr: { style: "text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;" } });
+// cells: string, or (td) => void for custom content
+function table(parent, headers, rows) {
+  const t = parent.createEl("table", { cls: "hb-table" });
+  const hr = t.createEl("thead").createEl("tr");
+  headers.forEach(h => hr.createEl("th", { text: h }));
+  const tb = t.createEl("tbody");
+  for (const cells of rows) {
+    const tr = tb.createEl("tr");
+    cells.forEach(c => {
+      const td = tr.createEl("td");
+      typeof c === "function" ? c(td) : td.setText(c ?? "");
+    });
+  }
+  return t;
+}
+
+const empty = (parent, text) => parent.createEl("div", { cls: "hb-empty", text });
+
+function card(span, title, { action, actionPath, cls } = {}) {
+  const c = root.createEl("section", { cls: `hb-card hb-span-${span} ${cls || ""}`.trim() });
+  if (title) {
+    const h = c.createEl("header", { cls: "hb-card-head" });
+    h.createEl("span", { cls: "hb-card-title", text: title });
+    if (action) link(h, action, actionPath, "hb-card-action");
+  }
+  return c.createEl("div", { cls: "hb-card-body" });
+}
+
+const jobs = [];
+function widget(span, title, opts, fill) {
+  const body = card(span, title, opts);
+  jobs.push(Promise.resolve().then(() => fill(body)).catch(err => {
+    body.empty();
+    empty(body, `⚠️ Couldn't load: ${err.message}`);
+    console.error(`[Dashboard-Beta] ${title}`, err);
+  }));
+}
+
+async function openDailyReview() {
+  const tpl = getFile("_System/Templates/Daily-Review.md", "Templates/Daily-Review.md");
+  if (!tpl) { new Notice("Daily-Review template not found"); return; }
+  try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); }
+  catch { open(tpl.path); }
+}
+
+// ---------- shared data ----------
+const now = new Date();
+const todayISO = localISO(now);
+
+const byDate = {};
+const tokenLog = getFile("04-Archives/Audit-Reports/Token-Usage.log", "Skills-Notes/Token-Usage.log");
+if (tokenLog) {
+  for (const raw of (await vault.read(tokenLog)).split("\n")) {
+    const m = raw.trim().match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)(?:\s*tokens?\s*\((\d+)\s*session)?/);
+    if (!m) continue;
+    const d = byDate[m[1]] ||= { tokens: 0, sessions: 0 };
+    d.tokens += parseInt(m[2]);
+    d.sessions += parseInt(m[3] || "0");
+  }
+}
+const lastDays = n => Array.from({ length: n }, (_, i) => {
+  const d = new Date(now);
+  d.setDate(d.getDate() - (n - 1 - i));
+  return byDate[localISO(d)] || { tokens: 0, sessions: 0 };
 });
 
-for (const f of recentFiles) {
-  const row = table.createEl("tr");
-  const nameCell = row.createEl("td", { attr: { style: "padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border);" } });
-  nameCell.createEl("a", { text: f.file.name, href: f.file.path, cls: "internal-link" });
-  row.createEl("td", { text: f.file.folder || "(root)", attr: { style: "padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.85em;" } });
-  row.createEl("td", { text: timeAgo(f.file.mtime), attr: { style: "padding: 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-faint); font-size: 0.85em;" } });
-}
-```
+const SKIP_DAILY = new Set(["README", "manifest", "Timeline", "Chat-Correlation"]);
+const dailyPages = arr(dv.pages('"04-Archives/Daily" or "Daily"').where(p => !SKIP_DAILY.has(p.file.name)))
+  .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
 
-## 🛡️ Health & Topical Index
+const memTasks = arr(dv.pages('"04-Archives/Memory-Review" or "Memory-Review"').file.tasks);
+const memDone = memTasks.filter(t => t.completed).length;
+const memOpen = memTasks.length - memDone;
 
-```dataviewjs
-// === ROW 9: VAULT HEALTH & TOPICAL TAG CLOUD (2 COLUMNS) ===
-const grid = dv.el("div", "", { cls: "dashboard-2col" });
+const SKIP_ANALYSIS = new Set(["Personality-Judgment-Analysis", "Personality-Judgment-Dashboard"]);
+const analyses = arr(dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
+  .where(p => p.subject && !SKIP_ANALYSIS.has(p.file.name)))
+  .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
 
-// --- LEFT: VAULT HEALTH CHECKS ---
-const leftCard = grid.createEl("div", { cls: "dashboard-card" });
-leftCard.createEl("div", { cls: "dashboard-card-title", text: "🛡️ Vault Health & Integrity" });
-
-const auditReport = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Vault-Audit-Report.md") || app.vault.getAbstractFileByPath("Skills-Notes/Vault-Audit-Report.md");
-if (!auditReport) {
-  leftCard.createEl("div", { text: "Audit report not found — will generate on first vault_audit.py run." });
-} else {
-  const content = await app.vault.read(auditReport);
-  const summaryMatch = content.match(/## Summary\n\n([\s\S]*?)\n---/);
-  if (summaryMatch) {
-    const lines = summaryMatch[1].trim().split('\n').map(l => l.trim()).filter(l => l.startsWith('-'));
-    for (const line of lines) {
-      const m = line.match(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/);
-      if (m) {
-        const [, label, count] = m;
-        const row = leftCard.createEl("div", { attr: { style: "display: flex; justify-content: space-between; align-items: center; padding: 3px 0;" } });
-        row.createEl("span", { text: label, attr: { style: "color: var(--text-muted); font-size: 0.85em;" } });
-        const cls = parseInt(count) > 0 ? "dashboard-badge-warn" : "dashboard-badge-ok";
-        row.createEl("span", { cls: `dashboard-badge ${cls}`, text: count });
-      }
-    }
-  }
-  const genMatch = content.match(/Generated:\s*([^\n]+)/);
-  if (genMatch) {
-    const footer = leftCard.createEl("div", { attr: { style: "margin-top: auto; padding-top: 8px; font-size: 0.8em; color: var(--text-faint);" } });
-    footer.createEl("span", { text: `Audit run: ${genMatch[1].trim()} · ` });
-    footer.createEl("a", { text: "Full report →", href: "04-Archives/Audit-Reports/Vault-Audit-Report.md", cls: "internal-link" });
-  }
+let health = { label: "No data", cls: "hb-badge-info", sub: "no archived sessions" };
+if (dailyPages.length) {
+  const hrs = (Date.now() - msOf(dailyPages[0].file.mtime)) / 3600000;
+  const sub = `last archive ${timeAgo(dailyPages[0].file.mtime)}`;
+  health = hrs < 3 ? { label: "Healthy", cls: "hb-badge-ok", sub }
+    : hrs < 48 ? { label: "Idle", cls: "hb-badge-info", sub }
+    : { label: "Stale", cls: "hb-badge-warn", sub };
 }
 
-// --- RIGHT: TOPICAL VAULT TAG CLOUD ---
-const rightCard = grid.createEl("div", { cls: "dashboard-card" });
-rightCard.createEl("div", { cls: "dashboard-card-title", text: "🏷️ Vault Topical Tags" });
+// ============================================================
+//  TOP BAR
+// ============================================================
+{
+  const bar = root.createEl("header", { cls: "hb-topbar hb-span-12" });
 
-const allPages = dv.pages();
-const allPagesList = allPages.array ? allPages.array() : Array.from(allPages);
-const tagCounts = {};
-for (const p of allPagesList) {
-  if (p.file && p.file.tags) {
-    for (const t of p.file.tags) {
-      const cleanTag = t.startsWith("#") ? t : "#" + t;
-      tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
-    }
-  }
+  const brand = bar.createEl("div", { cls: "hb-brand" });
+  const editable = (key, fallback, cls) => {
+    const el = brand.createEl("div", { cls, text: store.get(key) || fallback, attr: { contenteditable: "true", spellcheck: "false" } });
+    el.addEventListener("blur", () => { const v = el.textContent.trim(); if (v) store.set(key, v); });
+    el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+  };
+  editable("hb-dash-title", "HERMES BRAIN", "hb-brand-title");
+  editable("hb-dash-mantra", "agent memory & cognitive telemetry at a glance", "hb-brand-sub");
+
+  const mid = bar.createEl("div", { cls: "hb-topbar-mid" });
+  const H = now.getHours();
+  const greet = H < 5 ? "🌙 Late night session. Keep it steady."
+    : H < 9 ? "🌅 New day, new flow."
+    : H < 13 ? "⚡ Peak focus hours. Engage."
+    : H < 18 ? "☕ Afternoon momentum. Keep moving."
+    : H < 21 ? "🌆 Evening wind-down & review."
+    : "🌌 Night review & memory consolidation.";
+  mid.createEl("div", { cls: "hb-greet", text: greet });
+
+  const datePart = todayISO.replace(/-/g, "/");
+  const review = arr(dv.pages('"04-Archives/Daily" or "Daily"')
+    .where(p => p.file.path.includes(datePart) && p.file.name.includes("Review")))[0];
+  const badge = mid.createEl("span", {
+    cls: `hb-badge is-clickable ${review ? "hb-badge-ok" : "hb-badge-warn"}`,
+    text: review ? "✅ Daily Review logged" : "⏳ Daily Review pending",
+  });
+  badge.addEventListener("click", () => review ? open(review.file.path) : openDailyReview());
+
+  const clock = bar.createEl("div", { cls: "hb-clock" });
+  const timeEl = clock.createEl("div", { cls: "hb-clock-time" });
+  const dateEl = clock.createEl("div", { cls: "hb-clock-date" });
+  if (window._hbDashClock) clearInterval(window._hbDashClock);
+  let started = false;
+  const tick = () => {
+    if (started && !timeEl.isConnected) { clearInterval(window._hbDashClock); return; }
+    started = true;
+    const d = new Date();
+    timeEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    dateEl.textContent = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  };
+  tick();
+  window._hbDashClock = setInterval(tick, 1000);
 }
-const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 16);
 
-if (sortedTags.length === 0) {
-  rightCard.createEl("div", { text: "No tags indexed in vault." });
-} else {
-  const container = rightCard.createEl("div", { attr: { style: "display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0;" } });
-  sortedTags.forEach(([tag, count]) => {
-    const pill = container.createEl("div", { cls: "dashboard-tag-pill" });
-    pill.createEl("span", { text: tag });
-    pill.createEl("span", { cls: "dashboard-tag-count", text: String(count) });
-    pill.addEventListener("click", () => {
-      try {
-        const searchPlugin = app.internalPlugins.getPluginById("global-search");
-        if (searchPlugin && searchPlugin.instance) {
-          searchPlugin.instance.openGlobalSearch(`tag:${tag}`);
-        }
-      } catch (e) {
-        console.error("Search failed:", e);
-      }
+// ============================================================
+//  KPI STRIP
+// ============================================================
+{
+  const strip = root.createEl("section", { cls: "hb-kpis hb-span-12" });
+
+  function spark(parent, vals) {
+    const max = Math.max(1, ...vals), w = 100, h = 28, bw = w / vals.length;
+    const bars = vals.map((v, i) => {
+      const bh = v ? Math.max(2, (v / max) * h) : 1;
+      return `<rect x="${(i * bw + bw * 0.15).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.7).toFixed(2)}" height="${bh.toFixed(2)}" rx="0.8"/>`;
+    }).join("");
+    parent.createEl("div", { cls: "hb-spark" }).innerHTML =
+      `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
+  }
+
+  function kpi(label, value, sub, { sparkVals, accent, badge } = {}) {
+    const k = strip.createEl("div", { cls: "hb-kpi" });
+    k.createEl("div", { cls: "hb-kpi-label", text: label });
+    if (badge) k.createEl("span", { cls: `hb-badge ${badge}`, text: value });
+    else k.createEl("div", { cls: `hb-kpi-value ${accent ? "is-accent" : ""}`.trim(), text: value });
+    if (sub) k.createEl("div", { cls: "hb-kpi-sub", text: sub });
+    if (sparkVals) spark(k, sparkVals);
+  }
+
+  const days = Object.values(byDate);
+  const totalTokens = days.reduce((s, d) => s + d.tokens, 0);
+  const activeDays = days.filter(d => d.tokens > 0).length;
+  const last14 = lastDays(14).map(d => d.tokens);
+  const avg7 = last14.slice(7).reduce((a, b) => a + b, 0) / 7;
+  const todayTokens = byDate[todayISO]?.tokens || 0;
+  const weekSessions = lastDays(7).reduce((s, d) => s + d.sessions, 0);
+  const sessions14 = lastDays(14).map(d => d.sessions);
+
+  kpi("Total tokens", compact(totalTokens), "last 14 days", { sparkVals: last14 });
+  kpi("Tokens today", compact(todayTokens), `7-day avg ${compact(Math.round(avg7))}`);
+  kpi("Sessions · 7d", String(weekSessions), "last 14 days", { sparkVals: sessions14 });
+  kpi("Active days", String(activeDays), "with token activity");
+  kpi("Open facts", String(memOpen), `${memDone} promoted`, { accent: memOpen > 0 });
+  kpi("Analyses", String(analyses.length), "personality judgments", { accent: true });
+  kpi("Archiver", health.label, health.sub, { badge: health.cls });
+}
+
+// ============================================================
+//  ROW: TODAY · QUICK ACTIONS · CALENDAR
+// ============================================================
+widget(4, "🎯 Today", { action: "Edit profile →", actionPath: "02-Areas/User-Profile.md" }, async body => {
+  const focus = body.createEl("div", { cls: "hb-field" });
+  focus.createEl("div", { cls: "hb-field-label", text: "Primary focus" });
+  const fEl = focus.createEl("div", {
+    cls: "hb-field-value",
+    text: store.get("hb-dash-focus") || "Click to set today's primary focus…",
+    attr: { contenteditable: "true", spellcheck: "false" },
+  });
+  fEl.addEventListener("blur", () => { const v = fEl.textContent.trim(); if (v) store.set("hb-dash-focus", v); });
+  fEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); fEl.blur(); } });
+
+  const userFile = getFile("02-Areas/User-Profile.md", "User-Profile.md");
+  if (!userFile) { empty(body, "02-Areas/User-Profile.md not found — create it to set alignment parameters."); return; }
+  const txt = await vault.read(userFile);
+  const pick = re => {
+    const v = txt.match(re)?.[1]?.trim();
+    if (!v) return "Not set";
+    if (v.startsWith("_(") && v.endsWith(")_")) return "Default — customize in User-Profile.md";
+    return v;
+  };
+  [["Tone", /-\s+\*\*Tone:\*\*\s*([^\n]+)/],
+   ["When in doubt", /-\s+\*\*When in doubt:\*\*\s*([^\n]+)/],
+   ["Output format", /-\s+\*\*Output format:\*\*\s*([^\n]+)/]].forEach(([label, re]) => {
+    const f = body.createEl("div", { cls: "hb-field" });
+    f.createEl("div", { cls: "hb-field-label", text: label });
+    f.createEl("div", { cls: "hb-field-value is-static", text: pick(re) });
+  });
+});
+
+widget(4, "⚡ Quick actions", {}, body => {
+  const ACTIONS = [
+    ["📝", "Daily Review", openDailyReview],
+    ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.kanban")],
+    ["⚡", "Context Preamble", () => open("04-Archives/Memory-Review/HERMES-PREAMBLE.md")],
+    ["⚠️", "Log Lesson", () => open("_System/Templates/Lesson-Learned.md")],
+    ["📑", "New ADR", () => open("_System/Templates/Architecture-Decision-Record.md")],
+    ["🔍", "New Analysis", () => open("_System/Templates/Personality-Judgment-Analysis.md")],
+    ["✨", "Smart Search", () => app.commands.executeCommandById("smart-connections:Smart Connections: Open connections view")],
+    ["🛡️", "Vault Audit", () => open("04-Archives/Audit-Reports/Vault-Audit-Report.md")],
+  ];
+  const grid = body.createEl("div", { cls: "hb-actions" });
+  for (const [icon, label, fn] of ACTIONS) {
+    const b = grid.createEl("button", { cls: "hb-action" });
+    b.createEl("span", { cls: "hb-action-icon", text: icon });
+    b.createEl("span", { text: label });
+    b.addEventListener("click", async () => {
+      try { await fn(); } catch (e) { new Notice(`Failed: ${label}`); console.error(e); }
     });
-  });
-}
-```
-
-## 📜 Recent Archived Sessions
-
-```dataviewjs
-// === ROW 10: RECENT DAILY SESSIONS (FULL WIDTH TABLE) ===
-const card = dv.el("div", "", { cls: "dashboard-card" });
-card.createEl("div", { cls: "dashboard-card-title", text: "📜 Recent Chat Sessions" });
-
-const dailyPages = dv.pages('"04-Archives/Daily" or "Daily"')
-  .where(p => p.file.name !== "README" && p.file.name !== "manifest"
-    && p.file.name !== "Timeline" && p.file.name !== "Chat-Correlation")
-  .sort(p => p.file.mtime, 'desc');
-
-const list = dailyPages.array ? dailyPages.array() : Array.from(dailyPages);
-if (list.length === 0) {
-  card.createEl("div", { text: "No archived sessions found in 04-Archives/Daily/." });
-} else {
-  const table = card.createEl("table", { attr: { style: "width: 100%; border-collapse: collapse;" } });
-  const headRow = table.createEl("tr");
-  ["Session", "Modified", "Folder"].forEach(h => {
-    headRow.createEl("th", { text: h, attr: { style: "text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;" } });
-  });
-  for (const p of list.slice(0, 8)) {
-    const row = table.createEl("tr");
-    const nameCell = row.createEl("td", { attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border);" } });
-    nameCell.createEl("a", { text: p.file.name, href: p.file.path, cls: "internal-link" });
-    row.createEl("td", { text: p.file.mtime ? p.file.mtime.toISODate() : "", attr: { style: "padding: 5px 8px 5px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.85em;" } });
-    row.createEl("td", { text: p.file.folder ?? "", attr: { style: "padding: 5px 0; border-bottom: 1px solid var(--background-modifier-border); color: var(--text-muted); font-size: 0.85em;" } });
   }
-}
-const footer = card.createEl("div", { attr: { style: "margin-top: 8px; font-size: 0.85em;" } });
-footer.createEl("a", { text: "View Complete Timeline Archive →", href: "04-Archives/Daily/Timeline.md", cls: "internal-link" });
+});
+
+widget(4, "📅 Session calendar", {}, body => {
+  const index = new Map();
+  for (const p of dailyPages) {
+    const m = p.file.path.match(/Daily\/(\d{4})\/(\d{2})\/(\d{2})/);
+    const key = m ? `${m[1]}-${m[2]}-${m[3]}` : p.file.cday?.toISODate?.();
+    if (!key) continue;
+    if (!index.has(key)) index.set(key, []);
+    index.get(key).push(p);
+  }
+
+  let y = now.getFullYear(), mo = now.getMonth();
+  const cal = body.createEl("div", { cls: "hb-cal" });
+  const detail = body.createEl("div", { cls: "hb-cal-detail" });
+
+  function showDay(key, sessions) {
+    detail.empty();
+    detail.createEl("div", { cls: "hb-cal-detail-head", text: `${key} · ${sessions.length} session${sessions.length === 1 ? "" : "s"}` });
+    if (!sessions.length) return;
+    const ul = detail.createEl("ul");
+    sessions.slice(0, 6).forEach(s => link(ul.createEl("li"), s.file.name, s.file.path));
+  }
+
+  function render() {
+    cal.empty();
+    const nav = cal.createEl("div", { cls: "hb-cal-nav" });
+    const prev = nav.createEl("button", { cls: "hb-icon-btn", text: "‹", attr: { "aria-label": "Previous month" } });
+    nav.createEl("span", { cls: "hb-cal-month", text: new Date(y, mo).toLocaleDateString(undefined, { year: "numeric", month: "long" }) });
+    const next = nav.createEl("button", { cls: "hb-icon-btn", text: "›", attr: { "aria-label": "Next month" } });
+    prev.addEventListener("click", () => { if (--mo < 0) { mo = 11; y--; } render(); });
+    next.addEventListener("click", () => { if (++mo > 11) { mo = 0; y++; } render(); });
+
+    const grid = cal.createEl("div", { cls: "hb-cal-grid" });
+    ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach(d => grid.createEl("div", { cls: "hb-cal-dow", text: d }));
+    const first = new Date(y, mo, 1).getDay();
+    const days = new Date(y, mo + 1, 0).getDate();
+    for (let i = 0; i < first; i++) grid.createEl("div");
+    for (let d = 1; d <= days; d++) {
+      const key = `${y}-${pad(mo + 1)}-${pad(d)}`;
+      const sessions = index.get(key) || [];
+      const cell = grid.createEl("div", { cls: "hb-cal-day", text: String(d) });
+      if (key === todayISO) cell.addClass("is-today");
+      if (sessions.length) cell.addClass(sessions.length > 3 ? "is-busy" : "has-sessions");
+      cell.addEventListener("click", () => showDay(key, sessions));
+    }
+  }
+  render();
+  showDay(todayISO, index.get(todayISO) || []);
+});
+
+// ============================================================
+//  ROW: HEATMAP · SYSTEM
+// ============================================================
+widget(8, "📈 Token activity · last 26 weeks", {}, body => {
+  const WEEKS = 26;
+  const start = new Date(now);
+  start.setDate(start.getDate() - (WEEKS * 7 - 1));
+  start.setDate(start.getDate() - start.getDay()); // align to Sunday
+  const maxT = Math.max(1, ...Object.values(byDate).map(d => d.tokens));
+
+  let periodTokens = 0, periodActive = 0;
+  const heat = body.createEl("div", { cls: "hb-heat" });
+  ["", "Mon", "", "Wed", "", "Fri", ""].forEach(l => heat.createEl("div", { cls: "hb-heat-label", text: l }));
+  const cursor = new Date(start);
+  while (cursor <= now) {
+    for (let i = 0; i < 7; i++) {
+      const iso = localISO(cursor);
+      const v = byDate[iso]?.tokens || 0;
+      const cell = heat.createEl("div", { cls: "hb-heat-cell" });
+      if (cursor > now) cell.addClass("is-future");
+      else {
+        periodTokens += v;
+        if (v) periodActive++;
+        cell.title = `${iso}: ${v.toLocaleString()} tokens`;
+        if (v) cell.style.background = `color-mix(in srgb, var(--interactive-accent) ${Math.round(25 + (v / maxT) * 75)}%, transparent)`;
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+
+  const foot = body.createEl("div", { cls: "hb-heat-foot" });
+  foot.createEl("span", { cls: "hb-muted", text: `${periodTokens.toLocaleString()} tokens · ${periodActive} active days` });
+  const legend = foot.createEl("span", { cls: "hb-heat-legend" });
+  legend.createEl("span", { text: "Less" });
+  [0, 25, 50, 75, 100].forEach(p => {
+    const sw = legend.createEl("span", { cls: "hb-heat-cell" });
+    if (p) sw.style.background = `color-mix(in srgb, var(--interactive-accent) ${p}%, transparent)`;
+  });
+  legend.createEl("span", { text: "More" });
+});
+
+widget(4, "🖥️ System", {}, async body => {
+  // Version
+  const vSec = body.createEl("div", { cls: "hb-field" });
+  vSec.createEl("div", { cls: "hb-field-label", text: "Vault version" });
+  const vVal = vSec.createEl("div", { cls: "hb-field-value is-static" });
+  const versionFile = getFile("VERSION");
+  if (!versionFile) vVal.setText("⚠️ No VERSION file found");
+  else {
+    // VERSION file format is "<schema>|<semver>", e.g. "1|1.24.1"
+    const local = (await vault.read(versionFile)).trim().split("|").pop();
+    vVal.createEl("span", { cls: "hb-badge hb-badge-info", text: `Checking… v${local}` });
+    fetch("https://api.github.com/repos/mistrysiddh/hermes-brain-template/releases/latest")
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => {
+        const latest = (data.tag_name || "").replace(/^v/, "");
+        if (!latest) throw new Error("no tag");
+        vVal.empty();
+        if (latest === local) vVal.createEl("span", { cls: "hb-badge hb-badge-ok", text: `Up to date · v${local}` });
+        else {
+          vVal.createEl("span", { cls: "hb-badge hb-badge-warn", text: `Update: v${latest}` });
+          vVal.createEl("span", { cls: "hb-muted", text: ` installed v${local} · ` });
+          vVal.createEl("a", { text: "release notes", href: data.html_url, cls: "external-link" });
+        }
+      })
+      .catch(() => {
+        vVal.empty();
+        vVal.createEl("span", { cls: "hb-badge hb-badge-info", text: `v${local}` });
+        vVal.createEl("span", { cls: "hb-faint", text: " offline — local version" });
+      });
+  }
+
+  // Weather
+  const wSec = body.createEl("div", { cls: "hb-field" });
+  wSec.createEl("div", { cls: "hb-field-label", text: "Weather" });
+  const wBody = wSec.createEl("div");
+  const W = { city: "hb-weather-city", key: "hb-weather-key" };
+
+  function config() {
+    wBody.empty();
+    const form = wBody.createEl("div", { cls: "hb-form" });
+    const c = form.createEl("input", { cls: "hb-input", attr: { type: "text", placeholder: "City, e.g. London, UK" } });
+    const k = form.createEl("input", { cls: "hb-input", attr: { type: "password", placeholder: "OpenWeatherMap API key" } });
+    c.value = store.get(W.city) || "";
+    k.value = store.get(W.key) || "";
+    const save = form.createEl("button", { cls: "hb-action", text: "Save & fetch" });
+    save.addEventListener("click", () => { store.set(W.city, c.value.trim()); store.set(W.key, k.value.trim()); load(); });
+  }
+
+  async function load() {
+    const city = store.get(W.city), key = store.get(W.key);
+    if (!city || !key) { config(); return; }
+    wBody.setText("Fetching…");
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${encodeURIComponent(key)}&units=metric`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+      wBody.empty();
+      const w = wBody.createEl("div", { cls: "hb-weather" });
+      const info = w.createEl("div");
+      info.createEl("div", { cls: "hb-row-title", text: `${d.name}${d.sys?.country ? ", " + d.sys.country : ""}` });
+      info.createEl("div", { cls: "hb-row-sub", text: `${d.weather?.[0]?.description || ""} · 💧${d.main?.humidity}% · 💨${Math.round(d.wind?.speed || 0)} m/s` });
+      w.createEl("div", { cls: "hb-weather-temp", text: `${Math.round(d.main?.temp)}°` });
+      const edit = wBody.createEl("a", { cls: "hb-faint is-clickable", text: "⚙️ change location" });
+      edit.addEventListener("click", config);
+    } catch (err) {
+      wBody.empty();
+      empty(wBody, `Weather unavailable (${err.message})`);
+      const re = wBody.createEl("a", { cls: "is-clickable", text: "Reconfigure" });
+      re.addEventListener("click", config);
+    }
+  }
+  load();
+});
+
+// ============================================================
+//  ROW: PROJECTS · ACTION ITEMS
+// ============================================================
+widget(6, "🚀 Active projects", {}, body => {
+  const projects = arr(dv.pages('"01-Projects" or "Projects"')
+    .where(p => p.type === "project" && p.status === "active")
+    .sort(p => p.created, "desc"));
+  if (!projects.length) return empty(body, "No active projects.");
+  const created = p => {
+    if (p.created && typeof p.created !== "string") return p.created.toISODate?.() ?? String(p.created);
+    if (p.created && !p.created.includes("{{")) return p.created;
+    return p.file.cday?.toISODate?.() ?? "";
+  };
+  table(body, ["Project", "Status", "Started"], projects.map(p => [
+    td => link(td, p.file.name, p.file.path),
+    td => td.createEl("span", { cls: "hb-badge hb-badge-ok", text: p.status }),
+    created(p),
+  ]));
+});
+
+widget(6, "✅ Next action items", {}, body => {
+  const tasks = arr(dv.pages('"01-Projects" or "Projects"').file.tasks).filter(t => !t.completed);
+  if (!tasks.length) return empty(body, "No pending action items across projects. 🎉");
+  const list = body.createEl("div", { cls: "hb-tasks" });
+  for (const t of tasks.slice(0, 7)) {
+    const r = list.createEl("div", { cls: "hb-task" });
+    r.createEl("span", { cls: "hb-task-box" });
+    r.createEl("span", { cls: "hb-task-text", text: (t.text || "").trim() || "Untitled action item" });
+    if (t.link?.path) link(r, t.link.path.split("/").pop().replace(/\.md$/, ""), t.link.path, "hb-task-src");
+  }
+  if (tasks.length > 7) body.createEl("div", { cls: "hb-faint", text: `+ ${tasks.length - 7} more` });
+});
+
+// ============================================================
+//  ROW: MEMORY PIPELINE · VAULT PULSE
+// ============================================================
+widget(4, "🧠 Memory pipeline", { action: "Kanban →", actionPath: "04-Archives/Memory-Review/Memory-Board.kanban" }, body => {
+  const total = memTasks.length;
+  const pct = total ? Math.round((memDone / total) * 100) : 100;
+  const big = body.createEl("div", { cls: "hb-big" });
+  big.createEl("span", { cls: "hb-big-value", text: `${pct}%` });
+  big.createEl("span", { cls: "hb-muted", text: "of candidate facts reviewed" });
+  const track = body.createEl("div", { cls: "hb-progress" });
+  track.createEl("div", { cls: "hb-progress-fill" }).style.width = `${pct}%`;
+  const stats = body.createEl("div", { cls: "hb-stat-pair" });
+  [[memDone, "promoted"], [memOpen, "pending review"]].forEach(([n, l]) => {
+    const s = stats.createEl("div");
+    s.createEl("div", { cls: "hb-stat-n", text: String(n) });
+    s.createEl("div", { cls: "hb-faint", text: l });
+  });
+  body.createEl("div", { cls: "hb-faint hb-push", text: "Nightly: consolidate_memory.py → sync_to_hermes.py" });
+});
+
+widget(8, "🌐 Vault pulse · recent edits", {}, body => {
+  const files = vault.getFiles();
+  const notes = files.filter(f => f.extension === "md").length;
+  const canvases = files.filter(f => f.extension === "canvas").length;
+  const stats = body.createEl("div", { cls: "hb-inline-stats" });
+  [[notes, "notes"], [canvases, "canvases"], [dailyPages.length, "archived sessions"]].forEach(([n, l]) => {
+    const s = stats.createEl("span");
+    s.createEl("strong", { text: n.toLocaleString() });
+    s.appendText(` ${l}`);
+  });
+  const self = dv.current()?.file?.path;
+  const recent = arr(dv.pages()
+    .where(p => p.file.path !== self && !p.file.path.startsWith("04-Archives/Daily/") && !p.file.path.startsWith("Daily/"))
+    .sort(p => p.file.mtime, "desc")).slice(0, 6);
+  table(body, ["Note", "Folder", "Edited"], recent.map(f => [
+    td => link(td, f.file.name, f.file.path),
+    f.file.folder || "(root)",
+    timeAgo(f.file.mtime),
+  ]));
+});
+
+// ============================================================
+//  ROW: PERSONALITY · AGENT ROSTER
+// ============================================================
+widget(6, "🎭 Behavioral analyses", { action: "Full dashboard →", actionPath: "_System/Templates/Personality-Judgment-Dashboard.md" }, body => {
+  if (!analyses.length) return empty(body, "No analyses yet — start one from Quick actions.");
+  table(body, ["Subject", "Primary style", "Confidence"], analyses.slice(0, 5).map(a => {
+    const conf = a.confidence ? String(a.confidence).trim() : "Review";
+    const cls = { high: "hb-badge-ok", medium: "hb-badge-warn" }[conf.toLowerCase()] || "hb-badge-info";
+    return [
+      td => link(td, String(a.subject), a.file.path),
+      a.primary_style ?? "—",
+      td => td.createEl("span", { cls: `hb-badge ${cls}`, text: conf }),
+    ];
+  }));
+});
+
+widget(6, "🤖 Agent roster", { action: "Chat correlation →", actionPath: "04-Archives/Daily/Chat-Correlation.md" }, async body => {
+  const teamFile = getFile("02-Areas/Skills/Team-Profiles-Index.md", "Skills-Notes/Team-Profiles-Index.md");
+  if (!teamFile) return empty(body, "02-Areas/Skills/Team-Profiles-Index.md not found.");
+  const rows = (await vault.read(teamFile)).split("\n")
+    .filter(l => l.trim().startsWith("|") && !/^\|[\s:-]+\|/.test(l.trim()) && !l.toLowerCase().includes("profile |"))
+    .map(l => l.split("|").map(c => c.trim()).filter(Boolean))
+    .filter(c => c.length >= 2);
+  if (!rows.length) return empty(body, "No profiles configured yet.");
+  table(body, ["Profile", "Specialization"], rows.map(c => [
+    td => td.createEl("strong", { cls: "hb-accent", text: c[0] }),
+    c[1],
+  ]));
+});
+
+// ============================================================
+//  ROW: SKILLS · RESEARCH
+// ============================================================
+widget(6, "⚡ Skill competencies", { action: "Full catalog →", actionPath: "02-Areas/Skills/Installed-Skills-Index.md" }, async body => {
+  const mapFile = getFile("_System/Scripts/tag_skill_map.json", "Scripts/tag_skill_map.json");
+  if (!mapFile) return empty(body, "Maintain skills in 02-Areas/Skills/Installed-Skills-Index.md.");
+  const map = JSON.parse(await vault.read(mapFile));
+  const cats = Object.entries(map).filter(([, s]) => Array.isArray(s) && s.length).slice(0, 6);
+  const grid = body.createEl("div", { cls: "hb-tiles" });
+  for (const [cat, skills] of cats) {
+    const t = grid.createEl("div", { cls: "hb-tile" });
+    const h = t.createEl("div", { cls: "hb-tile-head" });
+    h.createEl("span", { cls: "hb-field-label", text: cat });
+    h.createEl("span", { cls: "hb-badge hb-badge-info", text: String(skills.length) });
+    t.createEl("div", { cls: "hb-row-sub", text: skills.map(s => s.replace(/-/g, " ")).join(", ") });
+  }
+});
+
+widget(6, "🔬 Active research", {}, body => {
+  const notes = arr(dv.pages('"03-Resources/Research" or "Research"')
+    .where(p => p.file.name !== "README")
+    .sort(p => p.file.mtime, "desc")).slice(0, 6);
+  if (!notes.length) return empty(body, "No research notes yet — use 03-Resources/Research/.");
+  const list = body.createEl("div", { cls: "hb-rows" });
+  notes.forEach(r => row(list, {
+    title: r.file.name,
+    sub: arr(r.file.tags).slice(0, 4).join(" ") || r.file.folder,
+    badge: timeAgo(r.file.mtime),
+    path: r.file.path,
+  }));
+});
+
+// ============================================================
+//  ROW: KNOWLEDGE HUBS · HEALTH · TAGS
+// ============================================================
+widget(4, "🗺️ Knowledge hubs", {}, body => {
+  const list = body.createEl("div", { cls: "hb-rows" });
+  [
+    ["Agentic Architecture", "03-Resources/MOCs/Agentic-Architecture-MOC.md", "Multi-agent systems & orchestration", "MOC", "hb-badge-blue"],
+    ["AI & Machine Learning", "03-Resources/MOCs/AI-ML-MOC.md", "Models, embeddings & evaluation", "MOC", "hb-badge-blue"],
+    ["Cybersecurity", "03-Resources/MOCs/Cybersecurity-MOC.md", "Threats, defenses & compliance", "MOC", "hb-badge-blue"],
+    ["Technology Stack", "03-Resources/MOCs/Technology-Stack-MOC.md", "Frameworks, databases, infra", "MOC", "hb-badge-blue"],
+    ["Vault Master MOC", "MOC.md", "Complete index of the brain", "MOC", "hb-badge-blue"],
+    ["Memory Pipeline", "_System/Canvases/Memory-Pipeline.canvas", "Cron export, staging & durable facts", "Canvas", "hb-badge-purple"],
+    ["Personality Judgment", "_System/Canvases/Personality-Judgment-Canvas.canvas", "11-dimension behavioral framework", "Canvas", "hb-badge-purple"],
+  ].forEach(([title, path, sub, badge, badgeCls]) => row(list, { title, sub, badge, badgeCls, path }));
+});
+
+widget(4, "🛡️ Vault health", { action: "Report →", actionPath: "04-Archives/Audit-Reports/Vault-Audit-Report.md" }, async body => {
+  const report = getFile("04-Archives/Audit-Reports/Vault-Audit-Report.md", "Skills-Notes/Vault-Audit-Report.md");
+  if (!report) return empty(body, "No audit yet — generated on first vault_audit.py run.");
+  const txt = await vault.read(report);
+  const summary = txt.match(/## Summary\r?\n\r?\n([\s\S]*?)\r?\n---/)?.[1] || "";
+  const checks = [...summary.matchAll(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/g)];
+  if (!checks.length) empty(body, "Audit summary not found in report.");
+  const issues = checks.reduce((s, m) => s + parseInt(m[2]), 0);
+  if (checks.length) {
+    const big = body.createEl("div", { cls: "hb-big" });
+    big.createEl("span", { cls: `hb-big-value ${issues ? "is-warn" : ""}`.trim(), text: String(issues) });
+    big.createEl("span", { cls: "hb-muted", text: issues ? "open issues" : "issues — all clear" });
+  }
+  const list = body.createEl("div", { cls: "hb-checks" });
+  for (const [, label, count] of checks) {
+    const r = list.createEl("div", { cls: "hb-check" });
+    r.createEl("span", { text: label });
+    r.createEl("span", { cls: `hb-badge ${+count ? "hb-badge-warn" : "hb-badge-ok"}`, text: count });
+  }
+  const gen = txt.match(/Generated:\s*([^\n]+)/)?.[1];
+  if (gen) body.createEl("div", { cls: "hb-faint hb-push", text: `Last audit: ${gen.trim()}` });
+});
+
+widget(4, "🏷️ Top tags", {}, body => {
+  const counts = {};
+  for (const p of arr(dv.pages())) for (const t of arr(p.file.tags)) {
+    const tag = t.startsWith("#") ? t : `#${t}`;
+    counts[tag] = (counts[tag] || 0) + 1;
+  }
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 18);
+  if (!top.length) return empty(body, "No tags indexed.");
+  const wrap = body.createEl("div", { cls: "hb-pills" });
+  for (const [tag, n] of top) {
+    const pill = wrap.createEl("button", { cls: "hb-pill" });
+    pill.createEl("span", { text: tag });
+    pill.createEl("span", { cls: "hb-pill-n", text: String(n) });
+    pill.addEventListener("click", () => {
+      app.internalPlugins.getPluginById("global-search")?.instance?.openGlobalSearch(`tag:${tag}`);
+    });
+  }
+});
+
+// ============================================================
+//  ROW: RECENT SESSIONS
+// ============================================================
+widget(12, "📜 Recent sessions", { action: "Full timeline →", actionPath: "04-Archives/Daily/Timeline.md" }, body => {
+  if (!dailyPages.length) return empty(body, "No archived sessions in 04-Archives/Daily/.");
+  table(body, ["Session", "Folder", "Modified"], dailyPages.slice(0, 8).map(p => [
+    td => link(td, p.file.name, p.file.path),
+    p.file.folder ?? "",
+    td => { td.setText(timeAgo(p.file.mtime)); td.title = p.file.mtime?.toISO?.() ?? ""; },
+  ]));
+});
+
+await Promise.all(jobs);
 ```
-
----
-
-_Widescreen card dashboard for Hermes Brain Vault. Original linear view maintained at [[Dashboard]]._
