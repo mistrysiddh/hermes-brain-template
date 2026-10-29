@@ -392,7 +392,8 @@ widget(4, "🖥️ System", {}, async body => {
   const versionFile = getFile("VERSION");
   if (!versionFile) vVal.setText("⚠️ No VERSION file found");
   else {
-    const local = (await vault.read(versionFile)).trim();
+    // VERSION file format is "<schema>|<semver>", e.g. "1|1.24.1"
+    const local = (await vault.read(versionFile)).trim().split("|").pop();
     vVal.createEl("span", { cls: "hb-badge hb-badge-info", text: `Checking… v${local}` });
     fetch("https://api.github.com/repos/mistrysiddh/hermes-brain-template/releases/latest")
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })

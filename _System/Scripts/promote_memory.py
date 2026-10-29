@@ -22,6 +22,9 @@ Usage:
   Dismiss a candidate note:
     python promote_memory.py --file <path_to_candidate.md> --target dismiss [--vault <path>]
 
+  Promote a fact to an arbitrary file:
+    python promote_memory.py --fact "Always use WAL mode" --target /path/to/memory.md [--vault <path>]
+
   Run Self-Tests:
     python promote_memory.py --test
 """
@@ -207,6 +210,42 @@ class MemoryPromoter:
             "fact": fact
         }
 
+    def promote_to_file(self, fact: str, target_path: Path, category: str = "general", candidate_path: Path = None) -> dict:
+        """Promote a fact directly into an arbitrary file path."""
+        target_path = Path(target_path)
+        now_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        entry_line = f"- [{now_date}] [{category}] {fact}\n"
+
+        # Ensure directory exists
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if not target_path.exists():
+            content = f"# Memory Facts\n\n## 🧠 Durable Facts & Architecture Rules\n{entry_line}"
+            target_path.write_text(content, encoding="utf-8")
+        else:
+            current = target_path.read_text(encoding="utf-8", errors="replace")
+            # If section exists, append to it, else append section
+            if "## 🧠 Durable Facts" in current or "## Durable Facts" in current:
+                target_header = "## 🧠 Durable Facts" if "## 🧠 Durable Facts" in current else "## Durable Facts"
+                parts = current.split(target_header)
+                updated = parts[0] + target_header + "\n" + entry_line + parts[1]
+                target_path.write_text(updated, encoding="utf-8")
+            else:
+                with open(target_path, "a", encoding="utf-8") as f:
+                    f.write(f"\n\n## 🧠 Durable Facts & Rules\n{entry_line}")
+
+        # Mark candidate file as approved if provided
+        if candidate_path and Path(candidate_path).exists():
+            self._mark_file_status(Path(candidate_path), "approved", str(target_path))
+
+        self.log_consolidation(fact, "file", str(target_path))
+        return {
+            "status": "success",
+            "action": "promoted_to_file",
+            "destination": str(target_path),
+            "fact": fact
+        }
+
     def dismiss(self, fact: str, candidate_path: Path = None) -> dict:
         """Dismiss a candidate without promoting to memory."""
         if candidate_path and Path(candidate_path).exists():
@@ -331,7 +370,7 @@ def main():
     parser.add_argument("--list", action="store_true", help="List pending memory candidates")
     parser.add_argument("--file", type=str, default="", help="Relative or absolute path to candidate markdown file")
     parser.add_argument("--fact", type=str, default="", help="Direct text of fact (if no file given)")
-    parser.add_argument("--target", choices=["hermes", "profile", "dismiss"], help="Promotion target destination")
+    parser.add_argument("--target", type=str, default="", help='Promotion target: "hermes", "profile", "dismiss", or a custom file path to write the fact to')
     parser.add_argument("--category", type=str, default="general", help="Category for fact")
     parser.add_argument("--test", action="store_true", help="Run automated self-tests")
     parser.add_argument("--review", action="store_true", help="Interactively review and promote/dismiss memory candidates")
@@ -467,6 +506,11 @@ def main():
     elif args.target == "dismiss":
         res = promoter.dismiss(fact_text, candidate_file)
         print(f"🗑️ Dismissed candidate: {fact_text}")
+    else:
+        # Treat --target as a custom file path
+        target_path = Path(args.target)
+        res = promoter.promote_to_file(fact_text, target_path, args.category, candidate_file)
+        print(f"✅ Promoted to {target_path}: {fact_text}")
 
 if __name__ == "__main__":
     main()

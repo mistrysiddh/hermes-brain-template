@@ -5,9 +5,6 @@ created: 2026-09-10
 tags:
   - dashboard
   - hub
-dashboard_last_visit: 2026-09-30T14:28:03.389Z
-dashboard_last_session_count: 827
-dashboard_last_candidate_count: 13
 cssclasses:
   - dashboard-beta
   - dashboard-wide
