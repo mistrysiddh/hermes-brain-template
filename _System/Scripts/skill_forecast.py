@@ -49,24 +49,31 @@ def resolve_vault():
     return None
 
 
-# Constants
-VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.", file=sys.stderr)
-    sys.exit(1)
-
-
-skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
-SKILLS_NOTES = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
-
-audit_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports")
-AUDIT_DIR = audit_cand if os.path.exists(audit_cand) else SKILLS_NOTES
-
-TAG_TRENDS_LOG = os.path.join(AUDIT_DIR, "Tag-Trends.log")
-INSTALLED_INDEX = os.path.join(SKILLS_NOTES, "Installed-Skills-Index.md")
-FORECAST_LOG = os.path.join(AUDIT_DIR, "Skill-Forecast.log")
-SKILL_TO_CHAT = os.path.join(SKILLS_NOTES, "Skill-to-Chat-Links.md")
+# Path constants (set by init_paths() in main())
+VAULT = None
+SKILLS_NOTES = None
+AUDIT_DIR = None
+TAG_TRENDS_LOG = None
+INSTALLED_INDEX = None
+FORECAST_LOG = None
+SKILL_TO_CHAT = None
 TAG_SKILL_MAP_JSON = os.path.join(os.path.dirname(__file__), "tag_skill_map.json")
+
+def init_paths(vault_path):
+    """Set module-level path globals from a vault root path."""
+    global VAULT, SKILLS_NOTES, AUDIT_DIR, TAG_TRENDS_LOG, INSTALLED_INDEX, FORECAST_LOG, SKILL_TO_CHAT
+    VAULT = Path(vault_path)
+    skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
+    SKILLS_NOTES = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
+
+    audit_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+    AUDIT_DIR = audit_cand if os.path.exists(audit_cand) else SKILLS_NOTES
+
+    TAG_TRENDS_LOG = os.path.join(AUDIT_DIR, "Tag-Trends.log")
+    INSTALLED_INDEX = os.path.join(SKILLS_NOTES, "Installed-Skills-Index.md")
+    FORECAST_LOG = os.path.join(AUDIT_DIR, "Skill-Forecast.log")
+    SKILL_TO_CHAT = os.path.join(SKILLS_NOTES, "Skill-to-Chat-Links.md")
+
 
 # ANSI color codes (fallback if colorama not available)
 if COLOR_AVAILABLE:
@@ -98,6 +105,10 @@ def parse_args():
     parser.add_argument(
         "--debug", action="store_true",
         help="Enable debug output"
+    )
+    parser.add_argument(
+        "--vault", type=str, default="",
+        help="Path to vault root (default: auto-detect or HERMES_VAULT_PATH)"
     )
     parser.add_argument(
         "--no-color", action="store_true",
@@ -473,6 +484,19 @@ def suggest_skills(args):
 def main():
     args = parse_args()
     debug_print.enabled = args.debug
+
+    # Resolve vault path: CLI arg > env var > auto-detect
+    vault_path = args.vault or os.environ.get("HERMES_VAULT_PATH") or None
+    if not vault_path:
+        detected = resolve_vault()
+        if detected:
+            vault_path = detected
+    if not vault_path:
+        print("Vault path not specified and auto-detection failed — aborting.", file=sys.stderr)
+        print("  Pass --vault <path> or set HERMES_VAULT_PATH.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(vault_path)
 
     # Handle NO_COLOR env and --no-color flag
     no_color = args.no_color or bool(os.environ.get('NO_COLOR'))
