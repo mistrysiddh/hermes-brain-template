@@ -126,3 +126,77 @@ jobs:
         run: |
           set -e
           python3 _System/Scripts/ci/test_generate_changelog.py
+
+  template-drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run template drift check
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/template_drift.py ${{ github.workspace }}
+          echo "template_drift.py: OK"
+
+  self-critique-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run self_critique.py dry-run
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/self_critique.py --vault ${{ github.workspace }} all
+          echo "self_critique.py: dry-run complete"
+
+  auto-remediate-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run auto_remediate.py dry-run
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/auto_remediate.py --vault ${{ github.workspace }} report
+          echo "auto_remediate.py: dry-run complete"
+
+  knowledge-synthesis-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run knowledge_synthesis.py dry-run
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/knowledge_synthesis.py --vault ${{ github.workspace }} --days 7 --test
+          echo "knowledge_synthesis.py: dry-run complete"
+
+  dream-cycle-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dream_cycle.py dry-run
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/dream_cycle.py --vault ${{ github.workspace }} --days 7 --test
+          echo "dream_cycle.py: dry-run complete"
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for secrets in tracked files
+        run: |
+          set -e
+          if command -v detect-secrets >/dev/null 2>&1; then
+            detect-secrets scan --baseline .secrets.baseline _System/Scripts/ || true
+            echo "detect-secrets: scan complete"
+          else
+            echo "detect-secrets not installed — skipping secret scan"
+          fi
