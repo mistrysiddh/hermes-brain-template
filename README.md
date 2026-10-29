@@ -416,3 +416,10 @@ additional Obsidian plugin recipes, or extra automation scripts.
 are enabled if you'd rather ask a question first — start with the
 [welcome post](https://github.com/mistrysiddh/hermes-brain-template/discussions/1).
 See [CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md) for community guidelines.
+
+## 🤝 Contributors
+
+| Contributor | GitHub | Contribution |
+|-------------|--------|--------------|
+| Siddh Mistry | [@mistrysiddh](https://github.com/mistrysiddh) | Creator & maintainer — Hermes Brain template, scripts, docs, website |
+| TomLucidor | [@TomLucidor](https://github.com/TomLucidor) | Feature proposals: multi-harness agent skills, smart auto-remediation, structured deep research, wisdom digestion (Satori), version control & synthesis tracking (via GitHub issue #11) |
