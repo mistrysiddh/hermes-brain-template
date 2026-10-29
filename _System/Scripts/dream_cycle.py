@@ -13,10 +13,10 @@ Consolidates recent episodic memories (04-Archives/Daily/ sessions) into durable
 
 Usage:
   Standard Run:
-    python dream_cycle.py [vault_path] [--days 14] [--link]
+    python dream_cycle.py --vault <vault_path> [--days 14] [--link]
 
   With Auto-Staging & ADR Drafting:
-    python dream_cycle.py [vault_path] --stage-memory --draft-adr
+    python dream_cycle.py --vault <vault_path> --stage-memory --draft-adr
 
   Run Automated Self-Tests:
     python dream_cycle.py --test
@@ -419,7 +419,12 @@ def run_self_test():
 
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain Dream Cycle & Latent Synthesis (v2)")
-    parser.add_argument("vault", nargs="?", default=None, help="Vault root directory")
+    parser.add_argument(
+        "--vault",
+        type=str,
+        default="",
+        help="Vault root directory path (default: HERMES_VAULT_PATH env var, then auto-detect)",
+    )
     parser.add_argument("--days", type=int, default=14, help="Number of past days to inspect (default: 14)")
     parser.add_argument("--link", action="store_true", help="Auto-inject Related Sessions backlinks into session notes")
     parser.add_argument("--stage-memory", action="store_true", help="Auto-stage distilled facts into Memory-Review")
