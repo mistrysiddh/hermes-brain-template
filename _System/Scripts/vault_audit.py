@@ -280,6 +280,7 @@ def find_orphaned_files():
         "Installed-Skills-Index.md", "Team-Profiles-Index.md",
         "Skill-to-Chat-Links.md", "Dataview-Query-Library.md",
         "SECURITY.md", "INSTALL_PROMPT.md", "release_notes.md",
+        "GRAPH_REPORT.md",
     ]
 
     orphans = []
