@@ -12,6 +12,7 @@ This repository contains **7 multi-harness agent skills** for the Hermes Brain O
 | **dream-cycle** | `_System/Scripts/dream_cycle.py` | Cognitive reflection — cross-session associations, drift detection, ADR drafting, memory staging |
 | **quiz** | `_System/Scripts/quiz.py` | Self-testing from vault notes — what is X?, complete the statement, true/false |
 | **radar** | `_System/Scripts/radar.py` | Standing surveillance on sources (blogs, news, papers) → daily/weekly digest |
+| **metrics** | `_System/Scripts/metrics.py` | Dated vault metrics snapshot — notes, links, sessions, tags, MOCs, stale |
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
 | **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOCs, note splitting, network maintenance |
 
@@ -27,6 +28,8 @@ python _System/Scripts/dream_cycle.py --vault /path/to/vault --stage-memory --dr
 python _System/Scripts/quiz.py --vault /path/to/vault --days 30
 python _System/Scripts/radar.py --vault /path/to/vault --days 7 scan
 python _System/Scripts/radar.py --vault /path/to/vault --days 7 digest --apply
+python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot
+python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot --apply
 python _System/Scripts/converse_learn.py --vault /path/to/vault --days 14
 python _System/Scripts/zknote.py --vault /path/to/vault index --days 30
 ```
