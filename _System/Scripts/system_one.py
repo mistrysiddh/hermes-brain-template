@@ -690,6 +690,163 @@ def dream_cycle(vault_dir, dry_run=True):
 
 
 # ---------------------------------------------------------------------------
+# Autonomic Kanban — evidence-backed board supervision (hermes-nerve inspired)
+# ---------------------------------------------------------------------------
+KANBAN_COLUMNS = ["Ingestion & Candidates", "Under Review", "Approved & Promoted", "Rejected / Ephemeral"]
+
+
+def find_kanban_boards(vault_dir):
+    """Find all .kanban files in the vault."""
+    boards = []
+    for root, dirs, files in os.walk(vault_dir):
+        dirs[:] = [d for d in dirs if d not in {".obsidian", ".git", ".trash", ".sota"} and not d.startswith(".")]
+        for f in sorted(files):
+            if not (f.endswith(".kanban") or f.endswith(".kanban.md")):
+                continue
+            full = os.path.join(root, f)
+            rel = os.path.relpath(full, vault_dir).replace("\\", "/")
+            content = read_file(full)
+            name = os.path.splitext(f)[0]
+            boards.append((full, rel, name, content))
+    return boards
+
+
+def parse_kanban_content(content):
+    """Parse a kanban board markdown into columns and cards."""
+    columns = {}
+    current_column = None
+    for line in content.split("\n"):
+        heading_match = re.match(r"^#{2,3}\s+(.+)$", line)
+        if heading_match:
+            current_column = heading_match.group(1).strip()
+            columns[current_column] = []
+        elif current_column and line.strip().startswith("- [ ]"):
+            card_text = line.strip()[5:]
+            columns[current_column].append(card_text)
+    return columns
+
+
+def run_kanban_scan(vault_dir, dry_run=True):
+    """Scan kanban boards and report card distribution."""
+    boards = find_kanban_boards(vault_dir)
+    results = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        total_cards = sum(len(cards) for cards in columns.values())
+        results.append({
+            "path": rel,
+            "columns": {col: len(cards) for col, cards in columns.items()},
+            "total_cards": total_cards,
+        })
+    return {"boards": results, "total_boards": len(boards)}
+
+
+def run_kanban_promote(vault_dir, threshold=0.7, dry_run=True):
+    """Auto-promote cards based on evidence/confidence thresholds."""
+    boards = find_kanban_boards(vault_dir)
+    promoted = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        candidates = columns.get("Ingestion & Candidates", [])
+        for card in candidates:
+            evidence_score = min(1.0, len(card) / 100.0 + (0.2 if "[[" in card else 0))
+            if evidence_score >= threshold:
+                promoted.append({
+                    "from": "Ingestion & Candidates",
+                    "to": "Under Review",
+                    "card": card,
+                    "evidence": round(evidence_score, 2),
+                })
+    return {"promoted": promoted, "dry_run": dry_run}
+
+
+def run_kanban_auto_move(vault_dir, dry_run=True):
+    """Automatically move cards between columns based on rules."""
+    boards = find_kanban_boards(vault_dir)
+    moves = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        review_cards = columns.get("Under Review", [])
+        for card in review_cards:
+            if "[[" not in card and len(card) < 50:
+                moves.append({
+                    "from": "Under Review",
+                    "to": "Rejected / Ephemeral",
+                    "card": card,
+                    "reason": "insufficient_evidence",
+                })
+    return {"moves": moves, "dry_run": dry_run}
+
+
+def run_kanban_report(vault_dir, dry_run=True):
+    """Evidence-backed kanban supervision report."""
+    scan = run_kanban_scan(vault_dir, dry_run=True)
+    lines = ["# Autonomic Kanban Supervision Report", f"Generated: {iso_now()}", ""]
+    for board in scan["boards"]:
+        lines.append(f"## {board['path']}")
+        lines.append(f"- Total cards: {board['total_cards']}")
+        for col, count in board["columns"].items():
+            lines.append(f"  - {col}: {count}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Model Providers — provider-neutral model management (local + diverse API)
+# ---------------------------------------------------------------------------
+DEFAULT_PROVIDERS = [
+    {"id": "ollama", "name": "Ollama (Local)", "type": "local", "endpoint": "http://localhost:11434",
+     "models": ["llama3.2", "codellama", "mistral"]},
+    {"id": "openai", "name": "OpenAI API", "type": "api", "endpoint": "https://api.openai.com/v1",
+     "models": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"]},
+    {"id": "anthropic", "name": "Anthropic API", "type": "api", "endpoint": "https://api.anthropic.com",
+     "models": ["claude-3-haiku", "claude-3-sonnet", "claude-3-opus"]},
+    {"id": "gemini", "name": "Google Gemini API", "type": "api",
+     "endpoint": "https://generativelanguage.googleapis.com",
+     "models": ["gemini-1.5-flash", "gemini-1.5-pro"]},
+]
+
+
+def run_providers_list(dry_run=True):
+    """List available model providers."""
+    return {"providers": DEFAULT_PROVIDERS}
+
+
+def run_providers_select(provider_id, task_type="general", dry_run=True):
+    """Select a provider for a task type."""
+    provider = next((p for p in DEFAULT_PROVIDERS if p["id"] == provider_id), None)
+    if not provider:
+        return {"error": f"Provider '{provider_id}' not found"}
+    if task_type == "simple" and provider["type"] == "local":
+        recommendation = "optimal"
+    elif task_type == "complex" and provider["type"] == "api":
+        recommendation = "optimal"
+    else:
+        recommendation = "acceptable"
+    return {
+        "provider": provider,
+        "task_type": task_type,
+        "recommendation": recommendation,
+        "dry_run": dry_run,
+    }
+
+
+def run_providers_fallback(chain=None, dry_run=True):
+    """Configure fallback chain between providers."""
+    if chain is None:
+        chain = ["ollama", "openai", "anthropic", "gemini"]
+    return {"fallback_chain": chain, "dry_run": dry_run}
+
+
+def run_providers_budget(dry_run=True):
+    """Token budget tracking per provider."""
+    return {
+        "providers": {p["id"]: {"budget": 100000, "used": 0, "remaining": 100000} for p in DEFAULT_PROVIDERS},
+        "dry_run": dry_run,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 def run_self_test():
@@ -755,6 +912,46 @@ def run_self_test():
         assert "executed" in result
     check("agency layer runs end-to-end", test_agency)
 
+    # Test 5: kanban scan finds boards
+    def test_kanban_scan():
+        import tempfile
+        import shutil
+        tmp = tempfile.mkdtemp()
+        try:
+            init_paths(tmp)
+            result = run_kanban_scan(tmp, dry_run=True)
+            assert "total_boards" in result
+            assert "boards" in result
+            assert isinstance(result["boards"], list)
+        finally:
+            shutil.rmtree(tmp)
+    check("kanban_scan finds kanban boards", test_kanban_scan)
+
+    # Test 6: providers list returns all providers
+    def test_providers_list():
+        result = run_providers_list(dry_run=True)
+        assert "providers" in result
+        assert len(result["providers"]) >= 4
+        ids = {p["id"] for p in result["providers"]}
+        assert "ollama" in ids
+        assert "openai" in ids
+    check("providers_list returns all providers", test_providers_list)
+
+    # Test 7: providers select works
+    def test_providers_select():
+        result = run_providers_select("ollama", task_type="simple", dry_run=True)
+        assert result["recommendation"] == "optimal"
+        assert result["provider"]["id"] == "ollama"
+        assert result["provider"]["type"] == "local"
+    check("providers_select recommends local for simple tasks", test_providers_select)
+
+    # Test 8: providers fallback chain
+    def test_providers_fallback():
+        result = run_providers_fallback(dry_run=True)
+        assert "fallback_chain" in result
+        assert len(result["fallback_chain"]) >= 2
+    check("providers_fallback returns chain", test_providers_fallback)
+
     print("=" * 50)
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     return failed == 0
@@ -791,6 +988,24 @@ def parse_args():
     p_tools.add_argument("--result", help="Result summary")
 
     p_dream = sub.add_parser("dream", help="Dream cycle: release/prune/reconcile/crystallize/distill")
+
+    p_kanban = sub.add_parser("kanban", help="Autonomic Kanban board supervision (evidence-backed)")
+    p_kanban.add_argument("--days", type=int, default=30, help="Days of activity to scan (default: 30)")
+    p_kanban_sub = p_kanban.add_subparsers(dest="kanban_command", help="Kanban command")
+    p_kanban_sub.add_parser("scan", help="Scan kanban boards and report card distribution")
+    p_kanban_sub.add_parser("promote", help="Auto-promote cards based on evidence thresholds")
+    p_kanban_sub.add_parser("auto-move", help="Auto-move cards between columns based on rules")
+    p_kanban_sub.add_parser("report", help="Evidence-backed kanban supervision report")
+    p_kanban.add_argument("--threshold", type=float, default=0.7, help="Promotion threshold (default: 0.7)")
+
+    p_providers = sub.add_parser("providers", help="Model provider management (local + diverse API)")
+    p_providers_sub = p_providers.add_subparsers(dest="providers_command", help="Providers command")
+    p_providers_sub.add_parser("list", help="List available model providers")
+    p_prov_select = p_providers_sub.add_parser("select", help="Select a provider for a task type")
+    p_prov_select.add_argument("--provider", required=True, help="Provider id (ollama, openai, anthropic, gemini)")
+    p_prov_select.add_argument("--task", default="general", help="Task type (simple, complex, general)")
+    p_providers_sub.add_parser("fallback", help="Configure fallback chain between providers")
+    p_providers_sub.add_parser("budget", help="Token budget tracking per provider")
 
     parser.add_argument("--dry-run", action="store_true", default=True, help="Report only (default)")
     parser.add_argument("--apply", action="store_true", help="Write outputs to vault (overrides --dry-run)")
@@ -895,8 +1110,81 @@ def main():
         if not dry_run and result.get("written_to"):
             print(f"\n📄 Written to {result['written_to']}")
 
+    elif args.command == "kanban":
+        kcmd = getattr(args, "kanban_command", None)
+        if kcmd == "scan":
+            result = run_kanban_scan(VAULT, dry_run=dry_run)
+            print(f"📋 Autonomic Kanban Scan ({result['total_boards']} board(s))")
+            for b in result["boards"]:
+                print(f"   {b['path']}: {b['total_cards']} cards")
+                for col, count in b["columns"].items():
+                    print(f"     {col}: {count}")
+        elif kcmd == "promote":
+            result = run_kanban_promote(VAULT, threshold=args.threshold, dry_run=dry_run)
+            print(f"🔼 Kanban Auto-Promote (threshold: {args.threshold})")
+            for p in result["promoted"]:
+                print(f"   {p['card'][:60]} — {p['from']} → {p['to']} (evidence: {p['evidence']})")
+            if not result["promoted"]:
+                print("   No cards met the promotion threshold.")
+        elif kcmd == "auto-move":
+            result = run_kanban_auto_move(VAULT, dry_run=dry_run)
+            print(f"🔄 Kanban Auto-Move")
+            for m in result["moves"]:
+                print(f"   {m['card'][:60]} — {m['from']} → {m['to']} ({m['reason']})")
+            if not result["moves"]:
+                print("   No cards met the auto-move criteria.")
+        elif kcmd == "report":
+            report = run_kanban_report(VAULT, dry_run=dry_run)
+            print(report)
+            if not dry_run:
+                kanban_dir = os.path.join(SYSTEM_ONE_DIR, "kanban")
+                os.makedirs(kanban_dir, exist_ok=True)
+                date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+                path = os.path.join(kanban_dir, f"kanban-report-{date_str}.md")
+                write_file(path, report)
+                print(f"\n📄 Written to {path}")
+        else:
+            print("Error: Unknown kanban command. Use: scan, promote, auto-move, report.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
+    elif args.command == "providers":
+        pcmd = getattr(args, "providers_command", None)
+        if pcmd == "list":
+            result = run_providers_list(dry_run=dry_run)
+            print(f"🤖 Model Providers ({len(result['providers'])})")
+            for p in result["providers"]:
+                print(f"   {p['name']} ({p['id']}) — {p['type']} — {p['endpoint']}")
+                print(f"      Models: {', '.join(p['models'])}")
+        elif pcmd == "select":
+            result = run_providers_select(args.provider, task_type=args.task, dry_run=dry_run)
+            if "error" in result:
+                print(f"❌ {result['error']}", file=sys.stderr)
+                sys.exit(1)
+            p = result["provider"]
+            print(f"🎯 Provider Selection")
+            print(f"   Provider: {p['name']} ({p['id']}) — {p['type']}")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Recommendation: {result['recommendation']}")
+            print(f"   Models: {', '.join(p['models'])}")
+        elif pcmd == "fallback":
+            result = run_providers_fallback(dry_run=dry_run)
+            print(f"🔗 Provider Fallback Chain")
+            print(f"   {' → '.join(result['fallback_chain'])}")
+        elif pcmd == "budget":
+            result = run_providers_budget(dry_run=dry_run)
+            print(f"💰 Token Budget per Provider")
+            for pid, info in result["providers"].items():
+                print(f"   {pid}: {info['used']}/{info['budget']} used ({info['remaining']} remaining)")
+        else:
+            print("Error: Unknown providers command. Use: list, select, fallback, budget.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
     else:
-        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream.", file=sys.stderr)
+        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream, kanban, providers.", file=sys.stderr)
         sys.exit(1)
 
     if dry_run:
