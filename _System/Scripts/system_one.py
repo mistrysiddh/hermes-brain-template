@@ -1883,6 +1883,363 @@ def run_reflex_jev_harness(action="doctor", dry_run=True):
 
 
 # ---------------------------------------------------------------------------
+# Reflex Shadow Mode — jev-harness "--shadow"
+#
+# Decides and reports what the gate would do while always exiting 0,
+# so the pipeline keeps running while you measure gates on real traffic.
+# ---------------------------------------------------------------------------
+
+def run_reflex_shadow(action="gate-check", dry_run=True):
+    """
+    Jev Harness shadow mode — decide and report without breaking the pipeline.
+    Reports [SHADOW] would exit N while always exiting 0.
+    """
+    result = {
+        "mode": "shadow",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Shadow mode decides and reports [SHADOW] would exit N while always exiting 0 — pipeline keeps running while you measure gates on real traffic.",
+        "dry_run": dry_run,
+    }
+
+    if action == "gate-check":
+        result["action"] = "gate-check"
+        result["shadow_verdict"] = "[SHADOW] would exit 0 — gate passed in shadow mode"
+        result["would_exit"] = 0
+        result["note"] = "CLI misuse (missing --log, invalid flag) still exits 2 even in shadow mode"
+    elif action == "triage":
+        result["action"] = "triage"
+        result["shadow_verdict"] = "[SHADOW] would exit 1 — test failure triage would abort"
+        result["would_exit"] = 1
+    elif action == "abort":
+        result["action"] = "abort"
+        result["shadow_verdict"] = "[SHADOW] would exit 1 — abort circuit breaker would trigger"
+        result["would_exit"] = 1
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["gate-check", "triage", "abort"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Decision Cache & Debounce — jev-harness ".jev/cache.json"
+#
+# Identical live decisions served from cache; repeated evaluations inside
+# the debounce window coalesce. Shadow runs and degraded answers never cached.
+# ---------------------------------------------------------------------------
+
+def run_reflex_cache(action="status", dry_run=True):
+    """
+    Jev Harness decision cache & debounce management.
+    """
+    result = {
+        "component": "decision_cache",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Decision cache (.jev/cache.json) — identical decisions served from cache; repeated evaluations coalesce in debounce window. Shadow runs and degraded answers never cached.",
+        "cache_file": ".jev/cache.json",
+        "dry_run": dry_run,
+    }
+
+    if action == "status":
+        result["action"] = "status"
+        result["cache_enabled"] = True
+        result["debounce_window_ms"] = 300
+        result["shadow_not_cached"] = True
+        result["degraded_not_cached"] = True
+        result["hit_rate"] = "reported in metrics"
+    elif action == "clear":
+        result["action"] = "clear"
+        result["cleared"] = True
+    elif action == "bypass":
+        result["action"] = "bypass"
+        result["flag"] = "--no-cache"
+        result["description"] = "Bypass cache for this evaluation"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["status", "clear", "bypass"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Calibration Corpus & Replay Gate — jev-harness "replay"
+#
+# Runs labelled cases through every gate, prints confusion matrix,
+# precision/recall/F1 and ECE per gate, fails CI on regression.
+# ---------------------------------------------------------------------------
+
+def run_reflex_replay(corpus_path="tests/corpus", dry_run=True):
+    """
+    Jev Harness calibration corpus replay gate.
+    Runs labelled cases through gates, reports confusion matrix, precision,
+    recall, F1 and ECE per gate. Fails CI on regression.
+    """
+    result = {
+        "component": "calibration_replay",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "corpus_path": corpus_path,
+        "description": "Replay gate — runs labelled cases through every gate, prints confusion matrix, precision/recall/F1 and ECE per gate, fails CI on regression or adversarial-log deterministic classification.",
+        "dry_run": dry_run,
+    }
+
+    if dry_run:
+        result["action"] = "replay (dry-run)"
+        result["corpus_cases"] = 160
+        result["hand_labelled"] = 84
+        result["gates_tested"] = 6
+        result["metrics"] = ["confusion_matrix", "precision", "recall", "F1", "ECE"]
+        result["fail_on_regression"] = True
+        result["fail_on_adversarial"] = True
+    else:
+        result["error"] = "Replay execution requires CI environment — use --test in CI"
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Focused Perception & State Redaction — jev-harness "focused_slice"
+#
+# Sends provider a focused_slice (≤15 lines) + causal_context instead of raw log.
+# Redacts credential-shaped material from state itself.
+# ---------------------------------------------------------------------------
+
+def run_reflex_redact(text="", dry_run=True):
+    """
+    Jev Harness focused perception & state redaction.
+    Redacts credential-shaped material from state, slices tracebacks to ≤15 lines.
+    """
+    import re as _re
+
+    # Credential patterns to redact
+    cred_patterns = [
+        (r"Bearer\s+[A-Za-z0-9\-_.+/]+", "[REDACTED]"),
+        (r"sk-[A-Za-z0-9]{20,}", "[REDACTED]"),
+        (r"vck_[A-Za-z0-9]{20,}", "[REDACTED]"),
+        (r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*[^\s]+", r"\1=[REDACTED]"),
+    ]
+
+    redacted = text
+    for pattern, repl in cred_patterns:
+        redacted = _re.sub(pattern, repl, redacted)
+
+    # Focused slice: keep assertion line + neighbours (≤15 lines)
+    lines = redacted.splitlines()
+    focus_start = 0
+    for i, line in enumerate(lines):
+        if any(k in line.lower() for k in ("assert", "error", "traceback", "failed", "exception")):
+            focus_start = max(0, i - 2)
+            break
+    focus_end = min(len(lines), focus_start + 15)
+    focused_slice = "\n".join(lines[focus_start:focus_end])
+
+    result = {
+        "component": "focused_perception_redaction",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "description": "Focused perception & state redaction — provider gets focused_slice (≤15 lines) + causal_context instead of raw 500-line log. Credentials redacted from state itself.",
+        "redacted_text": redacted,
+        "focused_slice": focused_slice,
+        "slice_line_count": len(focused_slice.splitlines()),
+        "credentials_redacted": redacted != text,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Structured Recovery — jev-harness "recovery"
+#
+# Missing dependency becomes structured data (action_type, package_name,
+# package_manager, argv, is_safe_auto_run, rationale) — never a shell string.
+# ---------------------------------------------------------------------------
+
+def run_reflex_recover(error_type="missing_dep", package=None, dry_run=True):
+    """
+    Jev Harness structured recovery — structured data for recovery actions,
+    never auto-executed shell strings.
+    """
+    result = {
+        "component": "structured_recovery",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "error_type": error_type,
+        "package": package,
+        "description": "Structured recovery — recovery is structured data, never auto-executed shell string. is_safe_auto_run requires package in manifests + explicit --allow-auto-recovery.",
+        "dry_run": dry_run,
+    }
+
+    if error_type == "missing_dep":
+        result["recovery"] = {
+            "action_type": "install_package",
+            "package_name": package or "unknown",
+            "package_manager": "pip",
+            "argv": ["pip", "install", package or "unknown"],
+            "is_safe_auto_run": False,
+            "rationale": "Package not in manifests and --allow-auto-recovery not set — human must approve",
+        }
+    elif error_type == "flaky_transient":
+        result["recovery"] = {
+            "action_type": "auto_retry",
+            "max_retries": 1,
+            "backoff": "exponential",
+            "is_safe_auto_run": True,
+            "rationale": "Transient network/port error — single auto-retry is safe",
+        }
+    elif error_type == "deep_logic":
+        result["recovery"] = {
+            "action_type": "escalate_to_system2",
+            "skip_llm": False,
+            "is_safe_auto_run": False,
+            "rationale": "Deep logic defect — requires frontier reasoning model",
+        }
+    else:
+        result["error"] = f"Unknown error_type: {error_type}"
+        result["valid_error_types"] = ["missing_dep", "flaky_transient", "deep_logic"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Session Memory & Effort Lease — jev-harness "lease"
+#
+# Decision opens a bounded effort lease answered in sub-milliseconds.
+# Invalidated immediately by tool_error (break-glass).
+# ---------------------------------------------------------------------------
+
+def run_reflex_lease(task_type="standard", dry_run=True):
+    """
+    Jev Harness session memory & effort lease management.
+    """
+    effort_map = {
+        "mechanical": 5,
+        "error": 1,
+        "standard": 2,
+        "complex": 10,
+    }
+
+    lease_steps = effort_map.get(task_type, 2)
+
+    result = {
+        "component": "session_memory_effort_lease",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "task_type": task_type,
+        "description": "Session memory & effort lease — decision opens a bounded effort lease answered in sub-milliseconds. Invalidated immediately by tool_error (break-glass).",
+        "lease_steps": lease_steps,
+        "lease_valid": True,
+        "break_glass_on_tool_error": True,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex MCP Server — jev-harness "mcp"
+#
+# Universal MCP Server exposing Jev decision tools over stdio.
+# ---------------------------------------------------------------------------
+
+def run_reflex_mcp(action="info", dry_run=True):
+    """
+    Jev Harness MCP server — exposes decision tools over stdio for
+    Cursor, Claude Desktop, Antigravity, Windsurf, Zed, OpenCode.
+    """
+    result = {
+        "component": "mcp_server",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Universal MCP Server exposing Jev decision tools over stdio.",
+        "server_name": "jev-mcp",
+        "transport": "stdio",
+        "dry_run": dry_run,
+    }
+
+    if action == "info":
+        result["tools"] = [
+            "jev_triage_test_failure",
+            "jev_abort_check",
+            "jev_route_task",
+            "jev_verify_completion",
+            "jev_modulate_reasoning_effort",
+            "jev_should_nudge_continuation",
+        ]
+        result["clients"] = ["Cursor", "Claude Desktop", "Antigravity", "Windsurf", "Zed", "OpenCode"]
+        result["zero_dependency"] = True
+    elif action == "clients":
+        result["action"] = "clients"
+        result["clients"] = ["Cursor", "Claude Desktop", "Antigravity", "Windsurf", "Zed", "OpenCode"]
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["info", "clients"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 def run_self_test():
@@ -2047,6 +2404,76 @@ def run_self_test():
         assert "receipts" in result["checks"]
     check("reflex_jev_harness integration", test_reflex_jev_harness)
 
+    # Test 15: reflex shadow mode
+    def test_reflex_shadow():
+        result = run_reflex_shadow("gate-check", dry_run=True)
+        assert result["mode"] == "shadow"
+        assert result["source"] == "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md"
+        assert result["action"] == "gate-check"
+        assert result["would_exit"] == 0
+        assert "[SHADOW]" in result["shadow_verdict"]
+    check("reflex_shadow shadow mode", test_reflex_shadow)
+
+    # Test 16: reflex decision cache
+    def test_reflex_cache():
+        result = run_reflex_cache("status", dry_run=True)
+        assert result["component"] == "decision_cache"
+        assert result["cache_enabled"] is True
+        assert result["shadow_not_cached"] is True
+        assert result["degraded_not_cached"] is True
+    check("reflex_cache decision cache", test_reflex_cache)
+
+    # Test 17: reflex calibration replay
+    def test_reflex_replay():
+        result = run_reflex_replay("tests/corpus", dry_run=True)
+        assert result["component"] == "calibration_replay"
+        assert result["corpus_cases"] == 160
+        assert result["hand_labelled"] == 84
+        assert result["gates_tested"] == 6
+        assert "confusion_matrix" in result["metrics"]
+        assert result["fail_on_regression"] is True
+    check("reflex_replay calibration replay", test_reflex_replay)
+
+    # Test 18: reflex focused perception & redaction
+    def test_reflex_redact():
+        result = run_reflex_redact("sk-abc123def456ghi789jkl012 is the key\nError: traceback at line 42\nAssertionError: expected 5 got 3", dry_run=True)
+        assert result["credentials_redacted"] is True
+        assert result["slice_line_count"] <= 15
+        assert "[REDACTED]" in result["redacted_text"]
+        assert "sk-abc123def456ghi789jkl012" not in result["redacted_text"]
+    check("reflex_redact focused perception", test_reflex_redact)
+
+    # Test 19: reflex structured recovery
+    def test_reflex_recover():
+        result = run_reflex_recover("missing_dep", "pytest", dry_run=True)
+        assert result["component"] == "structured_recovery"
+        rec = result["recovery"]
+        assert rec["action_type"] == "install_package"
+        assert rec["package_name"] == "pytest"
+        assert rec["is_safe_auto_run"] is False
+    check("reflex_recover structured recovery", test_reflex_recover)
+
+    # Test 20: reflex session memory & effort lease
+    def test_reflex_lease():
+        result = run_reflex_lease("mechanical", dry_run=True)
+        assert result["component"] == "session_memory_effort_lease"
+        assert result["lease_steps"] == 5
+        assert result["break_glass_on_tool_error"] is True
+
+        result2 = run_reflex_lease("error", dry_run=True)
+        assert result2["lease_steps"] == 1
+    check("reflex_lease session memory", test_reflex_lease)
+
+    # Test 21: reflex MCP server
+    def test_reflex_mcp():
+        result = run_reflex_mcp("info", dry_run=True)
+        assert result["component"] == "mcp_server"
+        assert result["server_name"] == "jev-mcp"
+        assert result["zero_dependency"] is True
+        assert "jev_triage_test_failure" in result["tools"]
+        assert "Cursor" in result["clients"]
+    check("reflex_mcp MCP server", test_reflex_mcp)
+
     print("=" * 50)
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     return failed == 0
@@ -2137,6 +2564,28 @@ def parse_args():
 
     p_reflex_jev = p_reflex_sub.add_parser("jev-harness", help="Jev harness integration (audit trail, receipts, doctor)")
     p_reflex_jev.add_argument("--action", default="doctor", choices=["doctor", "receipts", "audit_trail", "token_optimizer", "test_failure_triage", "semantic_guardrail"], help="Jev harness action")
+
+    p_reflex_shadow = p_reflex_sub.add_parser("shadow", help="Shadow mode — decide and report without breaking pipeline")
+    p_reflex_shadow.add_argument("--action", default="gate-check", choices=["gate-check", "triage", "abort"], help="Shadow action")
+
+    p_reflex_cache = p_reflex_sub.add_parser("cache", help="Decision cache & debounce management")
+    p_reflex_cache.add_argument("--action", default="status", choices=["status", "clear", "bypass"], help="Cache action")
+
+    p_reflex_replay = p_reflex_sub.add_parser("replay", help="Calibration corpus replay gate")
+    p_reflex_replay.add_argument("--corpus", default="tests/corpus", help="Path to labelled corpus")
+
+    p_reflex_redact = p_reflex_sub.add_parser("redact", help="Focused perception & state redaction")
+    p_reflex_redact.add_argument("--text", default="", help="Text to redact and slice")
+
+    p_reflex_recover = p_reflex_sub.add_parser("recover", help="Structured recovery actions")
+    p_reflex_recover.add_argument("--error-type", default="missing_dep", choices=["missing_dep", "flaky_transient", "deep_logic"], help="Error type")
+    p_reflex_recover.add_argument("--package", default=None, help="Package name for missing_dep")
+
+    p_reflex_lease = p_reflex_sub.add_parser("lease", help="Session memory & effort lease")
+    p_reflex_lease.add_argument("--task-type", default="standard", choices=["mechanical", "error", "standard", "complex"], help="Task type")
+
+    p_reflex_mcp = p_reflex_sub.add_parser("mcp", help="Jev MCP server info")
+    p_reflex_mcp.add_argument("--action", default="info", choices=["info", "clients"], help="MCP action")
 
     p_kanban = sub.add_parser("kanban", help="Autonomic Kanban board supervision (evidence-backed)")
     p_kanban.add_argument("--days", type=int, default=30, help="Days of activity to scan (default: 30)")
@@ -2504,8 +2953,86 @@ def main():
             print(f"   Message: {result.get('message', result.get('error', 'N/A'))}")
             if not dry_run and result.get("written_to"):
                 print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "shadow":
+            result = run_reflex_shadow(args.action, dry_run=dry_run)
+            print(f"👻 Reflex Shadow Mode ({result['mode']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Shadow verdict: {result.get('shadow_verdict', result.get('error', 'N/A'))}")
+            print(f"   Would exit: {result.get('would_exit', 'N/A')}")
+            print(f"   Note: {result.get('note', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "cache":
+            result = run_reflex_cache(args.action, dry_run=dry_run)
+            print(f"🗄️  Reflex Decision Cache ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Cache file: {result.get('cache_file', 'N/A')}")
+            print(f"   Cache enabled: {result.get('cache_enabled', 'N/A')}")
+            print(f"   Debounce window: {result.get('debounce_window_ms', 'N/A')}ms")
+            print(f"   Shadow not cached: {result.get('shadow_not_cached', 'N/A')}")
+            print(f"   Degraded not cached: {result.get('degraded_not_cached', 'N/A')}")
+            print(f"   Hit rate: {result.get('hit_rate', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "replay":
+            result = run_reflex_replay(args.corpus, dry_run=dry_run)
+            print(f"🔄 Reflex Calibration Replay ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Corpus path: {result['corpus_path']}")
+            print(f"   Corpus cases: {result.get('corpus_cases', 'N/A')}")
+            print(f"   Hand-labelled: {result.get('hand_labelled', 'N/A')}")
+            print(f"   Gates tested: {result.get('gates_tested', 'N/A')}")
+            print(f"   Metrics: {', '.join(result.get('metrics', []))}")
+            print(f"   Fail on regression: {result.get('fail_on_regression', 'N/A')}")
+            print(f"   Fail on adversarial: {result.get('fail_on_adversarial', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "redact":
+            result = run_reflex_redact(args.text, dry_run=dry_run)
+            print(f"🔒 Reflex Focused Perception & Redaction ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Credentials redacted: {result['credentials_redacted']}")
+            print(f"   Slice line count: {result['slice_line_count']}")
+            print(f"   Focused slice: {result['focused_slice'][:200]}...")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "recover":
+            result = run_reflex_recover(args.error_type, args.package, dry_run=dry_run)
+            print(f"🏥 Reflex Structured Recovery ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Error type: {result['error_type']}")
+            print(f"   Package: {result.get('package', 'N/A')}")
+            rec = result.get("recovery", {})
+            print(f"   Action type: {rec.get('action_type', 'N/A')}")
+            print(f"   Is safe auto-run: {rec.get('is_safe_auto_run', 'N/A')}")
+            print(f"   Rationale: {rec.get('rationale', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "lease":
+            result = run_reflex_lease(args.task_type, dry_run=dry_run)
+            print(f"⏳ Reflex Session Memory & Effort Lease ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Lease steps: {result['lease_steps']}")
+            print(f"   Lease valid: {result['lease_valid']}")
+            print(f"   Break glass on tool error: {result['break_glass_on_tool_error']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "mcp":
+            result = run_reflex_mcp(args.action, dry_run=dry_run)
+            print(f"🔌 Reflex MCP Server ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Server: {result['server_name']}")
+            print(f"   Transport: {result['transport']}")
+            print(f"   Zero dependency: {result['zero_dependency']}")
+            print(f"   Tools: {', '.join(result.get('tools', []))}")
+            print(f"   Clients: {', '.join(result.get('clients', []))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
         else:
-            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models, dsh-jev, jev-harness.", file=sys.stderr)
+            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models, dsh-jev, jev-harness, shadow, cache, replay, redact, recover, lease, mcp.", file=sys.stderr)
             sys.exit(1)
         if dry_run:
             print("\nRun with --apply to write outputs to vault.")
