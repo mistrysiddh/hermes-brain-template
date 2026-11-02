@@ -793,23 +793,45 @@ def run_kanban_report(vault_dir, dry_run=True):
 
 # ---------------------------------------------------------------------------
 # Model Providers — provider-neutral model management (local + diverse API)
+# Prioritizes multi-provider APIs + open-weight models per TomLucidor feedback
 # ---------------------------------------------------------------------------
 DEFAULT_PROVIDERS = [
-    {"id": "ollama", "name": "Ollama (Local)", "type": "local", "endpoint": "http://localhost:11434",
-     "models": ["llama3.2", "codellama", "mistral"]},
-    {"id": "openai", "name": "OpenAI API", "type": "api", "endpoint": "https://api.openai.com/v1",
-     "models": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"]},
-    {"id": "anthropic", "name": "Anthropic API", "type": "api", "endpoint": "https://api.anthropic.com",
-     "models": ["claude-3-haiku", "claude-3-sonnet", "claude-3-opus"]},
+    # Open-weight / local providers (prioritized)
+    {"id": "ollama", "name": "Ollama (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:11434", "open_weight": True,
+     "models": ["llama3.2", "llama3.1", "codellama", "mistral", "mixtral", "qwen2.5", "deepseek-r1"]},
+    {"id": "llama_cpp", "name": "llama.cpp (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:8080", "open_weight": True,
+     "models": ["llama-3.1-8b", "llama-3.1-70b", "mixtral-8x7b", "qwen2.5-72b"]},
+    {"id": "vllm", "name": "vLLM (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:8000", "open_weight": True,
+     "models": ["meta-llama/Llama-3.1-8B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-R1-Distill"]},
+    {"id": "tgi", "name": "Text Generation Inference (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:3000", "open_weight": True,
+     "models": ["bigcode/starcoder", "bigscience/bloom", "facebook/opt"]},
+    # Commercial API providers
+    {"id": "openai", "name": "OpenAI API", "type": "api",
+     "endpoint": "https://api.openai.com/v1", "open_weight": False,
+     "models": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "o1-mini", "o1-preview"]},
+    {"id": "anthropic", "name": "Anthropic API", "type": "api",
+     "endpoint": "https://api.anthropic.com", "open_weight": False,
+     "models": ["claude-3-haiku", "claude-3-sonnet", "claude-3-opus", "claude-3.5-sonnet"]},
     {"id": "gemini", "name": "Google Gemini API", "type": "api",
-     "endpoint": "https://generativelanguage.googleapis.com",
-     "models": ["gemini-1.5-flash", "gemini-1.5-pro"]},
+     "endpoint": "https://generativelanguage.googleapis.com", "open_weight": False,
+     "models": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]},
 ]
 
 
 def run_providers_list(dry_run=True):
-    """List available model providers."""
-    return {"providers": DEFAULT_PROVIDERS}
+    """List available model providers, open-weight first."""
+    providers = sorted(DEFAULT_PROVIDERS, key=lambda p: (not p["open_weight"], p["id"]))
+    return {"providers": providers}
+
+
+def run_providers_open_weight(dry_run=True):
+    """List only open-weight / local providers."""
+    providers = [p for p in DEFAULT_PROVIDERS if p["open_weight"]]
+    return {"providers": providers, "type": "open_weight_only"}
 
 
 def run_providers_select(provider_id, task_type="general", dry_run=True):
@@ -817,10 +839,13 @@ def run_providers_select(provider_id, task_type="general", dry_run=True):
     provider = next((p for p in DEFAULT_PROVIDERS if p["id"] == provider_id), None)
     if not provider:
         return {"error": f"Provider '{provider_id}' not found"}
-    if task_type == "simple" and provider["type"] == "local":
-        recommendation = "optimal"
-    elif task_type == "complex" and provider["type"] == "api":
-        recommendation = "optimal"
+    # Prioritize open-weight/local for simple tasks, API for complex
+    if task_type == "simple":
+        recommendation = "optimal" if provider["type"] == "local" else "acceptable"
+    elif task_type == "complex":
+        recommendation = "optimal" if provider["type"] == "api" else "acceptable"
+    elif task_type == "reasoning":
+        recommendation = "optimal" if provider["id"] in ("openai", "anthropic", "ollama") else "acceptable"
     else:
         recommendation = "acceptable"
     return {
@@ -832,16 +857,127 @@ def run_providers_select(provider_id, task_type="general", dry_run=True):
 
 
 def run_providers_fallback(chain=None, dry_run=True):
-    """Configure fallback chain between providers."""
+    """Configure fallback chain between providers — local first, then API."""
     if chain is None:
-        chain = ["ollama", "openai", "anthropic", "gemini"]
+        # Open-weight local first, then commercial APIs
+        chain = ["ollama", "llama_cpp", "vllm", "openai", "anthropic", "gemini"]
     return {"fallback_chain": chain, "dry_run": dry_run}
+
+
+def run_providers_gateway(dry_run=True):
+    """Gateway pattern — unify access to multiple providers (like bifrost)."""
+    gateway = {
+        "pattern": "provider-neutral gateway",
+        "description": "Single API surface that routes to the best available provider",
+        "providers": [p["id"] for p in DEFAULT_PROVIDERS],
+        "failover": "automatic on provider failure",
+        "load_balancing": "round-robin across healthy providers",
+        "semantic_caching": True,
+        "open_weight_first": True,
+    }
+    return {"gateway": gateway, "dry_run": dry_run}
 
 
 def run_providers_budget(dry_run=True):
     """Token budget tracking per provider."""
     return {
         "providers": {p["id"]: {"budget": 100000, "used": 0, "remaining": 100000} for p in DEFAULT_PROVIDERS},
+        "dry_run": dry_run,
+    }
+
+
+# ---------------------------------------------------------------------------
+# System One Research — dual-process theory repos and findings
+# ---------------------------------------------------------------------------
+SYSTEM_ONE_REPOS = [
+    {
+        "id": "dpt-agent",
+        "name": "DPT-Agent",
+        "url": "https://github.com/sjtu-marl/DPT-Agent",
+        "description": "Dual Process Theory in Language Agent Framework — System 1 (fast) + System 2 (slow) reasoning for human-AI collaboration (ACL 2025)",
+        "key_concepts": ["system1-system2-routing", "simultaneous-collaboration", "rule-based-collaboration"],
+    },
+    {
+        "id": "duo-ai",
+        "name": "DuoAI",
+        "url": "https://github.com/khanhptnk/duo-ai",
+        "description": "Two-System AI Agents — modular abstractions for coordination policies and decision-making agents that mimic human dual cognitive system",
+        "key_concepts": ["coordination-policies", "decision-making-agents", "uncertainty-based-routing"],
+    },
+    {
+        "id": "lex-dual-process",
+        "name": "lex-dual-process",
+        "url": "https://github.com/LegionIO-Archive/lex-dual-process",
+        "description": "Dual-process cognition modeling — routes decisions to fast heuristic (System 1) or slow deliberative (System 2) reasoning based on complexity, confidence, and effort budget",
+        "key_concepts": ["effort-budget", "heuristic-learning", "cognitive-fatigue", "reinforcement"],
+    },
+    {
+        "id": "dual-process-llm",
+        "name": "dual-process-llm",
+        "url": "https://github.com/xiaoyanLi629/dual-process-llm",
+        "description": "Investigating Dual Process Theory in LLMs — IEEE BIBM 2026, 4 model families, CoT helps analytical tasks but hurts intuitive ones",
+        "key_concepts": ["chain-of-thought-analysis", "model-family-comparison", "intuitive-vs-analytical"],
+    },
+    {
+        "id": "thinking-speed-control",
+        "name": "thinking-speed-control",
+        "url": "https://github.com/D2I-ai/thinking-speed-control",
+        "description": "Controlling Thinking Speed in Reasoning Models — plug-and-play module to switch LRMs between System 1 (fast) and System 2 (slow) thinking (NeurIPS 2025)",
+        "key_concepts": ["trigger-words", "steering-vectors", "representation-engineering", "fast-slow-switching"],
+    },
+]
+
+
+def run_system_one_research(dry_run=True):
+    """Research findings from System One / dual-process repos."""
+    return {
+        "repos": SYSTEM_ONE_REPOS,
+        "total": len(SYSTEM_ONE_REPOS),
+        "dry_run": dry_run,
+    }
+
+
+def run_system_one_route(query, complexity=None, confidence=None, dry_run=True):
+    """
+    Route a decision to System 1 (fast) or System 2 (slow) based on
+    dual-process theory — complexity, confidence, effort budget.
+    """
+    if complexity is None:
+        # Estimate complexity from query length and keywords
+        complex_keywords = ["analyze", "design", "architecture", "prove", "verify", "research", "compare"]
+        simple_keywords = ["what", "who", "when", "where", "list", "show", "get"]
+        c = sum(1 for k in complex_keywords if k in query.lower())
+        s = sum(1 for k in simple_keywords if k in query.lower())
+        complexity = c / max(1, c + s) if (c + s) > 0 else 0.5
+    if confidence is None:
+        confidence = 0.7
+
+    # Effort budget logic (from lex-dual-process)
+    effort_budget = 1.0
+    if complexity > 0.7:
+        system = "system_two"
+        effort_cost = 0.3
+    elif complexity > 0.4:
+        system = "system_two" if confidence < 0.6 else "system_one"
+        effort_cost = 0.15
+    else:
+        system = "system_one"
+        effort_cost = 0.05
+
+    effort_budget = max(0.0, effort_budget - effort_cost)
+
+    return {
+        "query": query,
+        "complexity": round(complexity, 2),
+        "confidence": confidence,
+        "routed_system": system,
+        "effort_cost": effort_cost,
+        "effort_budget_remaining": round(effort_budget, 2),
+        "reasoning": (
+            "High complexity → System 2 (slow, deliberative)"
+            if system == "system_two"
+            else "Low complexity → System 1 (fast, heuristic)"
+        ),
         "dry_run": dry_run,
     }
 
@@ -952,6 +1088,42 @@ def run_self_test():
         assert len(result["fallback_chain"]) >= 2
     check("providers_fallback returns chain", test_providers_fallback)
 
+    # Test 9: providers open-weight
+    def test_providers_open_weight():
+        result = run_providers_open_weight(dry_run=True)
+        assert "providers" in result
+        assert len(result["providers"]) >= 4
+        assert all(p["open_weight"] for p in result["providers"])
+    check("providers_open_weight returns only open-weight providers", test_providers_open_weight)
+
+    # Test 10: providers gateway
+    def test_providers_gateway():
+        result = run_providers_gateway(dry_run=True)
+        assert "gateway" in result
+        assert result["gateway"]["open_weight_first"] is True
+        assert len(result["gateway"]["providers"]) >= 4
+    check("providers_gateway returns gateway config", test_providers_gateway)
+
+    # Test 11: system_one research
+    def test_system_one_research():
+        result = run_system_one_research(dry_run=True)
+        assert "repos" in result
+        assert result["total"] >= 4
+        assert any(r["id"] == "dpt-agent" for r in result["repos"])
+        assert any(r["id"] == "thinking-speed-control" for r in result["repos"])
+    check("system_one_research returns repos", test_system_one_research)
+
+    # Test 12: system_one route
+    def test_system_one_route():
+        result = run_system_one_route("analyze this complex architecture", complexity=0.8, confidence=0.5, dry_run=True)
+        assert result["routed_system"] == "system_two"
+        assert result["complexity"] == 0.8
+        assert "effort_budget_remaining" in result
+
+        result2 = run_system_one_route("what is the time", complexity=0.2, confidence=0.9, dry_run=True)
+        assert result2["routed_system"] == "system_one"
+    check("system_one_route routes correctly", test_system_one_route)
+
     print("=" * 50)
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     return failed == 0
@@ -1006,6 +1178,16 @@ def parse_args():
     p_prov_select.add_argument("--task", default="general", help="Task type (simple, complex, general)")
     p_providers_sub.add_parser("fallback", help="Configure fallback chain between providers")
     p_providers_sub.add_parser("budget", help="Token budget tracking per provider")
+    p_providers_sub.add_parser("open-weight", help="List only open-weight / local providers")
+    p_providers_sub.add_parser("gateway", help="Provider-neutral gateway pattern (like bifrost)")
+
+    p_s1 = sub.add_parser("system-one", help="System One / dual-process research and routing")
+    p_s1_sub = p_s1.add_subparsers(dest="system_one_command", help="System One command")
+    p_s1_sub.add_parser("research", help="Research findings from System One / dual-process repos")
+    p_s1_route = p_s1_sub.add_parser("route", help="Route a decision to System 1 or System 2")
+    p_s1_route.add_argument("--query", required=True, help="Query to route")
+    p_s1_route.add_argument("--complexity", type=float, help="Complexity score 0-1")
+    p_s1_route.add_argument("--confidence", type=float, help="Confidence score 0-1")
 
     parser.add_argument("--dry-run", action="store_true", default=True, help="Report only (default)")
     parser.add_argument("--apply", action="store_true", help="Write outputs to vault (overrides --dry-run)")
@@ -1177,14 +1359,57 @@ def main():
             print(f"💰 Token Budget per Provider")
             for pid, info in result["providers"].items():
                 print(f"   {pid}: {info['used']}/{info['budget']} used ({info['remaining']} remaining)")
+        elif pcmd == "open-weight":
+            result = run_providers_open_weight(dry_run=dry_run)
+            print(f"🔓 Open-Weight / Local Providers ({len(result['providers'])})")
+            for p in result["providers"]:
+                print(f"   {p['name']} ({p['id']}) — {p['endpoint']}")
+                print(f"      Models: {', '.join(p['models'])}")
+        elif pcmd == "gateway":
+            result = run_providers_gateway(dry_run=dry_run)
+            g = result["gateway"]
+            print(f"🌐 Provider-Neutral Gateway")
+            print(f"   Pattern: {g['pattern']}")
+            print(f"   Description: {g['description']}")
+            print(f"   Providers: {', '.join(g['providers'])}")
+            print(f"   Failover: {g['failover']}")
+            print(f"   Load balancing: {g['load_balancing']}")
+            print(f"   Semantic caching: {g['semantic_caching']}")
+            print(f"   Open-weight first: {g['open_weight_first']}")
         else:
-            print("Error: Unknown providers command. Use: list, select, fallback, budget.", file=sys.stderr)
+            print("Error: Unknown providers command. Use: list, select, fallback, budget, open-weight, gateway.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
+    elif args.command == "system-one":
+        scmd = getattr(args, "system_one_command", None)
+        if scmd == "research":
+            result = run_system_one_research(dry_run=dry_run)
+            print(f"🧠 System One / Dual-Process Research ({result['total']} repos)")
+            for r in result["repos"]:
+                print(f"   {r['name']} ({r['id']})")
+                print(f"      {r['description']}")
+                print(f"      URL: {r['url']}")
+                print(f"      Concepts: {', '.join(r['key_concepts'])}")
+        elif scmd == "route":
+            result = run_system_one_route(args.query, complexity=args.complexity, confidence=args.confidence, dry_run=dry_run)
+            print(f"🔀 System One / System 2 Routing")
+            print(f"   Query: {result['query']}")
+            print(f"   Complexity: {result['complexity']}")
+            print(f"   Confidence: {result['confidence']}")
+            print(f"   Routed system: {result['routed_system']}")
+            print(f"   Effort cost: {result['effort_cost']}")
+            print(f"   Effort budget remaining: {result['effort_budget_remaining']}")
+            print(f"   Reasoning: {result['reasoning']}")
+        else:
+            print("Error: Unknown system-one command. Use: research, route.", file=sys.stderr)
             sys.exit(1)
         if dry_run:
             print("\nRun with --apply to write outputs to vault.")
 
     else:
-        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream, kanban, providers.", file=sys.stderr)
+        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream, kanban, providers, system-one.", file=sys.stderr)
         sys.exit(1)
 
     if dry_run:
