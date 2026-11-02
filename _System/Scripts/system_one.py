@@ -1075,6 +1075,72 @@ REFLEX_SLM_MODELS = [
     },
 ]
 
+# ---------------------------------------------------------------------------
+# Reflex Decision Models — benchmarkheaven.com/jev-models
+#
+# Jev-style decision models sourced from benchmarkheaven.com/jev-models.
+# Smaller/faster is better, ideally higher performance. These form the
+# efficiency frontier for reflex inference on laptops.
+#
+# 2026 SOTA per TomLucidor: Qwen-3.5 and Gemma-4 are SOTA for SLMs,
+# NOT Phi or Llama. Update every 3-6 months.
+# Source: https://benchmarkheaven.com/jev-models
+# ---------------------------------------------------------------------------
+REFLEX_DECISION_MODELS = [
+    {
+        "id": "qwen3.5:0.8b",
+        "name": "Qwen3.5 0.8B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "0.87B",
+        "size_q4": "0.5 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.95,
+        "latency_ms": 300,
+        "ollama": "ollama run qwen3.5:0.8b",
+    },
+    {
+        "id": "gemma3:1b",
+        "name": "Gemma 3 1B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "1.0B",
+        "size_q4": "0.6 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.92,
+        "latency_ms": 350,
+        "ollama": "ollama run gemma3:1b",
+    },
+    {
+        "id": "qwen3.5:1.7b",
+        "name": "Qwen3.5 1.7B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "1.72B",
+        "size_q4": "1.0 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.88,
+        "latency_ms": 450,
+        "ollama": "ollama run qwen3.5:1.7b",
+    },
+    {
+        "id": "gemma3:4b",
+        "name": "Gemma 3 4B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "4.3B",
+        "size_q4": "2.4 GB",
+        "ram_q4": "2 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_2",
+        "efficiency_score": 0.82,
+        "latency_ms": 700,
+        "ollama": "ollama run gemma3:4b",
+    },
+]
+
 REFLEX_RISK_RUBRIC = [
     "destructive?",
     "outside_the_workspace?",
@@ -1612,6 +1678,51 @@ def run_reflex_shell(query, dry_run=True):
     return result
 
 
+def run_reflex_decision_models(sota_tier="tier_1", dry_run=True):
+    """
+    Jev-style decision models from benchmarkheaven.com/jev-models.
+    Smaller/faster is better, ideally higher performance. These form the
+    efficiency frontier for reflex inference on laptops.
+    """
+    models = [m for m in REFLEX_DECISION_MODELS if m["sota_tier"] == sota_tier]
+
+    # Compute efficiency frontier: Pareto frontier of (efficiency_score, latency_ms)
+    frontier = []
+    for m in models:
+        is_frontier = True
+        for other in models:
+            if other is m:
+                continue
+            if other["efficiency_score"] >= m["efficiency_score"] and other["latency_ms"] <= m["latency_ms"]:
+                if other["efficiency_score"] > m["efficiency_score"] or other["latency_ms"] < m["latency_ms"]:
+                    is_frontier = False
+                    break
+        m["on_efficiency_frontier"] = is_frontier
+        if is_frontier:
+            frontier.append(m)
+
+    result = {
+        "sota_tier": sota_tier,
+        "source": "benchmarkheaven.com/jev-models",
+        "update_cycle": "Every 3-6 months",
+        "models": models,
+        "efficiency_frontier": frontier,
+        "note": "2026 SOTA: Qwen-3.5 and Gemma-4 are SOTA for SLMs, NOT Phi or Llama. Smaller/faster is better.",
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
@@ -1835,6 +1946,9 @@ def parse_args():
 
     p_reflex_shell = p_reflex_sub.add_parser("shell", help="Shell reflex jev — classify/score/order")
     p_reflex_shell.add_argument("--query", required=True)
+
+    p_reflex_dm = p_reflex_sub.add_parser("decision-models", help="Jev-style decision models from benchmarkheaven.com/jev-models")
+    p_reflex_dm.add_argument("--sota-tier", default="tier_1", choices=["tier_1", "tier_2"], help="Filter by SOTA tier (default: tier_1)")
 
     p_kanban = sub.add_parser("kanban", help="Autonomic Kanban board supervision (evidence-backed)")
     p_kanban.add_argument("--days", type=int, default=30, help="Days of activity to scan (default: 30)")
@@ -2168,8 +2282,20 @@ def main():
             print(f"   Confidence: {result['confidence']:.1%}")
             if not dry_run and result.get("written_to"):
                 print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "decision-models":
+            result = run_reflex_decision_models(args.sota_tier, dry_run=dry_run)
+            print(f"🎯 Reflex Decision Models (benchmarkheaven.com/jev-models)")
+            print(f"   SOTA tier: {result['sota_tier']}")
+            print(f"   Source: {result['source']}")
+            print(f"   Update cycle: {result['update_cycle']}")
+            for m in result["models"]:
+                print(f"   - {m['name']} ({m['id']}) — {m['params']}, {m['size_q4']}, {m['ram_q4']} RAM")
+                print(f"      Efficiency score: {m['efficiency_score']}, Latency: {m['latency_ms']}ms")
+                print(f"      Ollama: {m['ollama']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
         else:
-            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell.", file=sys.stderr)
+            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models.", file=sys.stderr)
             sys.exit(1)
         if dry_run:
             print("\nRun with --apply to write outputs to vault.")
