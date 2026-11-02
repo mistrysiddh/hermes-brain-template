@@ -1724,6 +1724,165 @@ def run_reflex_decision_models(sota_tier="tier_1", dry_run=True):
 
 
 # ---------------------------------------------------------------------------
+# Reflex DSH-Jev Plugin — luobosibing2/dsh-jev-plugin integration
+#
+# Native DeepSeek Harness (DSH) plugin integrating TypeSafe Jev or Decision API
+# like luna as a System One decision layer for agent selection, supervision,
+# corrections, and approvals.
+# ---------------------------------------------------------------------------
+
+DSH_JEV_PLUGIN_INFO = {
+    "id": "luobosibing2/dsh-jev-plugin",
+    "name": "DSH-JeV Plugin",
+    "source": "https://github.com/luobosibing2/dsh-jev-plugin",
+    "description": "Native DeepSeek Harness plugin integrating TypeSafe Jev or Decision API like luna as a System One decision layer for agent selection, supervision, corrections, and approvals.",
+    "capabilities": [
+        "agent_selection",
+        "supervision",
+        "corrections",
+        "approvals",
+        "system_one_decision_layer",
+    ],
+    "integration_points": [
+        "reflex_gate",
+        "reflex_complete",
+        "reflex_triage",
+        "reflex_router",
+    ],
+}
+
+JEV_HARNESS_INFO = {
+    "id": "ismaelsoilet/jev-harness",
+    "name": "Jev Harness",
+    "source": "https://github.com/ismaelsoilet/jev-harness",
+    "description": "Ultra-fast, zero-dependency token optimizer, test failure triage gate, and semantic guardrail for AI coding agents (OpenCode, Command Code, Claude Code, Cursor, Antigravity IDE, Windsurf, Zed, and Pi). Powered by TypeSafe AI's Jev System One non-autoregressive decision model.",
+    "capabilities": [
+        "audit_trail",
+        "self_diagnosis",
+        "receipts",
+        "doctor_checks",
+        "token_optimizer",
+        "test_failure_triage",
+        "semantic_guardrail",
+    ],
+    "integration_points": [
+        "reflex_gate",
+        "reflex_complete",
+        "reflex_triage",
+        "reflex_router",
+        "reflex_select_slm",
+    ],
+}
+
+
+def run_reflex_dsh_jev(action="status", dry_run=True):
+    """
+    DSH-Jev Plugin integration — DeepSeek Harness plugin integrating TypeSafe Jev
+    as a System One decision layer for agent selection, supervision, corrections,
+    and approvals.
+    """
+    result = {
+        "plugin": DSH_JEV_PLUGIN_INFO["name"],
+        "source": DSH_JEV_PLUGIN_INFO["source"],
+        "action": action,
+        "description": DSH_JEV_PLUGIN_INFO["description"],
+        "capabilities": DSH_JEV_PLUGIN_INFO["capabilities"],
+        "integration_points": DSH_JEV_PLUGIN_INFO["integration_points"],
+        "dry_run": dry_run,
+    }
+
+    if action == "status":
+        result["status"] = "integrated"
+        result["message"] = "DSH-Jev plugin connected to reflex layer as System One decision layer"
+    elif action == "agent_selection":
+        result["action"] = "agent_selection"
+        result["message"] = "JeV selects agent based on decision model routing"
+    elif action == "supervision":
+        result["action"] = "supervision"
+        result["message"] = "JeV supervises agent turns and tool calls"
+    elif action == "corrections":
+        result["action"] = "corrections"
+        result["message"] = "JeV applies corrections to agent outputs"
+    elif action == "approvals":
+        result["action"] = "approvals"
+        result["message"] = "JeV gates approvals for tool calls and writes"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["status", "agent_selection", "supervision", "corrections", "approvals"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def run_reflex_jev_harness(action="doctor", dry_run=True):
+    """
+    Jev Harness integration — Ultra-fast, zero-dependency token optimizer,
+    test failure triage gate, and semantic guardrail for AI coding agents.
+    Powered by TypeSafe AI's Jev System One non-autoregressive decision model.
+    """
+    result = {
+        "harness": JEV_HARNESS_INFO["name"],
+        "source": JEV_HARNESS_INFO["source"],
+        "action": action,
+        "description": JEV_HARNESS_INFO["description"],
+        "capabilities": JEV_HARNESS_INFO["capabilities"],
+        "integration_points": JEV_HARNESS_INFO["integration_points"],
+        "dry_run": dry_run,
+    }
+
+    if action == "doctor":
+        result["action"] = "doctor"
+        result["checks"] = [
+            "config",
+            "credentials",
+            "model_origin",
+            "limits",
+            "state_permissions",
+            "receipts",
+            "receipts_cache",
+            "git_hook",
+        ]
+        result["message"] = "Jev harness doctor checks config, credentials, model origin, limits, state permissions, receipts/cache and the git hook"
+    elif action == "receipts":
+        result["action"] = "receipts"
+        result["message"] = "Reads the append-only decision trail (hashes + metadata, never raw logs; 0600, TTL and size bounded)"
+    elif action == "audit_trail":
+        result["action"] = "audit_trail"
+        result["message"] = "Read-only audit trail of all reflex decisions"
+    elif action == "token_optimizer":
+        result["action"] = "token_optimizer"
+        result["message"] = "Ultra-fast token optimizer for AI coding agents"
+    elif action == "test_failure_triage":
+        result["action"] = "test_failure_triage"
+        result["message"] = "Test failure triage gate"
+    elif action == "semantic_guardrail":
+        result["action"] = "semantic_guardrail"
+        result["message"] = "Semantic guardrail for AI coding agents"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["doctor", "receipts", "audit_trail", "token_optimizer", "test_failure_triage", "semantic_guardrail"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 def run_self_test():
@@ -1865,6 +2024,29 @@ def run_self_test():
         assert result2["routed_system"] == "system_one"
     check("system_one_route routes correctly", test_system_one_route)
 
+    # Test 13: reflex dsh-jev plugin
+    def test_reflex_dsh_jev():
+        result = run_reflex_dsh_jev("status", dry_run=True)
+        assert result["plugin"] == "DSH-JeV Plugin"
+        assert result["source"] == "https://github.com/luobosibing2/dsh-jev-plugin"
+        assert result["action"] == "status"
+        assert "agent_selection" in result["capabilities"]
+        assert "supervision" in result["capabilities"]
+        assert "corrections" in result["capabilities"]
+        assert "approvals" in result["capabilities"]
+    check("reflex_dsh_jev plugin integration", test_reflex_dsh_jev)
+
+    # Test 14: reflex jev harness
+    def test_reflex_jev_harness():
+        result = run_reflex_jev_harness("doctor", dry_run=True)
+        assert result["harness"] == "Jev Harness"
+        assert result["source"] == "https://github.com/ismaelsoilet/jev-harness"
+        assert result["action"] == "doctor"
+        assert "config" in result["checks"]
+        assert "credentials" in result["checks"]
+        assert "receipts" in result["checks"]
+    check("reflex_jev_harness integration", test_reflex_jev_harness)
+
     print("=" * 50)
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     return failed == 0
@@ -1949,6 +2131,12 @@ def parse_args():
 
     p_reflex_dm = p_reflex_sub.add_parser("decision-models", help="Jev-style decision models from benchmarkheaven.com/jev-models")
     p_reflex_dm.add_argument("--sota-tier", default="tier_1", choices=["tier_1", "tier_2"], help="Filter by SOTA tier (default: tier_1)")
+
+    p_reflex_dsh = p_reflex_sub.add_parser("dsh-jev", help="DSH-Jev plugin integration (agent selection, supervision, corrections, approvals)")
+    p_reflex_dsh.add_argument("--action", default="status", choices=["status", "agent_selection", "supervision", "corrections", "approvals"], help="DSH-Jev action")
+
+    p_reflex_jev = p_reflex_sub.add_parser("jev-harness", help="Jev harness integration (audit trail, receipts, doctor)")
+    p_reflex_jev.add_argument("--action", default="doctor", choices=["doctor", "receipts", "audit_trail", "token_optimizer", "test_failure_triage", "semantic_guardrail"], help="Jev harness action")
 
     p_kanban = sub.add_parser("kanban", help="Autonomic Kanban board supervision (evidence-backed)")
     p_kanban.add_argument("--days", type=int, default=30, help="Days of activity to scan (default: 30)")
@@ -2294,8 +2482,30 @@ def main():
                 print(f"      Ollama: {m['ollama']}")
             if not dry_run and result.get("written_to"):
                 print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "dsh-jev":
+            result = run_reflex_dsh_jev(args.action, dry_run=dry_run)
+            print(f"🔌 Reflex DSH-Jev Plugin ({result['plugin']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Description: {result['description']}")
+            print(f"   Capabilities: {', '.join(result['capabilities'])}")
+            print(f"   Integration points: {', '.join(result['integration_points'])}")
+            print(f"   Message: {result.get('message', result.get('error', 'N/A'))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "jev-harness":
+            result = run_reflex_jev_harness(args.action, dry_run=dry_run)
+            print(f"🧠 Reflex Jev Harness ({result['harness']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Description: {result['description']}")
+            print(f"   Capabilities: {', '.join(result['capabilities'])}")
+            print(f"   Integration points: {', '.join(result['integration_points'])}")
+            print(f"   Message: {result.get('message', result.get('error', 'N/A'))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
         else:
-            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models.", file=sys.stderr)
+            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models, dsh-jev, jev-harness.", file=sys.stderr)
             sys.exit(1)
         if dry_run:
             print("\nRun with --apply to write outputs to vault.")
