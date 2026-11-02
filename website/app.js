@@ -108,7 +108,7 @@ function initMobileMenu() {
    ========================================================================== */
 const COMMAND_INDEX = [
   { title: "Memory Pipeline Simulator", subtitle: "4-stage session-to-durable memory pipeline", url: "#pipeline", type: "Section" },
-  { title: "What's New in v1.24", subtitle: "Decisions/Principles/Axioms, git safety net, cron separation", url: "#whats-new", type: "Release" },
+  { title: "What's New in v1.44", subtitle: "Multi-provider APIs, open-weight models, System One research & routing, autonomic Kanban", url: "#whats-new", type: "Release" },
   { title: "Multi-Agent ADR Simulator", subtitle: "Argus, Codex, Ledger & Vox architecture review", url: "#adr-sim", type: "Interactive" },
   { title: "11-Dimension Personality Matrix", subtitle: "Interactive slider generator for User-Profile.md", url: "#personality", type: "Interactive" },
   { title: "Obsidian Template Gallery", subtitle: "Raw Markdown sources for ADR, Charter, Lessons", url: "#templates", type: "Templates" },
@@ -1078,7 +1078,7 @@ const MCP_SIMULATIONS = {
   "total_sessions_archived": 248,
   "pending_memory_candidates": 3,
   "active_projects": 4,
-  "installed_skills": 18,
+  "installed_skills": 42,
   "token_telemetry": {
     "total_prompt_tokens": 1420950,
     "total_completion_tokens": 312400,

@@ -39,7 +39,7 @@
           </svg>
         </div>
         <span class="brand-text">Hermes Brain</span>
-        <span class="brand-badge js-version">v1.24.0</span>
+        <span class="brand-badge js-version">v1.44.0</span>
       </a>
 
       <!-- Grouped Nav Links -->
@@ -384,10 +384,10 @@
   <section id="whats-new">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Release Highlights · <span class="js-version">v1.24.0</span></span>
+        <span class="section-tag">Release Highlights · <span class="js-version">v1.44.0</span></span>
         <h2 class="section-title">What's New in the Template</h2>
         <p class="section-desc">
-          Your agent now remembers <em>why</em> you decided things, your vault has a local undo history, and cron noise stays out of your real chat logs.
+          Agent skills now decompose into multi-harness sub-skill hierarchies, System One runs fast automatic decision support with model provider diversity, and Social Science tools bring humanizer, paperwork, research corpus, and coherent skill tables to your vault.
         </p>
       </div>
 
@@ -413,9 +413,39 @@
 
       <div class="feature-grid">
         <article class="feature-card">
-          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🧭</span><span class="feature-ver">v1.24</span></div>
-          <h3>Decisions, Principles &amp; Axioms</h3>
-          <p>Log hard-to-reverse choices from <code>Decisions/TEMPLATE.md</code>. The <strong>Alternatives Rejected</strong> section is mandatory, so agents stop re-proposing ideas you already ruled out. <code>Axioms.md</code> ships empty on purpose: it should hold your beliefs, not generic filler.</p>
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🤖</span><span class="feature-ver">v1.44</span></div>
+          <h3>System One: Multi-Provider + Open-Weight Models</h3>
+          <p>Four open-weight/local providers (ollama, llama.cpp, vLLM, TGI) plus three commercial APIs (OpenAI, Anthropic, Gemini). Provider-neutral gateway, local-first fallback chain, and per-provider token budgets. Never trapped into one model.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🧠</span><span class="feature-ver">v1.44</span></div>
+          <h3>System One Research & Routing</h3>
+          <p>Five dual-process theory repos catalogued (DPT-Agent, DuoAI, lex-dual-process, dual-process-llm, thinking-speed-control). Route any decision to System 1 (fast heuristic) or System 2 (slow deliberative) using complexity, confidence, and effort budget.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🔄</span><span class="feature-ver">v1.43</span></div>
+          <h3>Autonomic Kanban Supervision</h3>
+          <p>Evidence-backed Kanban board supervision inspired by hermes-nerve. Auto-scan boards, promote cards by evidence threshold, auto-move low-signal cards, and generate supervision reports.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🏛️</span><span class="feature-ver">v1.41</span></div>
+          <h3>System One Decision Core</h3>
+          <p>Four-voice council with vote entropy, confidence calibration (ECE/Brier), blind-spot detection, agency layer (propose→audit→risk-gate→execute), knowledge graph storage, and dream cycle (release/prune/reconcile/crystallize/distill).</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">📊</span><span class="feature-ver">v1.42</span></div>
+          <h3>Social Science Skill Suite</h3>
+          <p>Humanizer (writing pattern diagnosis, Turnitin mitigation), Paperwork (citation management, APA bibliographies), Research Corpus (source aggregation, reading progress), and Skill Table (coherent catalog merging external research skills).</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🔖</span><span class="feature-ver">v1.40</span></div>
+          <h3>Readability Metrics</h3>
+          <p>Coleman-Liau, Dale-Chall, FORCAST, and PMOSE/IKIRSCH readability grading for vault notes, plus Chinese readability reference. Identify hard-to-read notes and track grade distribution.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">📚</span><span class="feature-ver">v1.37–39</span></div>
+          <h3>Sub-Skill Decomposition</h3>
+          <p>subagents.py → ingestor/linker/reviewer/researcher/graph-analyst/curator. converse_learn.py → memory/lesson/skill/project_doc/orchestrator. metrics.py → notes/links/sessions/tags/mocs/snapshot. sota_scan.py → profile/comparators/matrix/report. All 4/4 tests, multi-harness compliant.</p>
         </article>
         <article class="feature-card">
           <div class="feature-card-top"><span class="feature-icon" aria-hidden="true">🛟</span><span class="feature-ver">v1.24</span></div>
@@ -1201,7 +1231,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
             <li><strong style="color: #fff;">TomLucidor</strong></li>
             <li><span style="color: var(--text-dim);">Feature proposals via issue #11</span></li>
             <li><a href="https://github.com/TomLucidor" target="_blank" rel="noopener noreferrer">@TomLucidor on GitHub</a></li>
-            <li style="font-size: 0.8rem; color: var(--text-dim);">Multi-harness agent skills · Auto-remediation · Deep research · Wisdom digestion · Synthesis tracking</li>
+            <li style="font-size: 0.8rem; color: var(--text-dim);">32+ multi-harness sub-skills · System One decision core · Autonomic Kanban · Social Science suite · Readability metrics · Model provider diversity</li>
           </ul>
         </div>
       </div>
@@ -1211,7 +1241,7 @@ powershell -ExecutionPolicy Bypass -File .\_System\Scripts\Installers\try.ps1</p
           Released under the <strong>MIT License</strong>. Free to use, adapt, and fork.
         </div>
         <div>
-          Template Version <strong class="js-version">v1.24.0</strong> · Built for Obsidian & Hermes Agent
+          Template Version <strong class="js-version">v1.44.0</strong> · Built for Obsidian & Hermes Agent
         </div>
       </div>
     </div>
