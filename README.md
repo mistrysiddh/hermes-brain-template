@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Hermes Second Brain 🧠 — Obsidian Vault Template for Hermes Agent (including OpenClaw)
 
 **Give your Hermes/OpenClaw agent a memory it can't forget — and you can actually read.**
