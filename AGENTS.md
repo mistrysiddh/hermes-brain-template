@@ -25,6 +25,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
 | **skill-pack** | `_System/Scripts/skill_pack.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity ||
 | **paper-mapping** | `_System/Scripts/paper_mapping.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API ||
+| **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -81,6 +82,10 @@ python _System/Scripts/skill_pack.py --vault /path/to/vault --topic "<topic>"
 python _System/Scripts/skill_pack.py --vault <path> --self-eval --answer "<answer>"
 python _System/Scripts/paper_mapping.py --vault /path/to/vault --query "<paper title or DOI>"
 python _System/Scripts/paper_mapping.py --vault <path> --apply --query "<paper title or DOI>" --per-page 20
+python _System/Scripts/smart_memory.py --vault <path> add --content "..." --rel-type semantic --confidence 0.9
+python _System/Scripts/smart_memory.py --vault <path> retrieve --query "..." --rel-types semantic --top-k 5
+python _System/Scripts/smart_memory.py --vault <path> rag --query "..." --top-k 5
+python _System/Scripts/smart_memory.py --vault <path> route --complexity 0.8
 ```
 
 ## GitHub Agents
