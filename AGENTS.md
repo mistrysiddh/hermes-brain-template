@@ -23,6 +23,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
 | **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
 | **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
+| **skill-pack** | `_System/Scripts/skill_pack.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -75,6 +76,8 @@ python _System/Scripts/subagents/ingestor.py --vault /path/to/vault
 python _System/Scripts/converse_learn/orchestrator.py --vault <path> scan --days 14
 python _System/Scripts/position_mapping.py --vault /path/to/vault
 python _System/Scripts/position_mapping.py --vault /path/to/vault --apply
+python _System/Scripts/skill_pack.py --vault /path/to/vault --topic "<topic>"
+python _System/Scripts/skill_pack.py --vault <path> --self-eval --answer "<answer>"
 ```
 
 ## GitHub Agents
