@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Cron Job Metadata
 
 This folder stores metadata, logs, and housekeeping session notes specific to automated cron job runs.

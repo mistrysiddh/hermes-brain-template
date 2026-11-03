@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Research
 
 Sourced research, scraped evidence, and technical syntheses gathered by your agent (or agent team — see [[02-Areas/Skills/Team-Profiles-Index|Team-Profiles-Index]]). Cite sources; no raw secrets or PII.

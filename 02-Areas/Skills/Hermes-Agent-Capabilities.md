@@ -1,3 +1,10 @@
+---
+title: Hermes Agent Capabilities
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 --|
 type: skill-reference
 status: active

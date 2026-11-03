@@ -418,7 +418,12 @@ def run_self_test():
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Hermes Brain Dream Cycle & Latent Synthesis (v2)")
+    parser = argparse.ArgumentParser(description="Hermes Brain Dream Cycle & Latent Synthesis (v2)parser = argparse.ArgumentParser(description="Hermes Brain Dream Cycle & Latent Synthesis (v2)
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)")
     parser.add_argument("vault", nargs="?", default=None, help="Vault root directory")
     parser.add_argument("--days", type=int, default=14, help="Number of past days to inspect (default: 14)")
     parser.add_argument("--link", action="store_true", help="Auto-inject Related Sessions backlinks into session notes")

@@ -1,3 +1,10 @@
+---
+title: Personality Judgment Dashboard
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Personality Judgment Dashboard
 
 A dynamic Dataview-powered dashboard for tracking and visualizing personality judgment analyses.

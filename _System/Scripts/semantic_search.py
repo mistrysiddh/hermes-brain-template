@@ -40,7 +40,12 @@ except ImportError:
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
+    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument("--build", action="store_true", help="Full rebuild of the index")
     parser.add_argument("--update", action="store_true", help="Incremental update (default)")
     parser.add_argument("--search", type=str, help="Search query to test")

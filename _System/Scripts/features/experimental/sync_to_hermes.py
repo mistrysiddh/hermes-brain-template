@@ -208,7 +208,12 @@ def generate_context_preamble(vault_root, facts, dry_run=False):
     return preamble_text
 
 def main():
-    parser = argparse.ArgumentParser(description="Bidirectional memory sync for Hermes Brain")
+    parser = argparse.ArgumentParser(description="Bidirectional memory sync for Hermes Brain")parser = argparse.ArgumentParser(description="Bidirectional memory sync for Hermes Brain")
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument("vault", nargs="?", default=None, help="Vault root directory path")
     parser.add_argument("--dry-run", action="store_true", help="Preview sync actions without modifying files")
     parser.add_argument("--preamble-only", action="store_true", help="Only regenerate context preamble")

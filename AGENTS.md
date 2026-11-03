@@ -1,3 +1,10 @@
+---
+title: Agents
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Hermes Brain Agent Skills
 
 This repository contains **32+ multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a standalone Python script in `_System/Scripts/`. Each accepts `--vault <path>` and runs in `--dry-run` mode by default. Use `--apply` to apply changes.

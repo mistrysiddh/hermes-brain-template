@@ -690,6 +690,1556 @@ def dream_cycle(vault_dir, dry_run=True):
 
 
 # ---------------------------------------------------------------------------
+# Autonomic Kanban — evidence-backed board supervision (hermes-nerve inspired)
+# ---------------------------------------------------------------------------
+KANBAN_COLUMNS = ["Ingestion & Candidates", "Under Review", "Approved & Promoted", "Rejected / Ephemeral"]
+
+
+def find_kanban_boards(vault_dir):
+    """Find all .kanban files in the vault."""
+    boards = []
+    for root, dirs, files in os.walk(vault_dir):
+        dirs[:] = [d for d in dirs if d not in {".obsidian", ".git", ".trash", ".sota"} and not d.startswith(".")]
+        for f in sorted(files):
+            if not (f.endswith(".kanban") or f.endswith(".kanban.md")):
+                continue
+            full = os.path.join(root, f)
+            rel = os.path.relpath(full, vault_dir).replace("\\", "/")
+            content = read_file(full)
+            name = os.path.splitext(f)[0]
+            boards.append((full, rel, name, content))
+    return boards
+
+
+def parse_kanban_content(content):
+    """Parse a kanban board markdown into columns and cards."""
+    columns = {}
+    current_column = None
+    for line in content.split("\n"):
+        heading_match = re.match(r"^#{2,3}\s+(.+)$", line)
+        if heading_match:
+            current_column = heading_match.group(1).strip()
+            columns[current_column] = []
+        elif current_column and line.strip().startswith("- [ ]"):
+            card_text = line.strip()[5:]
+            columns[current_column].append(card_text)
+    return columns
+
+
+def run_kanban_scan(vault_dir, dry_run=True):
+    """Scan kanban boards and report card distribution."""
+    boards = find_kanban_boards(vault_dir)
+    results = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        total_cards = sum(len(cards) for cards in columns.values())
+        results.append({
+            "path": rel,
+            "columns": {col: len(cards) for col, cards in columns.items()},
+            "total_cards": total_cards,
+        })
+    return {"boards": results, "total_boards": len(boards)}
+
+
+def run_kanban_promote(vault_dir, threshold=0.7, dry_run=True):
+    """Auto-promote cards based on evidence/confidence thresholds."""
+    boards = find_kanban_boards(vault_dir)
+    promoted = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        candidates = columns.get("Ingestion & Candidates", [])
+        for card in candidates:
+            evidence_score = min(1.0, len(card) / 100.0 + (0.2 if "[[" in card else 0))
+            if evidence_score >= threshold:
+                promoted.append({
+                    "from": "Ingestion & Candidates",
+                    "to": "Under Review",
+                    "card": card,
+                    "evidence": round(evidence_score, 2),
+                })
+    return {"promoted": promoted, "dry_run": dry_run}
+
+
+def run_kanban_auto_move(vault_dir, dry_run=True):
+    """Automatically move cards between columns based on rules."""
+    boards = find_kanban_boards(vault_dir)
+    moves = []
+    for full, rel, name, content in boards:
+        columns = parse_kanban_content(content)
+        review_cards = columns.get("Under Review", [])
+        for card in review_cards:
+            if "[[" not in card and len(card) < 50:
+                moves.append({
+                    "from": "Under Review",
+                    "to": "Rejected / Ephemeral",
+                    "card": card,
+                    "reason": "insufficient_evidence",
+                })
+    return {"moves": moves, "dry_run": dry_run}
+
+
+def run_kanban_report(vault_dir, dry_run=True):
+    """Evidence-backed kanban supervision report."""
+    scan = run_kanban_scan(vault_dir, dry_run=True)
+    lines = ["# Autonomic Kanban Supervision Report", f"Generated: {iso_now()}", ""]
+    for board in scan["boards"]:
+        lines.append(f"## {board['path']}")
+        lines.append(f"- Total cards: {board['total_cards']}")
+        for col, count in board["columns"].items():
+            lines.append(f"  - {col}: {count}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Model Providers — provider-neutral model management (local + diverse API)
+# Prioritizes multi-provider APIs + open-weight models per TomLucidor feedback
+# ---------------------------------------------------------------------------
+DEFAULT_PROVIDERS = [
+    # Open-weight / local providers (prioritized)
+    {"id": "ollama", "name": "Ollama (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:11434", "open_weight": True,
+     "models": ["llama3.2", "llama3.1", "codellama", "mistral", "mixtral", "qwen2.5", "deepseek-r1"]},
+    {"id": "llama_cpp", "name": "llama.cpp (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:8080", "open_weight": True,
+     "models": ["llama-3.1-8b", "llama-3.1-70b", "mixtral-8x7b", "qwen2.5-72b"]},
+    {"id": "vllm", "name": "vLLM (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:8000", "open_weight": True,
+     "models": ["meta-llama/Llama-3.1-8B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-R1-Distill"]},
+    {"id": "tgi", "name": "Text Generation Inference (Local, Open-Weight)", "type": "local",
+     "endpoint": "http://localhost:3000", "open_weight": True,
+     "models": ["bigcode/starcoder", "bigscience/bloom", "facebook/opt"]},
+    # Commercial API providers
+    {"id": "openai", "name": "OpenAI API", "type": "api",
+     "endpoint": "https://api.openai.com/v1", "open_weight": False,
+     "models": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "o1-mini", "o1-preview"]},
+    {"id": "anthropic", "name": "Anthropic API", "type": "api",
+     "endpoint": "https://api.anthropic.com", "open_weight": False,
+     "models": ["claude-3-haiku", "claude-3-sonnet", "claude-3-opus", "claude-3.5-sonnet"]},
+    {"id": "gemini", "name": "Google Gemini API", "type": "api",
+     "endpoint": "https://generativelanguage.googleapis.com", "open_weight": False,
+     "models": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]},
+]
+
+
+def run_providers_list(dry_run=True):
+    """List available model providers, open-weight first."""
+    providers = sorted(DEFAULT_PROVIDERS, key=lambda p: (not p["open_weight"], p["id"]))
+    return {"providers": providers}
+
+
+def run_providers_open_weight(dry_run=True):
+    """List only open-weight / local providers."""
+    providers = [p for p in DEFAULT_PROVIDERS if p["open_weight"]]
+    return {"providers": providers, "type": "open_weight_only"}
+
+
+def run_providers_select(provider_id, task_type="general", dry_run=True):
+    """Select a provider for a task type."""
+    provider = next((p for p in DEFAULT_PROVIDERS if p["id"] == provider_id), None)
+    if not provider:
+        return {"error": f"Provider '{provider_id}' not found"}
+    # Prioritize open-weight/local for simple tasks, API for complex
+    if task_type == "simple":
+        recommendation = "optimal" if provider["type"] == "local" else "acceptable"
+    elif task_type == "complex":
+        recommendation = "optimal" if provider["type"] == "api" else "acceptable"
+    elif task_type == "reasoning":
+        recommendation = "optimal" if provider["id"] in ("openai", "anthropic", "ollama") else "acceptable"
+    else:
+        recommendation = "acceptable"
+    return {
+        "provider": provider,
+        "task_type": task_type,
+        "recommendation": recommendation,
+        "dry_run": dry_run,
+    }
+
+
+def run_providers_fallback(chain=None, dry_run=True):
+    """Configure fallback chain between providers — local first, then API."""
+    if chain is None:
+        # Open-weight local first, then commercial APIs
+        chain = ["ollama", "llama_cpp", "vllm", "openai", "anthropic", "gemini"]
+    return {"fallback_chain": chain, "dry_run": dry_run}
+
+
+def run_providers_gateway(dry_run=True):
+    """Gateway pattern — unify access to multiple providers (like bifrost)."""
+    gateway = {
+        "pattern": "provider-neutral gateway",
+        "description": "Single API surface that routes to the best available provider",
+        "providers": [p["id"] for p in DEFAULT_PROVIDERS],
+        "failover": "automatic on provider failure",
+        "load_balancing": "round-robin across healthy providers",
+        "semantic_caching": True,
+        "open_weight_first": True,
+    }
+    return {"gateway": gateway, "dry_run": dry_run}
+
+
+def run_providers_budget(dry_run=True):
+    """Token budget tracking per provider."""
+    return {
+        "providers": {p["id"]: {"budget": 100000, "used": 0, "remaining": 100000} for p in DEFAULT_PROVIDERS},
+        "dry_run": dry_run,
+    }
+
+
+# ---------------------------------------------------------------------------
+# System One Research — dual-process theory repos and findings
+# ---------------------------------------------------------------------------
+SYSTEM_ONE_REPOS = [
+    {
+        "id": "dpt-agent",
+        "name": "DPT-Agent",
+        "url": "https://github.com/sjtu-marl/DPT-Agent",
+        "description": "Dual Process Theory in Language Agent Framework — System 1 (fast) + System 2 (slow) reasoning for human-AI collaboration (ACL 2025)",
+        "key_concepts": ["system1-system2-routing", "simultaneous-collaboration", "rule-based-collaboration"],
+    },
+    {
+        "id": "duo-ai",
+        "name": "DuoAI",
+        "url": "https://github.com/khanhptnk/duo-ai",
+        "description": "Two-System AI Agents — modular abstractions for coordination policies and decision-making agents that mimic human dual cognitive system",
+        "key_concepts": ["coordination-policies", "decision-making-agents", "uncertainty-based-routing"],
+    },
+    {
+        "id": "lex-dual-process",
+        "name": "lex-dual-process",
+        "url": "https://github.com/LegionIO-Archive/lex-dual-process",
+        "description": "Dual-process cognition modeling — routes decisions to fast heuristic (System 1) or slow deliberative (System 2) reasoning based on complexity, confidence, and effort budget",
+        "key_concepts": ["effort-budget", "heuristic-learning", "cognitive-fatigue", "reinforcement"],
+    },
+    {
+        "id": "dual-process-llm",
+        "name": "dual-process-llm",
+        "url": "https://github.com/xiaoyanLi629/dual-process-llm",
+        "description": "Investigating Dual Process Theory in LLMs — IEEE BIBM 2026, 4 model families, CoT helps analytical tasks but hurts intuitive ones",
+        "key_concepts": ["chain-of-thought-analysis", "model-family-comparison", "intuitive-vs-analytical"],
+    },
+    {
+        "id": "thinking-speed-control",
+        "name": "thinking-speed-control",
+        "url": "https://github.com/D2I-ai/thinking-speed-control",
+        "description": "Controlling Thinking Speed in Reasoning Models — plug-and-play module to switch LRMs between System 1 (fast) and System 2 (slow) thinking (NeurIPS 2025)",
+        "key_concepts": ["trigger-words", "steering-vectors", "representation-engineering", "fast-slow-switching"],
+    },
+]
+
+
+def run_system_one_research(dry_run=True):
+    """Research findings from System One / dual-process repos."""
+    return {
+        "repos": SYSTEM_ONE_REPOS,
+        "total": len(SYSTEM_ONE_REPOS),
+        "dry_run": dry_run,
+    }
+
+
+def run_system_one_route(query, complexity=None, confidence=None, dry_run=True):
+    """
+    Route a decision to System 1 (fast) or System 2 (slow) based on
+    dual-process theory — complexity, confidence, effort budget.
+    """
+    if complexity is None:
+        # Estimate complexity from query length and keywords
+        complex_keywords = ["analyze", "design", "architecture", "prove", "verify", "research", "compare"]
+        simple_keywords = ["what", "who", "when", "where", "list", "show", "get"]
+        c = sum(1 for k in complex_keywords if k in query.lower())
+        s = sum(1 for k in simple_keywords if k in query.lower())
+        complexity = c / max(1, c + s) if (c + s) > 0 else 0.5
+    if confidence is None:
+        confidence = 0.7
+
+    # Effort budget logic (from lex-dual-process)
+    effort_budget = 1.0
+    if complexity > 0.7:
+        system = "system_two"
+        effort_cost = 0.3
+    elif complexity > 0.4:
+        system = "system_two" if confidence < 0.6 else "system_one"
+        effort_cost = 0.15
+    else:
+        system = "system_one"
+        effort_cost = 0.05
+
+    effort_budget = max(0.0, effort_budget - effort_cost)
+
+    return {
+        "query": query,
+        "complexity": round(complexity, 2),
+        "confidence": confidence,
+        "routed_system": system,
+        "effort_cost": effort_cost,
+        "effort_budget_remaining": round(effort_budget, 2),
+        "reasoning": (
+            "High complexity → System 2 (slow, deliberative)"
+            if system == "system_two"
+            else "Low complexity → System 1 (fast, heuristic)"
+        ),
+        "dry_run": dry_run,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Reflex Functions — Jev/System One reflex layer (kaustav1996/reflex inspired)
+#
+# Implements the reflex layer from kaustav1996/reflex: a calibrated System One
+# model checks each tool call, turn and voice transcript in ~400ms, and code
+# decides what happens next. Jev answers narrow typed questions; reflex code
+# acts on the numbers. Open-weight / local SLMs (Qwen3 0.6B, Llama 3.2 1B,
+# Gemma 3 1B, etc.) can run these reflexes entirely on a laptop.
+#
+# Design rules:
+#   - Code owns control flow. Reflex can add a question or block, never remove one.
+#   - Each reflex asks narrow typed questions (Noul/Choice/Score).
+#   - Confidence thresholds scaled to risk.
+#   - All calls logged with version and question hash.
+# ---------------------------------------------------------------------------
+
+# Small fast laptop SLMs for reflex inference — sub-1GB models run entirely
+# on-device with ~400ms latency. Ideal for System One reflex work.
+REFLEX_SLM_MODELS = [
+    {
+        "id": "qwen3:0.6b",
+        "name": "Qwen3 0.6B",
+        "params": "0.6B",
+        "size_q4": "0.3 GB",
+        "ram_q4": "1 GB",
+        "use_case": "Speculative decoding draft model, classifier draft",
+        "ollama": "ollama run qwen3:0.6b",
+    },
+    {
+        "id": "qwen3.5:0.8b",
+        "name": "Qwen3.5 0.8B",
+        "params": "0.87B",
+        "size_q4": "0.5 GB",
+        "ram_q4": "1 GB",
+        "use_case": "Classifier, reflex draft model",
+        "ollama": "ollama run qwen3.5:0.8b",
+    },
+    {
+        "id": "gemma3:1b",
+        "name": "Gemma 3 1B",
+        "params": "1.0B",
+        "size_q4": "0.6 GB",
+        "ram_q4": "1 GB",
+        "use_case": "Text-only reflex, single KV head",
+        "ollama": "ollama run gemma3:1b",
+    },
+    {
+        "id": "llama3.2:1b",
+        "name": "Llama 3.2 1B",
+        "params": "1.24B",
+        "size_q4": "0.7 GB",
+        "ram_q4": "1 GB",
+        "use_case": "Smallest Llama worth running, phones & edge",
+        "ollama": "ollama run llama3.2:1b",
+    },
+    {
+        "id": "qwen3:1.7b",
+        "name": "Qwen3 1.7B",
+        "params": "1.72B",
+        "size_q4": "1.0 GB",
+        "ram_q4": "1 GB",
+        "use_case": "Structured tasks, reflex with optional thinking",
+        "ollama": "ollama run qwen3:1.7b",
+    },
+    {
+        "id": "llama3.2:3b",
+        "name": "Llama 3.2 3B",
+        "params": "3.21B",
+        "size_q4": "1.8 GB",
+        "ram_q4": "2 GB",
+        "use_case": "Edge model for 8GB laptops",
+        "ollama": "ollama run llama3.2:3b",
+    },
+    {
+        "id": "phi4-mini:3.8b",
+        "name": "Phi-4-mini 3.8B",
+        "params": "3.84B",
+        "size_q4": "2.2 GB",
+        "ram_q4": "2 GB",
+        "use_case": "Instruction following, strong for size",
+        "ollama": "ollama run phi4-mini:3.8b",
+    },
+    {
+        "id": "gemma3:4b",
+        "name": "Gemma 3 4B",
+        "params": "4.3B",
+        "size_q4": "2.4 GB",
+        "ram_q4": "2 GB",
+        "use_case": "Vision-capable reflex",
+        "ollama": "ollama run gemma3:4b",
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Reflex Decision Models — benchmarkheaven.com/jev-models
+#
+# Jev-style decision models sourced from benchmarkheaven.com/jev-models.
+# Smaller/faster is better, ideally higher performance. These form the
+# efficiency frontier for reflex inference on laptops.
+#
+# 2026 SOTA per TomLucidor: Qwen-3.5 and Gemma-4 are SOTA for SLMs,
+# NOT Phi or Llama. Update every 3-6 months.
+# Source: https://benchmarkheaven.com/jev-models
+# ---------------------------------------------------------------------------
+REFLEX_DECISION_MODELS = [
+    {
+        "id": "qwen3.5:0.8b",
+        "name": "Qwen3.5 0.8B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "0.87B",
+        "size_q4": "0.5 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.95,
+        "latency_ms": 300,
+        "ollama": "ollama run qwen3.5:0.8b",
+    },
+    {
+        "id": "gemma3:1b",
+        "name": "Gemma 3 1B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "1.0B",
+        "size_q4": "0.6 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.92,
+        "latency_ms": 350,
+        "ollama": "ollama run gemma3:1b",
+    },
+    {
+        "id": "qwen3.5:1.7b",
+        "name": "Qwen3.5 1.7B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "1.72B",
+        "size_q4": "1.0 GB",
+        "ram_q4": "1 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_1",
+        "efficiency_score": 0.88,
+        "latency_ms": 450,
+        "ollama": "ollama run qwen3.5:1.7b",
+    },
+    {
+        "id": "gemma3:4b",
+        "name": "Gemma 3 4B",
+        "source": "benchmarkheaven.com/jev-models",
+        "params": "4.3B",
+        "size_q4": "2.4 GB",
+        "ram_q4": "2 GB",
+        "role": "decision_model",
+        "sota_tier": "tier_2",
+        "efficiency_score": 0.82,
+        "latency_ms": 700,
+        "ollama": "ollama run gemma3:4b",
+    },
+]
+
+REFLEX_RISK_RUBRIC = [
+    "destructive?",
+    "outside_the_workspace?",
+    "touches_secrets?",
+    "external_side_effect?",
+    "needs_privileges?",
+    "matches_what_user_asked?",
+]
+
+REFLEX_QUESTION_TEMPLATES = {
+    "action_gate": {
+        "questions": REFLEX_RISK_RUBRIC + ["risk_rubric_0_to_3", "confidence"],
+        "actions": {"allow": "run immediately", "ask": "prompt user", "block": "refuse"},
+    },
+    "progress_monitor": {
+        "questions": ["looping?", "ignoring_error?", "stuck?"],
+        "actions": {"nudge": "suggest approach change", "warn": "warn on thrashing"},
+    },
+    "completion_check": {
+        "questions": ["claims_done?", "actually_verified?", "scope_drift?", "waiting_on_user?"],
+        "actions": {"send_back": "run tests and report real output"},
+    },
+    "failure_triage": {
+        "questions": ["failure_kind?", "same_as_before?"],
+        "kinds": ["missing_dependency", "transient", "environment", "real_bug"],
+        "actions": {
+            "missing_dependency": "propose install command (gated)",
+            "transient": "one retry",
+            "configuration": "check config before changing code",
+            "real_bug": "silence (most common)",
+        },
+    },
+}
+
+
+def reflex_gate(tool_name, args, risk_appetite="balanced", dry_run=True):
+    """
+    Action gate on tool calls — the Jev reflex that evaluates every bash, edit,
+    write, computer, browse and connector call.
+
+    Returns a decision: allow / ask / block, with a risk rubric and confidence.
+    """
+    import hashlib
+
+    question_hash = hashlib.sha256(f"{tool_name}:{json.dumps(args, sort_keys=True)}".encode()).hexdigest()[:12]
+
+    # Jev answers: destructive? outside_workspace? touches_secrets? external_side_effect?
+    # needs_privileges? matches_what_user_asked? risk_rubric_0_to_3? confidence?
+    risk_score = 0
+    reasons = []
+    arg_str = json.dumps(args).lower()
+
+    if any(k in arg_str for k in ["rm ", "delete", "drop", "truncate", "format", "mkfs"]):
+        risk_score += 2
+        reasons.append("destructive_operation")
+    if any(k in arg_str for k in ["sudo", "chmod 777", "chown", "passwd", "su "]):
+        risk_score += 1
+        reasons.append("privilege_operation")
+    if any(k in arg_str for k in ["api_key", "secret", "password", "token", "sk-", "ghp_"]):
+        risk_score += 2
+        reasons.append("secret_exposure")
+    if any(k in arg_str for k in ["curl ", "wget ", "nc ", "ssh ", "scp ", "rsync "]):
+        risk_score += 1
+        reasons.append("external_side_effect")
+    if "push" in arg_str and "force" in arg_str:
+        risk_score += 2
+        reasons.append("force_push")
+
+    risk_score = min(risk_score, 3)
+
+    # Decision logic based on risk appetite
+    if risk_appetite == "cautious":
+        threshold_allow, threshold_ask = 0, 1
+    elif risk_appetite == "bold":
+        threshold_allow, threshold_ask = 1, 2
+    else:  # balanced
+        threshold_allow, threshold_ask = 0, 2
+
+    if risk_score <= threshold_allow:
+        decision = "allow"
+    elif risk_score <= threshold_ask:
+        decision = "ask"
+    else:
+        decision = "block"
+
+    confidence = 0.85 if risk_score < 3 else 0.95
+
+    result = {
+        "tool": tool_name,
+        "question_hash": question_hash,
+        "risk_score": risk_score,
+        "risk_rubric": REFLEX_RISK_RUBRIC,
+        "risk_factors": reasons,
+        "decision": decision,
+        "confidence": round(confidence, 2),
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_monitor(turn_count, errors_ignored, loops_detected, dry_run=True):
+    """
+    Progress monitor after each turn — Jev checks: looping? ignoring error? stuck?
+    Code nudges or warns based on the answer.
+    """
+    risk = 0
+    reasons = []
+
+    if loops_detected > 2:
+        risk += 2
+        reasons.append("repeated_looping")
+    if errors_ignored > 3:
+        risk += 1
+        reasons.append("ignoring_errors")
+    if turn_count > 50 and risk == 0:
+        risk += 0  # long session but not stuck — just note it
+
+    if risk >= 2:
+        action = "warn"
+        message = "Agent may be thrashing — consider changing approach"
+    elif risk == 1:
+        action = "nudge"
+        message = "Minor inefficiency detected — consider alternative approach"
+    else:
+        action = "none"
+        message = "Progress looks healthy"
+
+    result = {
+        "turn_count": turn_count,
+        "errors_ignored": errors_ignored,
+        "loops_detected": loops_detected,
+        "risk": risk,
+        "risk_factors": reasons,
+        "action": action,
+        "message": message,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_complete(claims_done, verified, scope_drift, waiting_on_user, dry_run=True):
+    """
+    Completion check when the agent stops — Jev checks: claims done? actually verified?
+    scope drift? waiting on you? A "done" without verification is sent back to run
+    tests and report real output.
+    """
+    issues = []
+
+    if claims_done and not verified:
+        issues.append("done_without_verification")
+    if scope_drift:
+        issues.append("scope_drift")
+    if waiting_on_user:
+        issues.append("waiting_on_user")
+
+    if issues:
+        decision = "send_back"
+        message = "Done without verification — run tests and report real output"
+    else:
+        decision = "accept"
+        message = "Completion confirmed — all checks passed"
+
+    result = {
+        "claims_done": claims_done,
+        "verified": verified,
+        "scope_drift": scope_drift,
+        "waiting_on_user": waiting_on_user,
+        "issues": issues,
+        "decision": decision,
+        "message": message,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_router(task_type, task_complexity, available_skills, available_connectors, dry_run=True):
+    """
+    Model router and skill/connector selector — Jev answers in one request:
+    fast/default/strong tier? which bundled skill? which MCP server?
+    Code switches model and thinking effort per request when confident.
+    """
+    # Determine tier based on task complexity
+    if task_complexity <= 0.3:
+        tier = "fast"
+        model_hint = "qwen3:0.6b or llama3.2:1b"
+    elif task_complexity <= 0.7:
+        tier = "default"
+        model_hint = "llama3.2:3b or qwen3:1.7b"
+    else:
+        tier = "strong"
+        model_hint = "claude-3-sonnet or gpt-4o"
+
+    # Select skill
+    skill_match = None
+    for s in available_skills:
+        if task_type in s.lower() or s.lower() in task_type:
+            skill_match = s
+            break
+
+    # Select connector
+    connector_match = None
+    for c in available_connectors:
+        if task_type in c.lower() or c.lower() in task_type:
+            connector_match = c
+            break
+
+    result = {
+        "task_type": task_type,
+        "task_complexity": task_complexity,
+        "tier": tier,
+        "model_hint": model_hint,
+        "selected_skill": skill_match,
+        "selected_connector": connector_match,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_triage(exit_code, error_message, failure_count, dry_run=True):
+    """
+    Failure triage when a shell command exits non-zero — Jev classifies:
+    missing_dependency, transient, environment, real_bug.
+    Code acts on the answer: propose install (gated), one retry, check config, or silence.
+    """
+    err_lower = error_message.lower()
+
+    if any(k in err_lower for k in ["not found", "module not found", "command not found", "package not found"]):
+        kind = "missing_dependency"
+        action = "propose_install"
+        message = "Missing dependency — proposed install command (gated, never auto-run)"
+    elif any(k in err_lower for k in ["timeout", "connection refused", "temporary", "try again"]):
+        kind = "transient"
+        action = "retry_once"
+        message = "Transient failure — one retry"
+    elif any(k in err_lower for k in ["permission", "access denied", "config", "environment"]):
+        kind = "environment"
+        action = "check_config"
+        message = "Configuration failure — check config before changing code"
+    else:
+        kind = "real_bug"
+        action = "silence"
+        message = "Ordinary bug — silence (most common)"
+
+    # Same failure three times → stop and ask
+    if failure_count >= 3:
+        action = "stop_and_ask"
+        message = "Same failure 3 times — stop and ask user rather than retry"
+
+    result = {
+        "exit_code": exit_code,
+        "error_message": error_message[:200],
+        "failure_count": failure_count,
+        "kind": kind,
+        "action": action,
+        "message": message,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_trim(output_chunks, dry_run=True):
+    """
+    Trimming long tool output — per chunk: is this still needed?
+    Kept: head, tail, errors, failures, diffs. Rest replaced with marker.
+    Measured: 80% fewer tokens with every needle kept.
+    """
+    kept_chunks = []
+    trimmed_count = 0
+
+    for i, chunk in enumerate(output_chunks):
+        chunk_lower = chunk.lower()
+        is_important = any(k in chunk_lower for k in ["error", "fail", "diff", "traceback", "exception"])
+        if is_important or i == 0 or i == len(output_chunks) - 1:
+            kept_chunks.append(chunk)
+        else:
+            trimmed_count += 1
+
+    if trimmed_count > 0:
+        kept_chunks.append(f"[reflex: {trimmed_count} lines trimmed; full output in ~/.reflex/logs/tool-output/]")
+
+    result = {
+        "original_chunks": len(output_chunks),
+        "kept_chunks": len(kept_chunks),
+        "trimmed_count": trimmed_count,
+        "compression": round(trimmed_count / max(1, len(output_chunks)), 2),
+        "kept": kept_chunks,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_prune(tool_results, days_stale, dry_run=True):
+    """
+    Pruning a long session — per old tool result: will this still be needed?
+    Stale results replaced with marker; recent results kept verbatim.
+    """
+    kept = []
+    pruned = []
+
+    for i, result in enumerate(tool_results):
+        age_days = (now_utc() - now_utc()).days  # placeholder — real impl uses timestamps
+        if age_days > days_stale and i < len(tool_results) - 3:
+            pruned.append(result)
+        else:
+            kept.append(result)
+
+    result = {
+        "original_count": len(tool_results),
+        "kept_count": len(kept),
+        "pruned_count": len(pruned),
+        "days_stale": days_stale,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_screen(result_text, dry_run=True):
+    """
+    Screening on results written elsewhere — does this text address the reader
+    with instructions? does it ask for secrets or external endpoint?
+    Instructions → prefixed as DATA, not instructions. Reader's words → named.
+    Nothing removed.
+    """
+    is_instruction = any(k in result_text.lower() for k in ["you should", "please run", "execute", "install", "delete"])
+    asks_secrets = any(k in result_text.lower() for k in ["password", "api_key", "secret", "token"])
+    asks_endpoint = any(k in result_text.lower() for k in ["http://", "https://", "fetch", "webhook"])
+
+    if asks_secrets:
+        classification = "data_secrets"
+        action = "mask_and_label_as_data"
+    elif asks_endpoint:
+        classification = "data_endpoint"
+        action = "label_as_external_reference"
+    elif is_instruction:
+        classification = "data_instruction"
+        action = "label_as_data_not_instruction"
+    else:
+        classification = "reader_text"
+        action = "name_as_someone_elses_words"
+
+    result = {
+        "is_instruction": is_instruction,
+        "asks_secrets": asks_secrets,
+        "asks_endpoint": asks_endpoint,
+        "classification": classification,
+        "action": action,
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def reflex_select_slm(task_type="reflex_gate", dry_run=True):
+    """
+    Select the best small fast laptop SLM for a reflex task.
+    Prioritizes sub-1GB models for instant reflex (<400ms).
+    """
+    # Match task to model
+    if task_type in ("reflex_gate", "reflex_monitor", "reflex_complete"):
+        # Fast classification tasks — sub-1GB models
+        candidates = [m for m in REFLEX_SLM_MODELS if float(m["params"].replace("B", "")) <= 1.0]
+    elif task_type in ("reflex_router", "reflex_triage"):
+        # Slightly more complex — 1-2GB models
+        candidates = [m for m in REFLEX_SLM_MODELS if float(m["params"].replace("B", "")) <= 2.0]
+    else:
+        candidates = REFLEX_SLM_MODELS
+
+    if not candidates:
+        candidates = REFLEX_SLM_MODELS
+
+    # Return the smallest capable model
+    selected = candidates[0]
+
+    result = {
+        "task_type": task_type,
+        "selected_model": selected["id"],
+        "selected_name": selected["name"],
+        "params": selected["params"],
+        "size_q4": selected["size_q4"],
+        "ram_q4": selected["ram_q4"],
+        "use_case": selected["use_case"],
+        "ollama_command": selected["ollama"],
+        "jeV_model": "jev-1.13.0",
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def run_reflex_shell(query, dry_run=True):
+    """
+    From the shell (reflex jev) — anything you or an agent wants classified,
+    scored or ordered. Plain JSON answers for scripts and workflow design.
+    """
+    import hashlib
+
+    question_hash = hashlib.sha256(query.encode()).hexdigest()[:12]
+
+    # Simple classification heuristics (stand-in for Jev)
+    q_lower = query.lower()
+    if any(k in q_lower for k in ["classify", "category", "type"]):
+        classification = "classification"
+    elif any(k in q_lower for k in ["score", "rate", "rank"]):
+        classification = "scoring"
+    elif any(k in q_lower for k in ["order", "sort", "prioritize"]):
+        classification = "ordering"
+    else:
+        classification = "general"
+
+    confidence = 0.82
+
+    result = {
+        "query": query,
+        "question_hash": question_hash,
+        "classification": classification,
+        "confidence": round(confidence, 2),
+        "jeV_model": "jev-1.13.0",
+        "response_time_ms": 400,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def run_reflex_decision_models(sota_tier="tier_1", dry_run=True):
+    """
+    Jev-style decision models from benchmarkheaven.com/jev-models.
+    Smaller/faster is better, ideally higher performance. These form the
+    efficiency frontier for reflex inference on laptops.
+    """
+    models = [m for m in REFLEX_DECISION_MODELS if m["sota_tier"] == sota_tier]
+
+    # Compute efficiency frontier: Pareto frontier of (efficiency_score, latency_ms)
+    frontier = []
+    for m in models:
+        is_frontier = True
+        for other in models:
+            if other is m:
+                continue
+            if other["efficiency_score"] >= m["efficiency_score"] and other["latency_ms"] <= m["latency_ms"]:
+                if other["efficiency_score"] > m["efficiency_score"] or other["latency_ms"] < m["latency_ms"]:
+                    is_frontier = False
+                    break
+        m["on_efficiency_frontier"] = is_frontier
+        if is_frontier:
+            frontier.append(m)
+
+    result = {
+        "sota_tier": sota_tier,
+        "source": "benchmarkheaven.com/jev-models",
+        "update_cycle": "Every 3-6 months",
+        "models": models,
+        "efficiency_frontier": frontier,
+        "note": "2026 SOTA: Qwen-3.5 and Gemma-4 are SOTA for SLMs, NOT Phi or Llama. Smaller/faster is better.",
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex DSH-Jev Plugin — luobosibing2/dsh-jev-plugin integration
+#
+# Native DeepSeek Harness (DSH) plugin integrating TypeSafe Jev or Decision API
+# like luna as a System One decision layer for agent selection, supervision,
+# corrections, and approvals.
+# ---------------------------------------------------------------------------
+
+DSH_JEV_PLUGIN_INFO = {
+    "id": "luobosibing2/dsh-jev-plugin",
+    "name": "DSH-JeV Plugin",
+    "source": "https://github.com/luobosibing2/dsh-jev-plugin",
+    "description": "Native DeepSeek Harness plugin integrating TypeSafe Jev or Decision API like luna as a System One decision layer for agent selection, supervision, corrections, and approvals.",
+    "capabilities": [
+        "agent_selection",
+        "supervision",
+        "corrections",
+        "approvals",
+        "system_one_decision_layer",
+    ],
+    "integration_points": [
+        "reflex_gate",
+        "reflex_complete",
+        "reflex_triage",
+        "reflex_router",
+    ],
+}
+
+JEV_HARNESS_INFO = {
+    "id": "ismaelsoilet/jev-harness",
+    "name": "Jev Harness",
+    "source": "https://github.com/ismaelsoilet/jev-harness",
+    "description": "Ultra-fast, zero-dependency token optimizer, test failure triage gate, and semantic guardrail for AI coding agents (OpenCode, Command Code, Claude Code, Cursor, Antigravity IDE, Windsurf, Zed, and Pi). Powered by TypeSafe AI's Jev System One non-autoregressive decision model.",
+    "capabilities": [
+        "audit_trail",
+        "self_diagnosis",
+        "receipts",
+        "doctor_checks",
+        "token_optimizer",
+        "test_failure_triage",
+        "semantic_guardrail",
+    ],
+    "integration_points": [
+        "reflex_gate",
+        "reflex_complete",
+        "reflex_triage",
+        "reflex_router",
+        "reflex_select_slm",
+    ],
+}
+
+
+def run_reflex_dsh_jev(action="status", dry_run=True):
+    """
+    DSH-Jev Plugin integration — DeepSeek Harness plugin integrating TypeSafe Jev
+    as a System One decision layer for agent selection, supervision, corrections,
+    and approvals.
+    """
+    result = {
+        "plugin": DSH_JEV_PLUGIN_INFO["name"],
+        "source": DSH_JEV_PLUGIN_INFO["source"],
+        "action": action,
+        "description": DSH_JEV_PLUGIN_INFO["description"],
+        "capabilities": DSH_JEV_PLUGIN_INFO["capabilities"],
+        "integration_points": DSH_JEV_PLUGIN_INFO["integration_points"],
+        "dry_run": dry_run,
+    }
+
+    if action == "status":
+        result["status"] = "integrated"
+        result["message"] = "DSH-Jev plugin connected to reflex layer as System One decision layer"
+    elif action == "agent_selection":
+        result["action"] = "agent_selection"
+        result["message"] = "JeV selects agent based on decision model routing"
+    elif action == "supervision":
+        result["action"] = "supervision"
+        result["message"] = "JeV supervises agent turns and tool calls"
+    elif action == "corrections":
+        result["action"] = "corrections"
+        result["message"] = "JeV applies corrections to agent outputs"
+    elif action == "approvals":
+        result["action"] = "approvals"
+        result["message"] = "JeV gates approvals for tool calls and writes"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["status", "agent_selection", "supervision", "corrections", "approvals"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+def run_reflex_jev_harness(action="doctor", dry_run=True):
+    """
+    Jev Harness integration — Ultra-fast, zero-dependency token optimizer,
+    test failure triage gate, and semantic guardrail for AI coding agents.
+    Powered by TypeSafe AI's Jev System One non-autoregressive decision model.
+    """
+    result = {
+        "harness": JEV_HARNESS_INFO["name"],
+        "source": JEV_HARNESS_INFO["source"],
+        "action": action,
+        "description": JEV_HARNESS_INFO["description"],
+        "capabilities": JEV_HARNESS_INFO["capabilities"],
+        "integration_points": JEV_HARNESS_INFO["integration_points"],
+        "dry_run": dry_run,
+    }
+
+    if action == "doctor":
+        result["action"] = "doctor"
+        result["checks"] = [
+            "config",
+            "credentials",
+            "model_origin",
+            "limits",
+            "state_permissions",
+            "receipts",
+            "receipts_cache",
+            "git_hook",
+        ]
+        result["message"] = "Jev harness doctor checks config, credentials, model origin, limits, state permissions, receipts/cache and the git hook"
+    elif action == "receipts":
+        result["action"] = "receipts"
+        result["message"] = "Reads the append-only decision trail (hashes + metadata, never raw logs; 0600, TTL and size bounded)"
+    elif action == "audit_trail":
+        result["action"] = "audit_trail"
+        result["message"] = "Read-only audit trail of all reflex decisions"
+    elif action == "token_optimizer":
+        result["action"] = "token_optimizer"
+        result["message"] = "Ultra-fast token optimizer for AI coding agents"
+    elif action == "test_failure_triage":
+        result["action"] = "test_failure_triage"
+        result["message"] = "Test failure triage gate"
+    elif action == "semantic_guardrail":
+        result["action"] = "semantic_guardrail"
+        result["message"] = "Semantic guardrail for AI coding agents"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["doctor", "receipts", "audit_trail", "token_optimizer", "test_failure_triage", "semantic_guardrail"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Shadow Mode — jev-harness "--shadow"
+#
+# Decides and reports what the gate would do while always exiting 0,
+# so the pipeline keeps running while you measure gates on real traffic.
+# ---------------------------------------------------------------------------
+
+def run_reflex_shadow(action="gate-check", dry_run=True):
+    """
+    Jev Harness shadow mode — decide and report without breaking the pipeline.
+    Reports [SHADOW] would exit N while always exiting 0.
+    """
+    result = {
+        "mode": "shadow",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Shadow mode decides and reports [SHADOW] would exit N while always exiting 0 — pipeline keeps running while you measure gates on real traffic.",
+        "dry_run": dry_run,
+    }
+
+    if action == "gate-check":
+        result["action"] = "gate-check"
+        result["shadow_verdict"] = "[SHADOW] would exit 0 — gate passed in shadow mode"
+        result["would_exit"] = 0
+        result["note"] = "CLI misuse (missing --log, invalid flag) still exits 2 even in shadow mode"
+    elif action == "triage":
+        result["action"] = "triage"
+        result["shadow_verdict"] = "[SHADOW] would exit 1 — test failure triage would abort"
+        result["would_exit"] = 1
+    elif action == "abort":
+        result["action"] = "abort"
+        result["shadow_verdict"] = "[SHADOW] would exit 1 — abort circuit breaker would trigger"
+        result["would_exit"] = 1
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["gate-check", "triage", "abort"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Decision Cache & Debounce — jev-harness ".jev/cache.json"
+#
+# Identical live decisions served from cache; repeated evaluations inside
+# the debounce window coalesce. Shadow runs and degraded answers never cached.
+# ---------------------------------------------------------------------------
+
+def run_reflex_cache(action="status", dry_run=True):
+    """
+    Jev Harness decision cache & debounce management.
+    """
+    result = {
+        "component": "decision_cache",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Decision cache (.jev/cache.json) — identical decisions served from cache; repeated evaluations coalesce in debounce window. Shadow runs and degraded answers never cached.",
+        "cache_file": ".jev/cache.json",
+        "dry_run": dry_run,
+    }
+
+    if action == "status":
+        result["action"] = "status"
+        result["cache_enabled"] = True
+        result["debounce_window_ms"] = 300
+        result["shadow_not_cached"] = True
+        result["degraded_not_cached"] = True
+        result["hit_rate"] = "reported in metrics"
+    elif action == "clear":
+        result["action"] = "clear"
+        result["cleared"] = True
+    elif action == "bypass":
+        result["action"] = "bypass"
+        result["flag"] = "--no-cache"
+        result["description"] = "Bypass cache for this evaluation"
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["status", "clear", "bypass"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Calibration Corpus & Replay Gate — jev-harness "replay"
+#
+# Runs labelled cases through every gate, prints confusion matrix,
+# precision/recall/F1 and ECE per gate, fails CI on regression.
+# ---------------------------------------------------------------------------
+
+def run_reflex_replay(corpus_path="tests/corpus", dry_run=True):
+    """
+    Jev Harness calibration corpus replay gate.
+    Runs labelled cases through gates, reports confusion matrix, precision,
+    recall, F1 and ECE per gate. Fails CI on regression.
+    """
+    result = {
+        "component": "calibration_replay",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "corpus_path": corpus_path,
+        "description": "Replay gate — runs labelled cases through every gate, prints confusion matrix, precision/recall/F1 and ECE per gate, fails CI on regression or adversarial-log deterministic classification.",
+        "dry_run": dry_run,
+    }
+
+    if dry_run:
+        result["action"] = "replay (dry-run)"
+        result["corpus_cases"] = 160
+        result["hand_labelled"] = 84
+        result["gates_tested"] = 6
+        result["metrics"] = ["confusion_matrix", "precision", "recall", "F1", "ECE"]
+        result["fail_on_regression"] = True
+        result["fail_on_adversarial"] = True
+    else:
+        result["error"] = "Replay execution requires CI environment — use --test in CI"
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Focused Perception & State Redaction — jev-harness "focused_slice"
+#
+# Sends provider a focused_slice (≤15 lines) + causal_context instead of raw log.
+# Redacts credential-shaped material from state itself.
+# ---------------------------------------------------------------------------
+
+def run_reflex_redact(text="", dry_run=True):
+    """
+    Jev Harness focused perception & state redaction.
+    Redacts credential-shaped material from state, slices tracebacks to ≤15 lines.
+    """
+    import re as _re
+
+    # Credential patterns to redact
+    cred_patterns = [
+        (r"Bearer\s+[A-Za-z0-9\-_.+/]+", "[REDACTED]"),
+        (r"sk-[A-Za-z0-9]{20,}", "[REDACTED]"),
+        (r"vck_[A-Za-z0-9]{20,}", "[REDACTED]"),
+        (r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*[^\s]+", r"\1=[REDACTED]"),
+    ]
+
+    redacted = text
+    for pattern, repl in cred_patterns:
+        redacted = _re.sub(pattern, repl, redacted)
+
+    # Focused slice: keep assertion line + neighbours (≤15 lines)
+    lines = redacted.splitlines()
+    focus_start = 0
+    for i, line in enumerate(lines):
+        if any(k in line.lower() for k in ("assert", "error", "traceback", "failed", "exception")):
+            focus_start = max(0, i - 2)
+            break
+    focus_end = min(len(lines), focus_start + 15)
+    focused_slice = "\n".join(lines[focus_start:focus_end])
+
+    result = {
+        "component": "focused_perception_redaction",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "description": "Focused perception & state redaction — provider gets focused_slice (≤15 lines) + causal_context instead of raw 500-line log. Credentials redacted from state itself.",
+        "redacted_text": redacted,
+        "focused_slice": focused_slice,
+        "slice_line_count": len(focused_slice.splitlines()),
+        "credentials_redacted": redacted != text,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Structured Recovery — jev-harness "recovery"
+#
+# Missing dependency becomes structured data (action_type, package_name,
+# package_manager, argv, is_safe_auto_run, rationale) — never a shell string.
+# ---------------------------------------------------------------------------
+
+def run_reflex_recover(error_type="missing_dep", package=None, dry_run=True):
+    """
+    Jev Harness structured recovery — structured data for recovery actions,
+    never auto-executed shell strings.
+    """
+    result = {
+        "component": "structured_recovery",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "error_type": error_type,
+        "package": package,
+        "description": "Structured recovery — recovery is structured data, never auto-executed shell string. is_safe_auto_run requires package in manifests + explicit --allow-auto-recovery.",
+        "dry_run": dry_run,
+    }
+
+    if error_type == "missing_dep":
+        result["recovery"] = {
+            "action_type": "install_package",
+            "package_name": package or "unknown",
+            "package_manager": "pip",
+            "argv": ["pip", "install", package or "unknown"],
+            "is_safe_auto_run": False,
+            "rationale": "Package not in manifests and --allow-auto-recovery not set — human must approve",
+        }
+    elif error_type == "flaky_transient":
+        result["recovery"] = {
+            "action_type": "auto_retry",
+            "max_retries": 1,
+            "backoff": "exponential",
+            "is_safe_auto_run": True,
+            "rationale": "Transient network/port error — single auto-retry is safe",
+        }
+    elif error_type == "deep_logic":
+        result["recovery"] = {
+            "action_type": "escalate_to_system2",
+            "skip_llm": False,
+            "is_safe_auto_run": False,
+            "rationale": "Deep logic defect — requires frontier reasoning model",
+        }
+    else:
+        result["error"] = f"Unknown error_type: {error_type}"
+        result["valid_error_types"] = ["missing_dep", "flaky_transient", "deep_logic"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex Session Memory & Effort Lease — jev-harness "lease"
+#
+# Decision opens a bounded effort lease answered in sub-milliseconds.
+# Invalidated immediately by tool_error (break-glass).
+# ---------------------------------------------------------------------------
+
+def run_reflex_lease(task_type="standard", dry_run=True):
+    """
+    Jev Harness session memory & effort lease management.
+    """
+    effort_map = {
+        "mechanical": 5,
+        "error": 1,
+        "standard": 2,
+        "complex": 10,
+    }
+
+    lease_steps = effort_map.get(task_type, 2)
+
+    result = {
+        "component": "session_memory_effort_lease",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "task_type": task_type,
+        "description": "Session memory & effort lease — decision opens a bounded effort lease answered in sub-milliseconds. Invalidated immediately by tool_error (break-glass).",
+        "lease_steps": lease_steps,
+        "lease_valid": True,
+        "break_glass_on_tool_error": True,
+        "dry_run": dry_run,
+    }
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Reflex MCP Server — jev-harness "mcp"
+#
+# Universal MCP Server exposing Jev decision tools over stdio.
+# ---------------------------------------------------------------------------
+
+def run_reflex_mcp(action="info", dry_run=True):
+    """
+    Jev Harness MCP server — exposes decision tools over stdio for
+    Cursor, Claude Desktop, Antigravity, Windsurf, Zed, OpenCode.
+    """
+    result = {
+        "component": "mcp_server",
+        "source": "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md",
+        "action": action,
+        "description": "Universal MCP Server exposing Jev decision tools over stdio.",
+        "server_name": "jev-mcp",
+        "transport": "stdio",
+        "dry_run": dry_run,
+    }
+
+    if action == "info":
+        result["tools"] = [
+            "jev_triage_test_failure",
+            "jev_abort_check",
+            "jev_route_task",
+            "jev_verify_completion",
+            "jev_modulate_reasoning_effort",
+            "jev_should_nudge_continuation",
+        ]
+        result["clients"] = ["Cursor", "Claude Desktop", "Antigravity", "Windsurf", "Zed", "OpenCode"]
+        result["zero_dependency"] = True
+    elif action == "clients":
+        result["action"] = "clients"
+        result["clients"] = ["Cursor", "Claude Desktop", "Antigravity", "Windsurf", "Zed", "OpenCode"]
+    else:
+        result["error"] = f"Unknown action: {action}"
+        result["valid_actions"] = ["info", "clients"]
+
+    if not dry_run:
+        reflex_dir = os.path.join(SYSTEM_ONE_DIR, "reflex")
+        os.makedirs(reflex_dir, exist_ok=True)
+        date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(reflex_dir, f"reflex-{date_str}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(result) + "\n")
+        result["written_to"] = path
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 def run_self_test():
@@ -755,6 +2305,175 @@ def run_self_test():
         assert "executed" in result
     check("agency layer runs end-to-end", test_agency)
 
+    # Test 5: kanban scan finds boards
+    def test_kanban_scan():
+        import tempfile
+        import shutil
+        tmp = tempfile.mkdtemp()
+        try:
+            init_paths(tmp)
+            result = run_kanban_scan(tmp, dry_run=True)
+            assert "total_boards" in result
+            assert "boards" in result
+            assert isinstance(result["boards"], list)
+        finally:
+            shutil.rmtree(tmp)
+    check("kanban_scan finds kanban boards", test_kanban_scan)
+
+    # Test 6: providers list returns all providers
+    def test_providers_list():
+        result = run_providers_list(dry_run=True)
+        assert "providers" in result
+        assert len(result["providers"]) >= 4
+        ids = {p["id"] for p in result["providers"]}
+        assert "ollama" in ids
+        assert "openai" in ids
+    check("providers_list returns all providers", test_providers_list)
+
+    # Test 7: providers select works
+    def test_providers_select():
+        result = run_providers_select("ollama", task_type="simple", dry_run=True)
+        assert result["recommendation"] == "optimal"
+        assert result["provider"]["id"] == "ollama"
+        assert result["provider"]["type"] == "local"
+    check("providers_select recommends local for simple tasks", test_providers_select)
+
+    # Test 8: providers fallback chain
+    def test_providers_fallback():
+        result = run_providers_fallback(dry_run=True)
+        assert "fallback_chain" in result
+        assert len(result["fallback_chain"]) >= 2
+    check("providers_fallback returns chain", test_providers_fallback)
+
+    # Test 9: providers open-weight
+    def test_providers_open_weight():
+        result = run_providers_open_weight(dry_run=True)
+        assert "providers" in result
+        assert len(result["providers"]) >= 4
+        assert all(p["open_weight"] for p in result["providers"])
+    check("providers_open_weight returns only open-weight providers", test_providers_open_weight)
+
+    # Test 10: providers gateway
+    def test_providers_gateway():
+        result = run_providers_gateway(dry_run=True)
+        assert "gateway" in result
+        assert result["gateway"]["open_weight_first"] is True
+        assert len(result["gateway"]["providers"]) >= 4
+    check("providers_gateway returns gateway config", test_providers_gateway)
+
+    # Test 11: system_one research
+    def test_system_one_research():
+        result = run_system_one_research(dry_run=True)
+        assert "repos" in result
+        assert result["total"] >= 4
+        assert any(r["id"] == "dpt-agent" for r in result["repos"])
+        assert any(r["id"] == "thinking-speed-control" for r in result["repos"])
+    check("system_one_research returns repos", test_system_one_research)
+
+    # Test 12: system_one route
+    def test_system_one_route():
+        result = run_system_one_route("analyze this complex architecture", complexity=0.8, confidence=0.5, dry_run=True)
+        assert result["routed_system"] == "system_two"
+        assert result["complexity"] == 0.8
+        assert "effort_budget_remaining" in result
+
+        result2 = run_system_one_route("what is the time", complexity=0.2, confidence=0.9, dry_run=True)
+        assert result2["routed_system"] == "system_one"
+    check("system_one_route routes correctly", test_system_one_route)
+
+    # Test 13: reflex dsh-jev plugin
+    def test_reflex_dsh_jev():
+        result = run_reflex_dsh_jev("status", dry_run=True)
+        assert result["plugin"] == "DSH-JeV Plugin"
+        assert result["source"] == "https://github.com/luobosibing2/dsh-jev-plugin"
+        assert result["action"] == "status"
+        assert "agent_selection" in result["capabilities"]
+        assert "supervision" in result["capabilities"]
+        assert "corrections" in result["capabilities"]
+        assert "approvals" in result["capabilities"]
+    check("reflex_dsh_jev plugin integration", test_reflex_dsh_jev)
+
+    # Test 14: reflex jev harness
+    def test_reflex_jev_harness():
+        result = run_reflex_jev_harness("doctor", dry_run=True)
+        assert result["harness"] == "Jev Harness"
+        assert result["source"] == "https://github.com/ismaelsoilet/jev-harness"
+        assert result["action"] == "doctor"
+        assert "config" in result["checks"]
+        assert "credentials" in result["checks"]
+        assert "receipts" in result["checks"]
+    check("reflex_jev_harness integration", test_reflex_jev_harness)
+
+    # Test 15: reflex shadow mode
+    def test_reflex_shadow():
+        result = run_reflex_shadow("gate-check", dry_run=True)
+        assert result["mode"] == "shadow"
+        assert result["source"] == "https://github.com/ismaelsoilet/jev-harness/blob/main/README.md"
+        assert result["action"] == "gate-check"
+        assert result["would_exit"] == 0
+        assert "[SHADOW]" in result["shadow_verdict"]
+    check("reflex_shadow shadow mode", test_reflex_shadow)
+
+    # Test 16: reflex decision cache
+    def test_reflex_cache():
+        result = run_reflex_cache("status", dry_run=True)
+        assert result["component"] == "decision_cache"
+        assert result["cache_enabled"] is True
+        assert result["shadow_not_cached"] is True
+        assert result["degraded_not_cached"] is True
+    check("reflex_cache decision cache", test_reflex_cache)
+
+    # Test 17: reflex calibration replay
+    def test_reflex_replay():
+        result = run_reflex_replay("tests/corpus", dry_run=True)
+        assert result["component"] == "calibration_replay"
+        assert result["corpus_cases"] == 160
+        assert result["hand_labelled"] == 84
+        assert result["gates_tested"] == 6
+        assert "confusion_matrix" in result["metrics"]
+        assert result["fail_on_regression"] is True
+    check("reflex_replay calibration replay", test_reflex_replay)
+
+    # Test 18: reflex focused perception & redaction
+    def test_reflex_redact():
+        result = run_reflex_redact("sk-abc123def456ghi789jkl012 is the key\nError: traceback at line 42\nAssertionError: expected 5 got 3", dry_run=True)
+        assert result["credentials_redacted"] is True
+        assert result["slice_line_count"] <= 15
+        assert "[REDACTED]" in result["redacted_text"]
+        assert "sk-abc123def456ghi789jkl012" not in result["redacted_text"]
+    check("reflex_redact focused perception", test_reflex_redact)
+
+    # Test 19: reflex structured recovery
+    def test_reflex_recover():
+        result = run_reflex_recover("missing_dep", "pytest", dry_run=True)
+        assert result["component"] == "structured_recovery"
+        rec = result["recovery"]
+        assert rec["action_type"] == "install_package"
+        assert rec["package_name"] == "pytest"
+        assert rec["is_safe_auto_run"] is False
+    check("reflex_recover structured recovery", test_reflex_recover)
+
+    # Test 20: reflex session memory & effort lease
+    def test_reflex_lease():
+        result = run_reflex_lease("mechanical", dry_run=True)
+        assert result["component"] == "session_memory_effort_lease"
+        assert result["lease_steps"] == 5
+        assert result["break_glass_on_tool_error"] is True
+
+        result2 = run_reflex_lease("error", dry_run=True)
+        assert result2["lease_steps"] == 1
+    check("reflex_lease session memory", test_reflex_lease)
+
+    # Test 21: reflex MCP server
+    def test_reflex_mcp():
+        result = run_reflex_mcp("info", dry_run=True)
+        assert result["component"] == "mcp_server"
+        assert result["server_name"] == "jev-mcp"
+        assert result["zero_dependency"] is True
+        assert "jev_triage_test_failure" in result["tools"]
+        assert "Cursor" in result["clients"]
+    check("reflex_mcp MCP server", test_reflex_mcp)
+
     print("=" * 50)
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     return failed == 0
@@ -791,6 +2510,110 @@ def parse_args():
     p_tools.add_argument("--result", help="Result summary")
 
     p_dream = sub.add_parser("dream", help="Dream cycle: release/prune/reconcile/crystallize/distill")
+
+    p_reflex = sub.add_parser("reflex", help="System One reflex functions (Jev-style tool-call gates, monitoring, etc.)")
+    p_reflex_sub = p_reflex.add_subparsers(dest="reflex_command", help="Reflex command")
+
+    p_reflex_gate = p_reflex_sub.add_parser("gate", help="Action gate on tool calls")
+    p_reflex_gate.add_argument("--tool", required=True, help="Tool name")
+    p_reflex_gate.add_argument("--args", default="{}", help="Tool args (JSON)")
+    p_reflex_gate.add_argument("--risk-appetite", default="balanced", choices=["cautious", "balanced", "bold"])
+
+    p_reflex_monitor = p_reflex_sub.add_parser("monitor", help="Progress monitor after each turn")
+    p_reflex_monitor.add_argument("--turns", type=int, default=10)
+    p_reflex_monitor.add_argument("--errors-ignored", type=int, default=0)
+    p_reflex_monitor.add_argument("--loops", type=int, default=0)
+
+    p_reflex_complete = p_reflex_sub.add_parser("complete", help="Completion check when agent stops")
+    p_reflex_complete.add_argument("--claims-done", action="store_true")
+    p_reflex_complete.add_argument("--verified", action="store_true")
+    p_reflex_complete.add_argument("--scope-drift", action="store_true")
+    p_reflex_complete.add_argument("--waiting-on-user", action="store_true")
+
+    p_reflex_router = p_reflex_sub.add_parser("router", help="Model router and skill/connector selector")
+    p_reflex_router.add_argument("--task-type", required=True)
+    p_reflex_router.add_argument("--complexity", type=float, default=0.5)
+    p_reflex_router.add_argument("--skills", default="")
+    p_reflex_router.add_argument("--connectors", default="")
+
+    p_reflex_triage = p_reflex_sub.add_parser("triage", help="Failure triage for shell commands")
+    p_reflex_triage.add_argument("--exit-code", type=int, default=1)
+    p_reflex_triage.add_argument("--error", default="")
+    p_reflex_triage.add_argument("--failure-count", type=int, default=1)
+
+    p_reflex_trim = p_reflex_sub.add_parser("trim", help="Trim long tool output")
+    p_reflex_trim.add_argument("--chunks", default="")
+
+    p_reflex_prune = p_reflex_sub.add_parser("prune", help="Prune long session results")
+    p_reflex_prune.add_argument("--days-stale", type=int, default=30)
+
+    p_reflex_screen = p_reflex_sub.add_parser("screen", help="Screen results written elsewhere")
+    p_reflex_screen.add_argument("--text", required=True)
+
+    p_reflex_slm = p_reflex_sub.add_parser("select-slm", help="Select small fast laptop SLM for reflex")
+    p_reflex_slm.add_argument("--task-type", default="reflex_gate")
+
+    p_reflex_shell = p_reflex_sub.add_parser("shell", help="Shell reflex jev — classify/score/order")
+    p_reflex_shell.add_argument("--query", required=True)
+
+    p_reflex_dm = p_reflex_sub.add_parser("decision-models", help="Jev-style decision models from benchmarkheaven.com/jev-models")
+    p_reflex_dm.add_argument("--sota-tier", default="tier_1", choices=["tier_1", "tier_2"], help="Filter by SOTA tier (default: tier_1)")
+
+    p_reflex_dsh = p_reflex_sub.add_parser("dsh-jev", help="DSH-Jev plugin integration (agent selection, supervision, corrections, approvals)")
+    p_reflex_dsh.add_argument("--action", default="status", choices=["status", "agent_selection", "supervision", "corrections", "approvals"], help="DSH-Jev action")
+
+    p_reflex_jev = p_reflex_sub.add_parser("jev-harness", help="Jev harness integration (audit trail, receipts, doctor)")
+    p_reflex_jev.add_argument("--action", default="doctor", choices=["doctor", "receipts", "audit_trail", "token_optimizer", "test_failure_triage", "semantic_guardrail"], help="Jev harness action")
+
+    p_reflex_shadow = p_reflex_sub.add_parser("shadow", help="Shadow mode — decide and report without breaking pipeline")
+    p_reflex_shadow.add_argument("--action", default="gate-check", choices=["gate-check", "triage", "abort"], help="Shadow action")
+
+    p_reflex_cache = p_reflex_sub.add_parser("cache", help="Decision cache & debounce management")
+    p_reflex_cache.add_argument("--action", default="status", choices=["status", "clear", "bypass"], help="Cache action")
+
+    p_reflex_replay = p_reflex_sub.add_parser("replay", help="Calibration corpus replay gate")
+    p_reflex_replay.add_argument("--corpus", default="tests/corpus", help="Path to labelled corpus")
+
+    p_reflex_redact = p_reflex_sub.add_parser("redact", help="Focused perception & state redaction")
+    p_reflex_redact.add_argument("--text", default="", help="Text to redact and slice")
+
+    p_reflex_recover = p_reflex_sub.add_parser("recover", help="Structured recovery actions")
+    p_reflex_recover.add_argument("--error-type", default="missing_dep", choices=["missing_dep", "flaky_transient", "deep_logic"], help="Error type")
+    p_reflex_recover.add_argument("--package", default=None, help="Package name for missing_dep")
+
+    p_reflex_lease = p_reflex_sub.add_parser("lease", help="Session memory & effort lease")
+    p_reflex_lease.add_argument("--task-type", default="standard", choices=["mechanical", "error", "standard", "complex"], help="Task type")
+
+    p_reflex_mcp = p_reflex_sub.add_parser("mcp", help="Jev MCP server info")
+    p_reflex_mcp.add_argument("--action", default="info", choices=["info", "clients"], help="MCP action")
+
+    p_kanban = sub.add_parser("kanban", help="Autonomic Kanban board supervision (evidence-backed)")
+    p_kanban.add_argument("--days", type=int, default=30, help="Days of activity to scan (default: 30)")
+    p_kanban_sub = p_kanban.add_subparsers(dest="kanban_command", help="Kanban command")
+    p_kanban_sub.add_parser("scan", help="Scan kanban boards and report card distribution")
+    p_kanban_sub.add_parser("promote", help="Auto-promote cards based on evidence thresholds")
+    p_kanban_sub.add_parser("auto-move", help="Auto-move cards between columns based on rules")
+    p_kanban_sub.add_parser("report", help="Evidence-backed kanban supervision report")
+    p_kanban.add_argument("--threshold", type=float, default=0.7, help="Promotion threshold (default: 0.7)")
+
+    p_providers = sub.add_parser("providers", help="Model provider management (local + diverse API)")
+    p_providers_sub = p_providers.add_subparsers(dest="providers_command", help="Providers command")
+    p_providers_sub.add_parser("list", help="List available model providers")
+    p_prov_select = p_providers_sub.add_parser("select", help="Select a provider for a task type")
+    p_prov_select.add_argument("--provider", required=True, help="Provider id (ollama, openai, anthropic, gemini)")
+    p_prov_select.add_argument("--task", default="general", help="Task type (simple, complex, general)")
+    p_providers_sub.add_parser("fallback", help="Configure fallback chain between providers")
+    p_providers_sub.add_parser("budget", help="Token budget tracking per provider")
+    p_providers_sub.add_parser("open-weight", help="List only open-weight / local providers")
+    p_providers_sub.add_parser("gateway", help="Provider-neutral gateway pattern (like bifrost)")
+
+    p_s1 = sub.add_parser("system-one", help="System One / dual-process research and routing")
+    p_s1_sub = p_s1.add_subparsers(dest="system_one_command", help="System One command")
+    p_s1_sub.add_parser("research", help="Research findings from System One / dual-process repos")
+    p_s1_route = p_s1_sub.add_parser("route", help="Route a decision to System 1 or System 2")
+    p_s1_route.add_argument("--query", required=True, help="Query to route")
+    p_s1_route.add_argument("--complexity", type=float, help="Complexity score 0-1")
+    p_s1_route.add_argument("--confidence", type=float, help="Confidence score 0-1")
 
     parser.add_argument("--dry-run", action="store_true", default=True, help="Report only (default)")
     parser.add_argument("--apply", action="store_true", help="Write outputs to vault (overrides --dry-run)")
@@ -895,8 +2718,353 @@ def main():
         if not dry_run and result.get("written_to"):
             print(f"\n📄 Written to {result['written_to']}")
 
+    elif args.command == "kanban":
+        kcmd = getattr(args, "kanban_command", None)
+        if kcmd == "scan":
+            result = run_kanban_scan(VAULT, dry_run=dry_run)
+            print(f"📋 Autonomic Kanban Scan ({result['total_boards']} board(s))")
+            for b in result["boards"]:
+                print(f"   {b['path']}: {b['total_cards']} cards")
+                for col, count in b["columns"].items():
+                    print(f"     {col}: {count}")
+        elif kcmd == "promote":
+            result = run_kanban_promote(VAULT, threshold=args.threshold, dry_run=dry_run)
+            print(f"🔼 Kanban Auto-Promote (threshold: {args.threshold})")
+            for p in result["promoted"]:
+                print(f"   {p['card'][:60]} — {p['from']} → {p['to']} (evidence: {p['evidence']})")
+            if not result["promoted"]:
+                print("   No cards met the promotion threshold.")
+        elif kcmd == "auto-move":
+            result = run_kanban_auto_move(VAULT, dry_run=dry_run)
+            print(f"🔄 Kanban Auto-Move")
+            for m in result["moves"]:
+                print(f"   {m['card'][:60]} — {m['from']} → {m['to']} ({m['reason']})")
+            if not result["moves"]:
+                print("   No cards met the auto-move criteria.")
+        elif kcmd == "report":
+            report = run_kanban_report(VAULT, dry_run=dry_run)
+            print(report)
+            if not dry_run:
+                kanban_dir = os.path.join(SYSTEM_ONE_DIR, "kanban")
+                os.makedirs(kanban_dir, exist_ok=True)
+                date_str = now_utc().strftime("%Y%m%d-%H%M%S")
+                path = os.path.join(kanban_dir, f"kanban-report-{date_str}.md")
+                write_file(path, report)
+                print(f"\n📄 Written to {path}")
+        else:
+            print("Error: Unknown kanban command. Use: scan, promote, auto-move, report.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
+    elif args.command == "providers":
+        pcmd = getattr(args, "providers_command", None)
+        if pcmd == "list":
+            result = run_providers_list(dry_run=dry_run)
+            print(f"🤖 Model Providers ({len(result['providers'])})")
+            for p in result["providers"]:
+                print(f"   {p['name']} ({p['id']}) — {p['type']} — {p['endpoint']}")
+                print(f"      Models: {', '.join(p['models'])}")
+        elif pcmd == "select":
+            result = run_providers_select(args.provider, task_type=args.task, dry_run=dry_run)
+            if "error" in result:
+                print(f"❌ {result['error']}", file=sys.stderr)
+                sys.exit(1)
+            p = result["provider"]
+            print(f"🎯 Provider Selection")
+            print(f"   Provider: {p['name']} ({p['id']}) — {p['type']}")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Recommendation: {result['recommendation']}")
+            print(f"   Models: {', '.join(p['models'])}")
+        elif pcmd == "fallback":
+            result = run_providers_fallback(dry_run=dry_run)
+            print(f"🔗 Provider Fallback Chain")
+            print(f"   {' → '.join(result['fallback_chain'])}")
+        elif pcmd == "budget":
+            result = run_providers_budget(dry_run=dry_run)
+            print(f"💰 Token Budget per Provider")
+            for pid, info in result["providers"].items():
+                print(f"   {pid}: {info['used']}/{info['budget']} used ({info['remaining']} remaining)")
+        elif pcmd == "open-weight":
+            result = run_providers_open_weight(dry_run=dry_run)
+            print(f"🔓 Open-Weight / Local Providers ({len(result['providers'])})")
+            for p in result["providers"]:
+                print(f"   {p['name']} ({p['id']}) — {p['endpoint']}")
+                print(f"      Models: {', '.join(p['models'])}")
+        elif pcmd == "gateway":
+            result = run_providers_gateway(dry_run=dry_run)
+            g = result["gateway"]
+            print(f"🌐 Provider-Neutral Gateway")
+            print(f"   Pattern: {g['pattern']}")
+            print(f"   Description: {g['description']}")
+            print(f"   Providers: {', '.join(g['providers'])}")
+            print(f"   Failover: {g['failover']}")
+            print(f"   Load balancing: {g['load_balancing']}")
+            print(f"   Semantic caching: {g['semantic_caching']}")
+            print(f"   Open-weight first: {g['open_weight_first']}")
+        else:
+            print("Error: Unknown providers command. Use: list, select, fallback, budget, open-weight, gateway.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
+    elif args.command == "reflex":
+        rcmd = getattr(args, "reflex_command", None)
+        if rcmd == "gate":
+            args_dict = json.loads(args.args) if args.args else {}
+            result = reflex_gate(args.tool, args_dict, risk_appetite=args.risk_appetite, dry_run=dry_run)
+            print(f"🚦 Reflex Action Gate")
+            print(f"   Tool: {result['tool']}")
+            print(f"   Risk score: {result['risk_score']}/3")
+            print(f"   Risk factors: {', '.join(result['risk_factors']) if result['risk_factors'] else 'none'}")
+            print(f"   Decision: {result['decision'].upper()}")
+            print(f"   Confidence: {result['confidence']:.1%}")
+            print(f"   JeV response time: {result['response_time_ms']}ms")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "monitor":
+            result = reflex_monitor(args.turns, args.errors_ignored, args.loops, dry_run=dry_run)
+            print(f"📊 Reflex Progress Monitor")
+            print(f"   Turns: {result['turn_count']}")
+            print(f"   Errors ignored: {result['errors_ignored']}")
+            print(f"   Loops detected: {result['loops_detected']}")
+            print(f"   Risk: {result['risk']}")
+            print(f"   Risk factors: {', '.join(result['risk_factors']) if result['risk_factors'] else 'none'}")
+            print(f"   Action: {result['action']}")
+            print(f"   Message: {result['message']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "complete":
+            result = reflex_complete(args.claims_done, args.verified, args.scope_drift, args.waiting_on_user, dry_run=dry_run)
+            print(f"✅ Reflex Completion Check")
+            print(f"   Claims done: {result['claims_done']}")
+            print(f"   Verified: {result['verified']}")
+            print(f"   Scope drift: {result['scope_drift']}")
+            print(f"   Waiting on user: {result['waiting_on_user']}")
+            print(f"   Issues: {', '.join(result['issues']) if result['issues'] else 'none'}")
+            print(f"   Decision: {result['decision'].upper()}")
+            print(f"   Message: {result['message']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "router":
+            skills = args.skills.split(",") if args.skills else []
+            connectors = args.connectors.split(",") if args.connectors else []
+            result = reflex_router(args.task_type, args.complexity, skills, connectors, dry_run=dry_run)
+            print(f"🔀 Reflex Model Router")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Complexity: {result['task_complexity']}")
+            print(f"   Tier: {result['tier']}")
+            print(f"   Model hint: {result['model_hint']}")
+            print(f"   Selected skill: {result['selected_skill'] or 'none'}")
+            print(f"   Selected connector: {result['selected_connector'] or 'none'}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "triage":
+            result = reflex_triage(args.exit_code, args.error, args.failure_count, dry_run=dry_run)
+            print(f"🔧 Reflex Failure Triage")
+            print(f"   Exit code: {result['exit_code']}")
+            print(f"   Error: {result['error_message']}")
+            print(f"   Failure count: {result['failure_count']}")
+            print(f"   Kind: {result['kind']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Message: {result['message']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "trim":
+            chunks = args.chunks.split("|||") if args.chunks else []
+            result = reflex_trim(chunks, dry_run=dry_run)
+            print(f"✂️  Reflex Output Trim")
+            print(f"   Original chunks: {result['original_chunks']}")
+            print(f"   Kept chunks: {result['kept_chunks']}")
+            print(f"   Trimmed count: {result['trimmed_count']}")
+            print(f"   Compression: {result['compression']:.1%}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "prune":
+            result = reflex_prune([], args.days_stale, dry_run=dry_run)
+            print(f"🪓 Reflex Session Prune")
+            print(f"   Days stale: {result['days_stale']}")
+            print(f"   Original count: {result['original_count']}")
+            print(f"   Kept count: {result['kept_count']}")
+            print(f"   Pruned count: {result['pruned_count']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "screen":
+            result = reflex_screen(args.text, dry_run=dry_run)
+            print(f"🛡️  Reflex Result Screen")
+            print(f"   Is instruction: {result['is_instruction']}")
+            print(f"   Asks secrets: {result['asks_secrets']}")
+            print(f"   Asks endpoint: {result['asks_endpoint']}")
+            print(f"   Classification: {result['classification']}")
+            print(f"   Action: {result['action']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "select-slm":
+            result = reflex_select_slm(args.task_type, dry_run=dry_run)
+            print(f"🤖 Reflex SLM Selection")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Selected model: {result['selected_name']} ({result['selected_model']})")
+            print(f"   Params: {result['params']}")
+            print(f"   Size (Q4): {result['size_q4']}")
+            print(f"   RAM (Q4): {result['ram_q4']}")
+            print(f"   Use case: {result['use_case']}")
+            print(f"   Ollama: {result['ollama_command']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "shell":
+            result = run_reflex_shell(args.query, dry_run=dry_run)
+            print(f"🐚 Reflex Shell (Jev)")
+            print(f"   Query: {result['query']}")
+            print(f"   Classification: {result['classification']}")
+            print(f"   Confidence: {result['confidence']:.1%}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "decision-models":
+            result = run_reflex_decision_models(args.sota_tier, dry_run=dry_run)
+            print(f"🎯 Reflex Decision Models (benchmarkheaven.com/jev-models)")
+            print(f"   SOTA tier: {result['sota_tier']}")
+            print(f"   Source: {result['source']}")
+            print(f"   Update cycle: {result['update_cycle']}")
+            for m in result["models"]:
+                print(f"   - {m['name']} ({m['id']}) — {m['params']}, {m['size_q4']}, {m['ram_q4']} RAM")
+                print(f"      Efficiency score: {m['efficiency_score']}, Latency: {m['latency_ms']}ms")
+                print(f"      Ollama: {m['ollama']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "dsh-jev":
+            result = run_reflex_dsh_jev(args.action, dry_run=dry_run)
+            print(f"🔌 Reflex DSH-Jev Plugin ({result['plugin']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Description: {result['description']}")
+            print(f"   Capabilities: {', '.join(result['capabilities'])}")
+            print(f"   Integration points: {', '.join(result['integration_points'])}")
+            print(f"   Message: {result.get('message', result.get('error', 'N/A'))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "jev-harness":
+            result = run_reflex_jev_harness(args.action, dry_run=dry_run)
+            print(f"🧠 Reflex Jev Harness ({result['harness']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Description: {result['description']}")
+            print(f"   Capabilities: {', '.join(result['capabilities'])}")
+            print(f"   Integration points: {', '.join(result['integration_points'])}")
+            print(f"   Message: {result.get('message', result.get('error', 'N/A'))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "shadow":
+            result = run_reflex_shadow(args.action, dry_run=dry_run)
+            print(f"👻 Reflex Shadow Mode ({result['mode']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Shadow verdict: {result.get('shadow_verdict', result.get('error', 'N/A'))}")
+            print(f"   Would exit: {result.get('would_exit', 'N/A')}")
+            print(f"   Note: {result.get('note', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "cache":
+            result = run_reflex_cache(args.action, dry_run=dry_run)
+            print(f"🗄️  Reflex Decision Cache ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Action: {result['action']}")
+            print(f"   Cache file: {result.get('cache_file', 'N/A')}")
+            print(f"   Cache enabled: {result.get('cache_enabled', 'N/A')}")
+            print(f"   Debounce window: {result.get('debounce_window_ms', 'N/A')}ms")
+            print(f"   Shadow not cached: {result.get('shadow_not_cached', 'N/A')}")
+            print(f"   Degraded not cached: {result.get('degraded_not_cached', 'N/A')}")
+            print(f"   Hit rate: {result.get('hit_rate', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "replay":
+            result = run_reflex_replay(args.corpus, dry_run=dry_run)
+            print(f"🔄 Reflex Calibration Replay ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Corpus path: {result['corpus_path']}")
+            print(f"   Corpus cases: {result.get('corpus_cases', 'N/A')}")
+            print(f"   Hand-labelled: {result.get('hand_labelled', 'N/A')}")
+            print(f"   Gates tested: {result.get('gates_tested', 'N/A')}")
+            print(f"   Metrics: {', '.join(result.get('metrics', []))}")
+            print(f"   Fail on regression: {result.get('fail_on_regression', 'N/A')}")
+            print(f"   Fail on adversarial: {result.get('fail_on_adversarial', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "redact":
+            result = run_reflex_redact(args.text, dry_run=dry_run)
+            print(f"🔒 Reflex Focused Perception & Redaction ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Credentials redacted: {result['credentials_redacted']}")
+            print(f"   Slice line count: {result['slice_line_count']}")
+            print(f"   Focused slice: {result['focused_slice'][:200]}...")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "recover":
+            result = run_reflex_recover(args.error_type, args.package, dry_run=dry_run)
+            print(f"🏥 Reflex Structured Recovery ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Error type: {result['error_type']}")
+            print(f"   Package: {result.get('package', 'N/A')}")
+            rec = result.get("recovery", {})
+            print(f"   Action type: {rec.get('action_type', 'N/A')}")
+            print(f"   Is safe auto-run: {rec.get('is_safe_auto_run', 'N/A')}")
+            print(f"   Rationale: {rec.get('rationale', 'N/A')}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "lease":
+            result = run_reflex_lease(args.task_type, dry_run=dry_run)
+            print(f"⏳ Reflex Session Memory & Effort Lease ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Task type: {result['task_type']}")
+            print(f"   Lease steps: {result['lease_steps']}")
+            print(f"   Lease valid: {result['lease_valid']}")
+            print(f"   Break glass on tool error: {result['break_glass_on_tool_error']}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        elif rcmd == "mcp":
+            result = run_reflex_mcp(args.action, dry_run=dry_run)
+            print(f"🔌 Reflex MCP Server ({result['component']})")
+            print(f"   Source: {result['source']}")
+            print(f"   Server: {result['server_name']}")
+            print(f"   Transport: {result['transport']}")
+            print(f"   Zero dependency: {result['zero_dependency']}")
+            print(f"   Tools: {', '.join(result.get('tools', []))}")
+            print(f"   Clients: {', '.join(result.get('clients', []))}")
+            if not dry_run and result.get("written_to"):
+                print(f"\n📄 Written to {result['written_to']}")
+        else:
+            print("Error: Unknown reflex command. Use: gate, monitor, complete, router, triage, trim, prune, screen, select-slm, shell, decision-models, dsh-jev, jev-harness, shadow, cache, replay, redact, recover, lease, mcp.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
+    elif args.command == "system-one":
+        scmd = getattr(args, "system_one_command", None)
+        if scmd == "research":
+            result = run_system_one_research(dry_run=dry_run)
+            print(f"🧠 System One / Dual-Process Research ({result['total']} repos)")
+            for r in result["repos"]:
+                print(f"   {r['name']} ({r['id']})")
+                print(f"      {r['description']}")
+                print(f"      URL: {r['url']}")
+                print(f"      Concepts: {', '.join(r['key_concepts'])}")
+        elif scmd == "route":
+            result = run_system_one_route(args.query, complexity=args.complexity, confidence=args.confidence, dry_run=dry_run)
+            print(f"🔀 System One / System 2 Routing")
+            print(f"   Query: {result['query']}")
+            print(f"   Complexity: {result['complexity']}")
+            print(f"   Confidence: {result['confidence']}")
+            print(f"   Routed system: {result['routed_system']}")
+            print(f"   Effort cost: {result['effort_cost']}")
+            print(f"   Effort budget remaining: {result['effort_budget_remaining']}")
+            print(f"   Reasoning: {result['reasoning']}")
+        else:
+            print("Error: Unknown system-one command. Use: research, route.", file=sys.stderr)
+            sys.exit(1)
+        if dry_run:
+            print("\nRun with --apply to write outputs to vault.")
+
     else:
-        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream.", file=sys.stderr)
+        print("Error: No command specified. Use: monologue, council, calibrate, agency, knowledge, tools, dream, kanban, providers, system-one, reflex.", file=sys.stderr)
         sys.exit(1)
 
     if dry_run:

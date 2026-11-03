@@ -155,6 +155,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Generate Self-Critique report first
+        env:
+          HERMES_VAULT_PATH: ${{ github.workspace }}
+        run: |
+          set -e
+          python3 _System/Scripts/self_critique.py --vault ${{ github.workspace }} all
       - name: Run auto_remediate.py dry-run
         env:
           HERMES_VAULT_PATH: ${{ github.workspace }}

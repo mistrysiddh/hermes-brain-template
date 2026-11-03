@@ -1,3 +1,10 @@
+---
+title: Security
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Security Policy
 
 ## Supported Versions
