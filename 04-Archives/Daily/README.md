@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Daily
 
 Raw session archive, organized `YYYY/MM/DD/<session-file>.md` — one file per
