@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Research
 
 Sourced research, scraped evidence, article outlines gathered by your
