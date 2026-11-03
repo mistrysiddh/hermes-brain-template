@@ -25,7 +25,7 @@
 
 | File | Broken Link Count | Example Broken Links |
 |------|------------------|---------------------|
-| `04-Archives/Audit-Reports/Self-Critique-Report.md` | ~70 | `[[../../graphify-out/GRAPH_REPORT.md]]`, `[[../../../../Daily/README]]`, `[[../../../../Memory-Review/TEMPLATE]]`, `[[../../../../02-Areas/Skills/Team-Profiles-Index]]`, `[[03-Resources/Research/Cybersecurity-Certifications]]` |
+| `04-Archives/Audit-Reports/Self-Critique-Report.md` | ~70 | `[[../../graphify-out/GRAPH_REPORT.md]]`, `[[../Daily/README]]`, `[[../Memory-Review/TEMPLATE]]`, `[[../../02-Areas/Skills/Team-Profiles-Index]]`, `[[03-Resources/Research/Cybersecurity-Certifications]]` |
 | `03-Resources/MOCs/Cybersecurity-MOC.md` | 1 | `[[03-Resources/Research/Cybersecurity-Certifications]]` |
 | `03-Resources/Research/Interactive-Knowledge-Map.md` | 1 | `[[../../graphify-out/GRAPH_REPORT.md]]` |
 | Various | ~24 | Repeated broken links from session notes |
@@ -40,30 +40,30 @@
 | 4 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../graphify-out/GRAPH_REPORT.md]] | 185 |
 | 5 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[03-Resources/Research/Cybersecurity-Certifications]] | 263 |
 | 6 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../graphify-out/GRAPH_REPORT.md]] | 271 |
-| 7 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Daily/README]] | 282 |
-| 8 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/TEMPLATE]] | 283 |
-| 9 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Supermemory-Explicit-Memories]] | 284 |
-| 10 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Supermemory-All-Memory-Entries]] | 285 |
-| 11 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Hermes-Native-Memory]] | 286 |
-| 12 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Research/README]] | 287 |
-| 13 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Projects/README]] | 288 |
-| 14 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Projects/README]] | 289 |
-| 15 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 309 |
-| 16 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 310 |
-| 17 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 311 |
-| 18 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 312 |
+| 7 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Daily/README]] | 282 |
+| 8 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/TEMPLATE]] | 283 |
+| 9 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Supermemory-Explicit-Memories]] | 284 |
+| 10 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Supermemory-All-Memory-Entries]] | 285 |
+| 11 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Hermes-Native-Memory]] | 286 |
+| 12 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Research/README]] | 287 |
+| 13 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../01-Projects/README]] | 288 |
+| 14 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../01-Projects/README]] | 289 |
+| 15 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 309 |
+| 16 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 310 |
+| 17 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 311 |
+| 18 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 312 |
 | 19 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[03-Resources/Research/Cybersecurity-Certifications]] | 390 |
 | 20 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../graphify-out/GRAPH_REPORT.md]] | 398 |
-| 21 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Daily/README]] | 409 |
-| 22 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/TEMPLATE]] | 410 |
-| 23 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Supermemory-Explicit-Memories]] | 411 |
-| 24 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Supermemory-All-Memory-Entries]] | 412 |
-| 25 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Memory-Review/Hermes-Native-Memory]] | 413 |
-| 26 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Research/README]] | 414 |
-| 27 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Projects/README]] | 415 |
-| 28 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../Projects/README]] | 416 |
-| 29 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 436 |
-| 30 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../../../02-Areas/Skills/Team-Profiles-Index]] | 437 |
+| 21 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Daily/README]] | 409 |
+| 22 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/TEMPLATE]] | 410 |
+| 23 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Supermemory-Explicit-Memories]] | 411 |
+| 24 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Supermemory-All-Memory-Entries]] | 412 |
+| 25 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Memory-Review/Hermes-Native-Memory]] | 413 |
+| 26 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../Research/README]] | 414 |
+| 27 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../01-Projects/README]] | 415 |
+| 28 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../01-Projects/README]] | 416 |
+| 29 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 436 |
+| 30 | 04-Archives/Audit-Reports/Self-Critique-Report.md | [[../../02-Areas/Skills/Team-Profiles-Index]] | 437 |
 
 *Plus ~66 more broken links across the same files.*
 

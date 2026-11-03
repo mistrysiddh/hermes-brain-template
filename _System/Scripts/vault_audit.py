@@ -151,6 +151,12 @@ def find_broken_wikilinks():
                 all_files.add(rel[:-3])
                 all_files.add(f[:-3])
 
+    # Also include graphify-out/GRAPH_REPORT.md (exists but excluded from walk)
+    graph_report = "graphify-out/GRAPH_REPORT.md"
+    if os.path.exists(os.path.join(VAULT, graph_report)):
+        all_files.add(graph_report)
+        all_files.add(graph_report[:-3])
+
     for root, dirs, files in os.walk(VAULT):
         dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('cache', 'graphify-out')]
         for f in files:
