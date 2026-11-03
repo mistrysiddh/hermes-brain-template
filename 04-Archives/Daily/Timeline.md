@@ -1,3 +1,10 @@
+---
+title: Timeline
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Daily Timeline
 
 A single chronological view connecting every archived chat across
