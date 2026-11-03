@@ -1,3 +1,10 @@
+---
+title: Code Of Conduct
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
