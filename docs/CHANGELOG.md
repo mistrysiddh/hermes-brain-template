@@ -1,3 +1,10 @@
+---
+title: Changelog
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Changelog
 
 All notable changes to the Hermes Brain vault template. Versions correspond to [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases).
