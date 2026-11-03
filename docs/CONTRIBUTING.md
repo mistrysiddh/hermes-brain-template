@@ -1,3 +1,10 @@
+---
+title: Contributing
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Contributing
 
 Thanks for considering a contribution to this template.
