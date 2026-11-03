@@ -1,3 +1,10 @@
+---
+title: Release Notes
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 ## What's Changed
 
 ### 📄 New Documentation
