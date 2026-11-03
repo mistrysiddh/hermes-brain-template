@@ -185,7 +185,12 @@ def get_vault(explicit_vault=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
+    parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument("vault_root", nargs="?", default=None, help="Path to the vault root directory")
     parser.add_argument("--scan-secrets", action="store_true",
                         help="Enable detect-secrets scanning in addition to regex patterns")
