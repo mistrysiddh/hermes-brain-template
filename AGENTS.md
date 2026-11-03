@@ -24,6 +24,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
 | **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
 | **skill-pack** | `_System/Scripts/skill_pack.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity ||
+| **paper-mapping** | `_System/Scripts/paper_mapping.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -78,6 +79,8 @@ python _System/Scripts/position_mapping.py --vault /path/to/vault
 python _System/Scripts/position_mapping.py --vault /path/to/vault --apply
 python _System/Scripts/skill_pack.py --vault /path/to/vault --topic "<topic>"
 python _System/Scripts/skill_pack.py --vault <path> --self-eval --answer "<answer>"
+python _System/Scripts/paper_mapping.py --vault /path/to/vault --query "<paper title or DOI>"
+python _System/Scripts/paper_mapping.py --vault <path> --apply --query "<paper title or DOI>" --per-page 20
 ```
 
 ## GitHub Agents
