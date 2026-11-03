@@ -82,7 +82,14 @@ else:
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Hermes Brain Future Skill Forecast - Suggest skills to learn based on vault activity."
+    )parser = argparse.ArgumentParser(
+        description="Hermes Brain Future Skill Forecast - Suggest skills to learn based on vault activity."
     )
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument(
         "--days", type=int, default=14,
         help="Number of days to look back for tag trends (default: 14)"
