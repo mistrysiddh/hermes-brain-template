@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Hermes Brain — Official Website & Interactive Showcase
 
 This directory contains the official showcase website and interactive documentation for **Hermes Brain** (the Obsidian Vault Template for Hermes Agent and OpenClaw).
