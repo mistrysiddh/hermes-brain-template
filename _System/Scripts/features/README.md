@@ -1,3 +1,10 @@
+---
+title: Readme
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Feature Skill Packs
 
 This directory contains opt-in skill packs for the Hermes Brain template. Users can copy scripts from these packs into `_System/Scripts/` when they're ready for more advanced features.
