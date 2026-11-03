@@ -1,3 +1,10 @@
+---
+title: Install Prompt
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Hermes Install Prompt
 
 Copy-paste blocks below straight into a Hermes/OpenClaw Agent chat. No manual cloning,
