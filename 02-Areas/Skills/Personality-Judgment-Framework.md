@@ -1,3 +1,10 @@
+---
+title: Personality Judgment Framework
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Personality Judgment Framework
 
 A structured approach to analyzing communication patterns, behavioral tendencies, and personality traits through systematic observation and evidence-based reasoning.
