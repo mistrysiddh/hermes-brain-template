@@ -1,3 +1,10 @@
+---
+title: Chat Correlation
+created: 2026-11-03
+type: stub
+status: auto-remediated
+---
+
 # Chat ↔ Skill ↔ Profile Correlation (Live)
 
 Correlates archived chats by **source type** and **file pattern** in real
