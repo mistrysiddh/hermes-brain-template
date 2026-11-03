@@ -120,7 +120,12 @@ def process_file(filepath):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
+    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument('--path', default=DAILY, help='Root directory to search (default: Daily/)')
     parser.add_argument('--ext', default='.md', help='File extension to process (default: .md)')
     args = parser.parse_args()
