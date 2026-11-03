@@ -26,6 +26,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **skill-pack** | `_System/Scripts/skill_pack.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity ||
 | **paper-mapping** | `_System/Scripts/paper_mapping.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API ||
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
+| **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -86,6 +87,12 @@ python _System/Scripts/smart_memory.py --vault <path> add --content "..." --rel-
 python _System/Scripts/smart_memory.py --vault <path> retrieve --query "..." --rel-types semantic --top-k 5
 python _System/Scripts/smart_memory.py --vault <path> rag --query "..." --top-k 5
 python _System/Scripts/smart_memory.py --vault <path> route --complexity 0.8
+python _System/Scripts/knowledge_management.py --vault <path> ds-add-decision --case "..." --conclusion "..." --basis "..." --computation "..." --boundary "..."
+python _System/Scripts/knowledge_management.py --vault <path> kb-add-article --title "..." --content "..." --author "..." --tags "tag1,tag2"
+python _System/Scripts/knowledge_management.py --vault <path> rule-add --name "..." --condition "..." --action "..." --priority 1
+python _System/Scripts/knowledge_management.py --vault <path> ontology-add-object --id "obj_1" --type "Person" --properties '{"name": "Alice"}'
+python _System/Scripts/knowledge_management.py --vault <path> dataset-register --name "customer_data" --columns '["id","name","email"]' --keys '["id"]'
+python _System/Scripts/knowledge_management.py --vault <path> knowledge-map
 ```
 
 ## GitHub Agents
