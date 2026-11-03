@@ -271,7 +271,14 @@ def main():
     
     parser = argparse.ArgumentParser(
         description="Generate changelog for Hermes Brain template releases"
+    )parser = argparse.ArgumentParser(
+        description="Generate changelog for Hermes Brain template releases"
     )
+
+parser.add_argument(
+    "--vault",
+    help="Path to the Hermes Brain vault root",
+)
     parser.add_argument(
         "--since",
         required=True,
