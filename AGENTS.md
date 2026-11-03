@@ -7,7 +7,7 @@ status: auto-remediated
 
 # Hermes Brain Agent Skills
 
-This repository contains **7 multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a GitHub Agent in `.github/agents/` and as a standalone Python script in `_System/Scripts/`.
+This repository contains **8 multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a GitHub Agent in `.github/agents/` and as a standalone Python script in `_System/Scripts/`.
 
 ## Agent Skills
 
@@ -21,7 +21,8 @@ This repository contains **7 multi-harness agent skills** for the Hermes Brain O
 | **radar** | `_System/Scripts/radar.py` | Standing surveillance on sources (blogs, news, papers) → daily/weekly digest |
 | **metrics** | `_System/Scripts/metrics.py` | Dated vault metrics snapshot — notes, links, sessions, tags, MOCs, stale |
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
-| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOCs, note splitting, network maintenance |
+|| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
+| **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring |
 
 ## Using Agents
 
@@ -39,6 +40,8 @@ python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot
 python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot --apply
 python _System/Scripts/converse_learn.py --vault /path/to/vault --days 14
 python _System/Scripts/zknote.py --vault /path/to/vault index --days 30
+python _System/Scripts/position_mapping.py --vault /path/to/vault
+python _System/Scripts/position_mapping.py --vault /path/to/vault --apply
 ```
 
 ## GitHub Agents
