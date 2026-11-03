@@ -21,7 +21,8 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **radar** | `_System/Scripts/radar.py` | Standing surveillance on sources (blogs, news, papers) → daily/weekly digest |
 | **metrics** | `_System/Scripts/metrics.py` | Dated vault metrics snapshot — notes, links, sessions, tags, MOCs, stale |
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
-| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOCs, note splitting, network maintenance |
+| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
+| **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -70,8 +71,10 @@ python _System/Scripts/readability.py --vault <path> scan --days 30
 python _System/Scripts/social_science/skill_table.py --vault <path> scan --days 30
 python _System/Scripts/metrics/snapshot.py --vault <path> snapshot --days 30 --apply
 python _System/Scripts/sota/report.py --vault <path> scan --domain agent-brain-vault --apply --save
-python _System/Scripts/subagents/ingestor.py --vault <path>
+python _System/Scripts/subagents/ingestor.py --vault /path/to/vault
 python _System/Scripts/converse_learn/orchestrator.py --vault <path> scan --days 14
+python _System/Scripts/position_mapping.py --vault /path/to/vault
+python _System/Scripts/position_mapping.py --vault /path/to/vault --apply
 ```
 
 ## GitHub Agents
