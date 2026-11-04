@@ -27,6 +27,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 || **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) ||
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
 | **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map ||
+| **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds, TRUST scanner, repo layout (§19.1). Phase 1 of v25.0 operating reference. ||
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 

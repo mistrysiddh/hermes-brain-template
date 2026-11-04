@@ -244,6 +244,7 @@ This repo ships with **32+ multi-harness agent skills** in `_System/Scripts/`. E
 | **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — citations, cited-by, same-author works via OpenAlex + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) |
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval |
 | **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map |
+| **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds (Role, Skill, Orchestration, Trigger, Policy, Resource, Tool-binding), TRUST scanner, repo layout (§19.1). Phase 1 of skill-pack-digest v25.0. |
 
 Each skill is also available as a GitHub Agent in `.github/agents/` — reference them as `@hermes-brain <skill-name>`.
 
