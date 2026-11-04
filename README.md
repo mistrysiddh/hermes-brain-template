@@ -224,6 +224,29 @@ This creates a temporary vault at `/tmp/hermes-brain-trial` that you can open in
 | **Zero-commitment trial run (scratch vault)** | `.\_System\Scripts\Installers\try.ps1` | `./_System/Scripts/Installers/try.sh` |
 | Seed sample/demo data (preview only, opt-in) | `python _System\Scripts\seed_sample_data.py .` | `python3 _System/Scripts/seed_sample_data.py .` |
 
+## 🤖 Agent Skills
+
+This repo ships with **32+ multi-harness agent skills** in `_System/Scripts/`. Each accepts `--vault <path>`, runs in `--dry-run` mode by default, and is stdlib-only with a built-in `--test` suite.
+
+| Agent | File | Purpose |
+|-------|------|---------|
+| **self-critique** | `_System/Scripts/self_critique.py` | Vault health audit — broken wikilinks, missing frontmatter, module-level paths, hardcoded paths, secret exposure |
+| **auto-remediate** | `_System/Scripts/auto_remediate.py` | Apply safe fixes from Self-Critique findings |
+| **knowledge-synthesis** | `_System/Scripts/knowledge_synthesis.py` | BASB/ZK knowledge consolidation — atomic ideas, progressive summarization, MOCs, backlinks |
+| **dream-cycle** | `_System/Scripts/dream_cycle.py` | Cognitive reflection — cross-session associations, drift detection, ADR drafting |
+| **quiz** | `_System/Scripts/quiz.py` | Self-testing from vault notes — what is X?, complete the statement, true/false |
+| **radar** | `_System/Scripts/radar.py` | Standing surveillance — RSS/Atom/JSON/arXiv sources → daily/weekly digest |
+| **metrics** | `_System/Scripts/metrics.py` | Dated vault metrics — notes, links, sessions, tags, MOCs, stale |
+| **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings across 4 categories |
+| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building |
+| **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection |
+| **skill-pack** | `_System/Scripts/skill_pack/cli.py` | Skill packs for education — question users, self-evaluate, model routing, knowledge graph, dependency trees, adaptive practice, thinking fields (10 sub-modules, v1.53.0) |
+| **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — citations, cited-by, same-author works via OpenAlex + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) |
+| **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval |
+| **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map |
+
+Each skill is also available as a GitHub Agent in `.github/agents/` — reference them as `@hermes-brain <skill-name>`.
+
 ## Requirements
 
 - [Obsidian](https://obsidian.md) (free)

@@ -23,8 +23,8 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
 | **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
 | **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
-| **skill-pack** | `_System/Scripts/skill_pack.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity ||
-| **paper-mapping** | `_System/Scripts/paper_mapping.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API ||
+|| **skill-pack** | `_System/Scripts/skill_pack/cli.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity, knowledge graph, dependency trees, adaptive practice, thinking fields (10 sub-modules, v1.53.0) ||
+|| **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) ||
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
 | **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map ||
 
