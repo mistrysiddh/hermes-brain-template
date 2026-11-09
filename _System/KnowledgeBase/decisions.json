@@ -1,0 +1,26 @@
+{
+  "8c97743e04c7650d": {
+    "id": "8c97743e04c7650d",
+    "case": "Underwrite cyber insurance policy",
+    "conclusion": "Approve with standard premium",
+    "basis": "Risk score 0.25 < threshold 0.5",
+    "computation": "rule_engine_v3",
+    "boundary": "Policies < M",
+    "rule_id": "rule_underwriting_1",
+    "author": "user",
+    "created_at": "2026-11-03T16:18:42.164161",
+    "version": 1
+  },
+  "c870c568bdd83446": {
+    "id": "c870c568bdd83446",
+    "case": "Underwrite cyber insurance policy",
+    "conclusion": "Approve with standard premium",
+    "basis": "Risk score 0.25 < threshold 0.5",
+    "computation": "rule_engine_v3",
+    "boundary": "Policies < M",
+    "rule_id": "rule_underwriting_1",
+    "author": "user",
+    "created_at": "2026-11-03T16:19:32.636587",
+    "version": 1
+  }
+}
