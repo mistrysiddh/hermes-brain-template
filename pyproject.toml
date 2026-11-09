@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-brain-skills"
+version = "1.0.0"
+description = "Multi-harness agent skills for the Hermes Brain Obsidian vault template"
+readme = "package_readme.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Mistry Siddh", email = "siddh.mistry396321@gmail.com" },
+]
+license = { text = "MIT" }
+keywords = [
+    "agent-skills",
+    "hermes-brain",
+    "obsidian",
+    "vault",
+    "ai-agent",
+    "multi-harness",
+    "cybersecurity",
+    "automation",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.scripts]
+hermes-brain = "hermes_brain_skills.cli:main"
+hermes-brain-borg = "hermes_brain_skills.borg.cli:main"
+hermes-brain-skill-pack = "hermes_brain_skills.skill_pack.cli:main"
+hermes-brain-paper-mapping = "hermes_brain_skills.paper_mapping.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hermes_brain_skills*"]
