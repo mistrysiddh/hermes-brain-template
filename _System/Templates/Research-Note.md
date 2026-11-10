@@ -20,7 +20,6 @@ tags: [research]
 - 
 
 ## Related
-- 
+- [[MOC|Map of Content]]
+- [[03-Resources/Research/README|Research Hub]]
 
----
-*Maintained in [[03-Resources/Research/README|Research Hub]] · [[Dashboard|Dashboard]]*

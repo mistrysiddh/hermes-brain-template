@@ -12,7 +12,7 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 ## 🏗️ Core Architectural Patterns
 
 ### Agentic OS Design
-- [[agentic-architecture]] — Design patterns for Agentic Operating Systems
+- [[02-Areas/Skills/Installed-Skills-Index|agentic-architecture]] — Design patterns for Agentic Operating Systems
 - [[../Research/Agentic-OS-Principles.md|Core Principles: Autonomy, Delegation, Verification]]
 - [[../Research/State-Management.md|Agent State & Memory Persistence]]
 - [[../Research/Tool-Use-Architecture.md|Tool Calling & Function Execution]]
@@ -31,7 +31,7 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 ## 🤝 Multi-Agent Collaboration
 
 ### Group Chat Systems
-- [[multi-agent-groupchat-collaboration]] — Verified bot group chats
+- [[02-Areas/Skills/Installed-Skills-Index|multi-agent-groupchat-collaboration]] — Verified bot group chats
 - [[../Research/Group-Chat-Moderation.md|Moderation & Fact-Checking]]
 - [[../Research/Consensus-Mechanisms.md|Voting, Weighted Decisions]]
 
@@ -43,9 +43,9 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 ## 🛠️ Delegation & Coding Agents
 
 ### CLI-Based Delegation
-- [[claude-code]] — Claude Code CLI delegation
-- [[codex]] — OpenAI Codex CLI patterns
-- [[opencode]] — Opencode CLI workflows
+- [[02-Areas/Skills/Installed-Skills-Index|claude-code]] — Claude Code CLI delegation
+- [[02-Areas/Skills/Installed-Skills-Index|codex]] — OpenAI Codex CLI patterns
+- [[02-Areas/Skills/Installed-Skills-Index|opencode]] — Opencode CLI workflows
 
 ### Autonomous Coding Patterns
 - [[../Research/Feature-Branch-Delegation.md|Delegating Full Features]]
@@ -72,9 +72,9 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 - Skill forecast = capability planning
 
 ### Plugin Architecture
-- [[hermes-desktop-plugin-dev]] — UI panes as agent interfaces
-- [[inspecting-hermes-desktop-dom]] — DOM introspection for agents
-- [[hermes-plugin-discovery]] — Plugin ecosystem navigation
+- [[02-Areas/Skills/Installed-Skills-Index|hermes-desktop-plugin-dev]] — UI panes as agent interfaces
+- [[02-Areas/Skills/Installed-Skills-Index|inspecting-hermes-desktop-dom]] — DOM introspection for agents
+- [[02-Areas/Skills/Installed-Skills-Index|hermes-plugin-discovery]] — Plugin ecosystem navigation
 
 ### Session & Memory Integration
 - [[../Research/Session-Aware-Agents.md|Agents with Session Context]]

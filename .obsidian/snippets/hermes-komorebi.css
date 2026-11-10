@@ -1,0 +1,69 @@
+/* Hermes Brain — Komorebi-style dashboard. Save as .obsidian/snippets/hermes-komorebi.css and enable it. */
+.hb-page .inline-title { display: none; }
+.hb {
+  --hb-card: var(--background-secondary);
+  --hb-border: var(--background-modifier-border);
+  --hb-accent: #f5c2e7;
+  --hb-ok: #a6e3a1; --hb-warn: #f9e2af; --hb-bad: #f38ba8;
+  --hb-dim: var(--text-muted);
+  font-family: var(--font-interface);
+}
+.hb-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 6px 4px 16px; border-bottom: 1px solid var(--hb-border); margin-bottom: 16px; }
+.hb-title { font-size: 1.6rem; font-weight: 700; letter-spacing: .18em; color: var(--hb-accent); outline: none; }
+.hb-mantra { font-size: .72rem; color: var(--hb-dim); letter-spacing: .08em; outline: none; }
+.hb-clock { text-align: center; }
+.hb-time { font-size: 2rem; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+.hb-date { font-size: .72rem; color: var(--hb-dim); }
+.hb-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.hb-greet { font-size: .75rem; color: var(--hb-dim); font-style: italic; }
+.hb-pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.hb-pill { background: var(--hb-card); border: 1px solid var(--hb-border); border-radius: 10px; padding: 4px 12px; text-align: center; min-width: 58px; }
+.hb-pill-num { font-size: 1.05rem; font-weight: 600; color: var(--hb-accent); }
+.hb-pill-lbl { font-size: .6rem; color: var(--hb-dim); text-transform: lowercase; }
+
+.hb-grid { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 14px; align-items: start; }
+.hb-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hb-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.hb-card { background: var(--hb-card); border: 1px solid var(--hb-border); border-radius: 12px; padding: 14px 16px; }
+.hb-label { font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--hb-dim); margin-bottom: 10px; }
+
+.hb-focus { font-size: 1rem; line-height: 1.45; outline: none; min-height: 2.4em; }
+.hb-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; font-size: .8rem; cursor: default; }
+.hb-row:hover { background: var(--background-modifier-hover); }
+.hb-row-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hb-row-meta { font-size: .68rem; color: var(--hb-dim); white-space: nowrap; }
+.hb-card .hb-row[class*="hb-row"] { cursor: pointer; }
+.hb-empty { font-size: .78rem; color: var(--hb-dim); padding: 6px; }
+.hb-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.hb-dot.hb-ok { background: var(--hb-ok); } .hb-dot.hb-warn { background: var(--hb-warn); } .hb-dot.hb-bad { background: var(--hb-bad); }
+
+.hb-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hb-act { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border: 1px solid var(--hb-border); border-radius: 8px; cursor: pointer; }
+.hb-act:hover { border-color: var(--hb-accent); background: var(--background-modifier-hover); }
+.hb-act-icon { font-size: 1.1rem; } .hb-act-lbl { font-size: .62rem; color: var(--hb-dim); }
+
+.hb-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hb-cal-month { font-size: .8rem; font-weight: 600; }
+.hb-cal-btn { cursor: pointer; padding: 0 8px; color: var(--hb-dim); font-size: 1.1rem; }
+.hb-cal-btn:hover { color: var(--hb-accent); }
+.hb-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.hb-cal-dh { text-align: center; font-size: .58rem; color: var(--hb-dim); padding-bottom: 3px; }
+.hb-cal-cell { position: relative; text-align: center; font-size: .72rem; padding: 5px 0 9px; border-radius: 6px; }
+.hb-cal-cell.hb-has { cursor: pointer; }
+.hb-cal-cell.hb-has:hover { background: var(--background-modifier-hover); }
+.hb-cal-cell.hb-today { border: 1px solid var(--hb-accent); color: var(--hb-accent); font-weight: 600; }
+.hb-cal-dot { position: absolute; bottom: 3px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--hb-accent); }
+.hb-cal-list { margin-top: 8px; }
+.hb-cal-list-hdr { font-size: .65rem; color: var(--hb-dim); padding: 4px 6px; border-top: 1px solid var(--hb-border); }
+
+.hb-bars { display: flex; align-items: flex-end; gap: 4px; height: 70px; }
+.hb-bar-wrap { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.hb-bar { width: 100%; background: var(--hb-accent); border-radius: 3px 3px 0 0; opacity: .85; }
+.hb-bar.hb-bar-zero { background: var(--hb-border); opacity: 1; }
+.hb-bars-foot { font-size: .65rem; color: var(--hb-dim); margin-top: 8px; text-align: center; }
+
+@media (max-width: 900px) {
+  .hb-header, .hb-grid, .hb-bottom { grid-template-columns: 1fr; }
+  .hb-right, .hb-pills { align-items: flex-start; justify-content: flex-start; }
+  .hb-clock { text-align: left; }
+}

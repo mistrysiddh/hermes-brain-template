@@ -12,8 +12,8 @@ Central map of content for infrastructure, containerization, and self-hosting te
 ## 🐧 Linux & Systems
 
 ### Core Skills
-- [[virtualbox-vm-setup]] — VM provisioning with raw disk boot
-- [[vmware-vm-setup]] — macOS guests on VMware Workstation
+- [[02-Areas/Skills/Installed-Skills-Index|virtualbox-vm-setup]] — VM provisioning with raw disk boot
+- [[02-Areas/Skills/Installed-Skills-Index|vmware-vm-setup]] — macOS guests on VMware Workstation
 
 ### Topics
 - [[../Research/Linux-Hardening.md|Linux Hardening]] (create if needed)
@@ -62,7 +62,7 @@ Central map of content for infrastructure, containerization, and self-hosting te
 
 ### Skills
 - [[automated-information-briefings]] — Scheduled research digests
-- [[ntfy-notifications]] — Cross-platform push notifications
+- [[02-Areas/Skills/Installed-Skills-Index|ntfy-notifications]] — Cross-platform push notifications
 - [[ai-ml-research-briefing]] — AI/ML paper monitoring
 
 ### Patterns

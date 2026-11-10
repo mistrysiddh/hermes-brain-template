@@ -7,7 +7,7 @@ status: auto-remediated
 
 # Hermes Brain Agent Skills
 
-This repository contains **8 multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a GitHub Agent in `.github/agents/` and as a standalone Python script in `_System/Scripts/`.
+This repository contains **32+ multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a standalone Python script in `_System/Scripts/`. Each accepts `--vault <path>` and runs in `--dry-run` mode by default. Use `--apply` to apply changes.
 
 ## Agent Skills
 
@@ -21,8 +21,45 @@ This repository contains **8 multi-harness agent skills** for the Hermes Brain O
 | **radar** | `_System/Scripts/radar.py` | Standing surveillance on sources (blogs, news, papers) → daily/weekly digest |
 | **metrics** | `_System/Scripts/metrics.py` | Dated vault metrics snapshot — notes, links, sessions, tags, MOCs, stale |
 | **converse-learn** | `_System/Scripts/converse_learn.py` | Conversation learning — extract learnings from sessions across 4 categories |
-|| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
-| **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring |
+| **zknote** | `_System/Scripts/zknote.py` | Zettelkasten — fleeting notes, literature notes, MOC building, note splitting, network maintenance ||
+| **position-mapping** | `_System/Scripts/position_mapping.py` | Position map — folder depth, parent MOC, link counts, orphan detection, position scoring ||
+|| **skill-pack** | `_System/Scripts/skill_pack/cli.py` | Skill packs for education — question users, self-evaluate answers, route tasks by model complexity, knowledge graph, dependency trees, adaptive practice, thinking fields (10 sub-modules, v1.53.0) ||
+|| **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — related papers, citations, cited-by, same-author works via OpenAlex API + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) ||
+| **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
+| **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map ||
+| **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds, TRUST scanner, repo layout (§19.1). Phase 1 of v25.0 operating reference. ||
+
+## Sub-Skill Hierarchies (v1.37–v1.44)
+
+| Sub-Skill | File | Purpose |
+|-----------|------|---------|
+| **system-one** | `_System/Scripts/system_one.py` | Fast automatic agent decision support — inner monologue, four-voice council, confidence calibration, agency layer, knowledge graph, tool capture, dream cycle |
+| **readability** | `_System/Scripts/readability.py` | Human readability grading — Coleman-Liau, Dale-Chall, FORCAST, PMOSE/IKIRSCH, Chinese reference |
+| **social-science/humanizer** | `_System/Scripts/social_science/humanizer.py` | Prose routing, writing pattern diagnosis, sectional chunking, Turnitin mitigation, research integrity |
+| **social-science/paperwork** | `_System/Scripts/social_science/paperwork.py` | Academic paper processing, citation management, bibliography formatting, paper metadata |
+| **social-science/research-corpus** | `_System/Scripts/social_science/research_corpus.py` | Research source aggregation, corpus index building, reading progress tracking |
+| **social-science/skill-table** | `_System/Scripts/social_science/skill_table.py` | Coherent table-of-skills merging humanizer, paperwork, research_corpus + external sources |
+| **sota/profile** | `_System/Scripts/sota/profile.py` | Build repo capability profile from evidence |
+| **sota/comparators** | `_System/Scripts/sota/comparators.py` | Fetch + classify comparator repos from GitHub API |
+| **sota/matrix** | `_System/Scripts/sota/matrix.py` | Capability matrix + gap ranking (table-stakes vs edge) |
+| **sota/report** | `_System/Scripts/sota/report.py` | Markdown report + artifact persistence for SOTA scan |
+| **metrics/notes** | `_System/Scripts/metrics/notes.py` | Note-level metrics (counts, by-dir, recent, sizes) |
+| **metrics/links** | `_System/Scripts/metrics/links.py` | Wikilink metrics (total, unique, broken, density) |
+| **metrics/sessions** | `_System/Scripts/metrics/sessions.py` | Session metrics from Daily/ archives |
+| **metrics/tags** | `_System/Scripts/metrics/tags.py` | Tag frequency distribution |
+| **metrics/mocs** | `_System/Scripts/metrics/mocs.py` | MOC health (healthy vs orphaned) |
+| **metrics/snapshot** | `_System/Scripts/metrics/snapshot.py` | Orchestrated dated snapshot with markdown render |
+| **converse-learn/memory** | `_System/Scripts/converse_learn/memory.py` | Extract durable facts/preferences from conversations |
+| **converse-learn/lesson** | `_System/Scripts/converse_learn/lesson.py` | Extract mistakes/anti-patterns from conversations |
+| **converse-learn/skill** | `_System/Scripts/converse_learn/skill.py` | Extract reusable workflows from conversations |
+| **converse-learn/project-doc** | `_System/Scripts/converse_learn/project_doc.py` | Extract build commands/conventions from conversations |
+| **converse-learn/orchestrator** | `_System/Scripts/converse_learn/orchestrator.py` | 5-pass scan/generate/dedup/confirm/execute workflow |
+| **subagents/ingestor** | `_System/Scripts/subagents/ingestor.py` | Ingest raw/ notes into vault |
+| **subagents/linker** | `_System/Scripts/subagents/linker.py` | Find missing connections between notes |
+| **subagents/reviewer** | `_System/Scripts/subagents/reviewer.py` | Read-only vault audit |
+| **subagents/researcher** | `_System/Scripts/subagents/researcher.py` | On-demand deep research |
+| **subagents/graph-analyst** | `_System/Scripts/subagents/graph_analyst.py` | Monthly navigation analysis |
+| **subagents/curator** | `_System/Scripts/subagents/curator.py` | Quarterly prune/archive review |
 
 ## Using Agents
 
@@ -31,22 +68,37 @@ Each agent accepts `--vault <path>` and runs in `--dry-run` mode by default. Use
 ```
 python _System/Scripts/self_critique.py --vault /path/to/vault all
 python _System/Scripts/auto_remediate.py --vault /path/to/vault apply
-python _System/Scripts/knowledge_synthesis.py --vault /path/to/vault --moc --atomic --link
-python _System/Scripts/dream_cycle.py --vault /path/to/vault --stage-memory --draft-adr --link
-python _System/Scripts/quiz.py --vault /path/to/vault --days 30
-python _System/Scripts/radar.py --vault /path/to/vault --days 7 scan
-python _System/Scripts/radar.py --vault /path/to/vault --days 7 digest --apply
-python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot
-python _System/Scripts/metrics.py --vault /path/to/vault --days 30 snapshot --apply
-python _System/Scripts/converse_learn.py --vault /path/to/vault --days 14
-python _System/Scripts/zknote.py --vault /path/to/vault index --days 30
+python _System/Scripts/system_one.py --vault <path> --apply monologue --days 7
+python _System/Scripts/system_one.py --vault . --apply council --question "should we X?"
+python _System/Scripts/system_one.py --vault . --apply providers list
+python _System/Scripts/system_one.py --vault . --apply system-one research
+python _System/Scripts/readability.py --vault <path> scan --days 30
+python _System/Scripts/social_science/skill_table.py --vault <path> scan --days 30
+python _System/Scripts/metrics/snapshot.py --vault <path> snapshot --days 30 --apply
+python _System/Scripts/sota/report.py --vault <path> scan --domain agent-brain-vault --apply --save
+python _System/Scripts/subagents/ingestor.py --vault /path/to/vault
+python _System/Scripts/converse_learn/orchestrator.py --vault <path> scan --days 14
 python _System/Scripts/position_mapping.py --vault /path/to/vault
 python _System/Scripts/position_mapping.py --vault /path/to/vault --apply
+python _System/Scripts/skill_pack.py --vault /path/to/vault --topic "<topic>"
+python _System/Scripts/skill_pack.py --vault <path> --self-eval --answer "<answer>"
+python _System/Scripts/paper_mapping.py --vault /path/to/vault --query "<paper title or DOI>"
+python _System/Scripts/paper_mapping.py --vault <path> --apply --query "<paper title or DOI>" --per-page 20
+python _System/Scripts/smart_memory.py --vault <path> add --content "..." --rel-type semantic --confidence 0.9
+python _System/Scripts/smart_memory.py --vault <path> retrieve --query "..." --rel-types semantic --top-k 5
+python _System/Scripts/smart_memory.py --vault <path> rag --query "..." --top-k 5
+python _System/Scripts/smart_memory.py --vault <path> route --complexity 0.8
+python _System/Scripts/knowledge_management.py --vault <path> ds-add-decision --case "..." --conclusion "..." --basis "..." --computation "..." --boundary "..."
+python _System/Scripts/knowledge_management.py --vault <path> kb-add-article --title "..." --content "..." --author "..." --tags "tag1,tag2"
+python _System/Scripts/knowledge_management.py --vault <path> rule-add --name "..." --condition "..." --action "..." --priority 1
+python _System/Scripts/knowledge_management.py --vault <path> ontology-add-object --id "obj_1" --type "Person" --properties '{"name": "Alice"}'
+python _System/Scripts/knowledge_management.py --vault <path> dataset-register --name "customer_data" --columns '["id","name","email"]' --keys '["id"]'
+python _System/Scripts/knowledge_management.py --vault <path> knowledge-map
 ```
 
 ## GitHub Agents
 
-All 7 skills are also available as GitHub Agents in `.github/agents/`. Reference them in chat as `@hermes-brain <skill-name>`.
+All skills are also available as GitHub Agents in `.github/agents/`. Reference them in chat as `@hermes-brain <skill-name>`.
 
 ---
 

@@ -9,6 +9,13 @@ status: auto-remediated
 
 A structured approach to analyzing communication patterns, behavioral tendencies, and personality traits through systematic observation and evidence-based reasoning.
 
+> [!INFO] **Framework Links & Tools:**
+> - **Hub:** [[MOC|Map of Content]] · **Profile:** [[02-Areas/User-Profile|User Profile & Boundaries]]
+> - **Template:** [[_System/Templates/Personality-Judgment-Analysis|Personality Judgment Analysis Template]]
+> - **Dashboard:** [[_System/Templates/Personality-Judgment-Dashboard|Personality Judgment Dashboard]]
+> - **Visual Canvas:** [[_System/Canvases/Personality-Judgment-Canvas.canvas|Personality Judgment Canvas]]
+
+
 ## Core Methodology: The Analysis Chain
 
 Every judgment follows this evidence chain:

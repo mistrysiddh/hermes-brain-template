@@ -80,6 +80,21 @@ def load_manifest():
     return sessions
 
 
+def _manifest_path_exists(path):
+    """Resolve a manifest path that may be absolute, from another OS, or moved (e.g. cron notes)."""
+    norm = path.replace('\\', '/')
+    cands = [norm]
+    if '04-Archives/' in norm:
+        rel = norm[norm.index('04-Archives/'):]
+        cands.append(rel)
+        if os.path.basename(rel).startswith('cron_'):
+            cands.append(rel.replace('04-Archives/Daily/', '04-Archives/Cron/sessions/', 1))
+    for c in cands:
+        if os.path.exists(c if os.path.isabs(c) and os.path.exists(c) else os.path.join(VAULT, c)):
+            return True
+    return False
+
+
 def validate_manifest():
     """Validate manifest.jsonl for consistency and completeness."""
     issues = []
@@ -93,7 +108,7 @@ def validate_manifest():
     # Check for missing files referenced in manifest
     for sid, rec in sessions.items():
         path = rec.get("path", "")
-        if path and not os.path.exists(os.path.join(VAULT, path)):
+        if path and not _manifest_path_exists(path):
             issues.append({
                 "type": "missing_file",
                 "session_id": sid,
@@ -155,7 +170,15 @@ def find_broken_wikilinks():
                 link = raw_link.replace(r'\|', '|').replace(r'\]', ']').split('|')[0].split('#')[0].strip().rstrip('\\')
                 if not link or link.startswith("http://") or link.startswith("https://"):
                     continue
+                # Shell tests like [[ -e "$x" ]] and code symbols are not wikilinks
+                if re.search(r'[$"]', link) or link.startswith(('-', '!', '&', '_COMMUNITY_')):
+                    continue
                 norm_link = link.replace('\\', '/')
+                if norm_link.startswith(('./', '../')):
+                    # Resolve relative links against the containing file's folder
+                    resolved = os.path.normpath(os.path.join(os.path.dirname(os.path.relpath(full, VAULT)), norm_link)).replace('\\', '/')
+                    if resolved in all_files or resolved + '.md' in all_files:
+                        continue
                 if norm_link not in all_files:
                     broken.append({
                         "file": os.path.relpath(full, VAULT).replace('\\', '/'),
@@ -256,13 +279,15 @@ def find_orphaned_files():
         "manifest.jsonl", "Token-Usage.log", "Vault-Audit-Report.md",
         "Installed-Skills-Index.md", "Team-Profiles-Index.md",
         "Skill-to-Chat-Links.md", "Dataview-Query-Library.md",
+        "SECURITY.md", "INSTALL_PROMPT.md", "release_notes.md",
+        "GRAPH_REPORT.md",
     ]
 
     orphans = []
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
             # Also ignore files in .obsidian, Daily/ manifest, etc.
-            if f.startswith(".obsidian/") or ("Daily/" in f and ("manifest" in f or "README" in f)):
+            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or ("Daily/" in f and ("manifest" in f or "README" in f)):
                 continue
             # Dated session notes (chat archives in Daily/YYYY/MM/DD/ and cron
             # session notes in Cron/sessions/YYYY/MM/DD/) are a timeline, not a

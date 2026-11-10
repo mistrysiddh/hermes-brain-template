@@ -28,3 +28,4 @@ actually *used*, this one tells you which skills are *available*.
 - [[Team-Profiles-Index]] — which profile tends to reach for which skill
 - [[Skill-to-Chat-Links]] — which archived sessions actually invoked each skill
 - [[04-Archives/Daily/Chat-Correlation|Chat-Correlation]] — live session breakdown by source/profile
+- [[Hermes-Agent-Capabilities]] — what the Hermes agent can do out of the box

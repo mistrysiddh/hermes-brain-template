@@ -1,0 +1,29 @@
+{
+  "name": "position_mapping",
+  "description": "Learn how position mapping works in the Hermes Brain vault — folder depth, parent MOCs, link counts, and orphan detection.",
+  "topic": {
+    "position_mapping": {
+      "summary": "Position mapping organizes vault notes by their location in the folder hierarchy, nearest parent MOC, incoming/outgoing wikilink counts, and orphan status. Hub notes have 10+ links, connectors have 3-9, leaves have 1-2, and orphans have none.",
+      "questions": [
+        {
+          "question": "What makes a note a \"hub\" in position mapping?",
+          "type": "short_answer",
+          "answer": "A hub note has 10 or more total links (incoming + outgoing).",
+          "hint": "Think about the link count threshold."
+        },
+        {
+          "question": "What is an orphaned note?",
+          "type": "short_answer",
+          "answer": "A note with no links in or out and no parent frontmatter.",
+          "hint": "It's disconnected from the rest of the vault."
+        },
+        {
+          "question": "How does position mapping help vault navigation?",
+          "type": "open_ended",
+          "answer": "It shows which notes are central (hubs), which are peripheral (leaves), and which are disconnected (orphans), helping you reorganize and maintain the vault.",
+          "hint": "Think about hub, connector, leaf, and orphan tiers."
+        }
+      ]
+    }
+  }
+}

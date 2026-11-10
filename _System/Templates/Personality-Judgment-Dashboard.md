@@ -9,6 +9,13 @@ status: auto-remediated
 
 A dynamic Dataview-powered dashboard for tracking and visualizing personality judgment analyses.
 
+> [!INFO] **Framework Links & Navigation:**
+> - **Hub:** [[MOC|Map of Content]]
+> - **Framework Document:** [[02-Areas/Skills/Personality-Judgment-Framework|Personality Judgment Framework]]
+> - **Analysis Template:** [[_System/Templates/Personality-Judgment-Analysis|Personality Judgment Analysis Template]]
+> - **Interactive Canvas:** [[_System/Canvases/Personality-Judgment-Canvas.canvas|Personality Judgment Canvas]]
+
+
 ## 📊 Active Analyses
 
 ```dataview

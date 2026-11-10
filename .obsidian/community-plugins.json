@@ -1,5 +1,5 @@
 [
-  "obsidian-local-rest-api",
   "dataview",
-  "obsidian-kanban"
+  "obsidian-kanban",
+  "obsidian-local-rest-api"
 ]
