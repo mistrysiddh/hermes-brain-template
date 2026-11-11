@@ -6,6 +6,34 @@ import os
 import sys
 import time
 import urllib.request
+import argparse
+
+
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+
+
+def init_paths(vault_path):
+    global VAULT
+    VAULT = os.path.abspath(vault_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="pull_supermemory.py — multi-harness compatible.",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+
 
 API_KEY = os.environ.get("SUPERMEMORY_API_KEY")
 CONTAINER_TAG = os.environ.get("SUPERMEMORY_CONTAINER_TAG", "hermes")

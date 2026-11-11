@@ -6,14 +6,41 @@ Reads every note template in _System/Templates/ and 04-Archives/Memory-Review/TE
 and generates an Obsidian-native gallery note where each template is enclosed in
 a collapsible callout with 4-backtick raw markdown syntax highlighting and 1-click copy support.
 """
+import argparse
 import os
 import sys
 
-VAULT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-TEMPLATES_DIR = os.path.join(VAULT_ROOT, "_System", "Templates")
-OUTPUT_FILE = os.path.join(TEMPLATES_DIR, "Template-Showcase.md")
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+TEMPLATES_DIR = None
+OUTPUT_FILE = None
 
-TEMPLATES_META = [
+
+def init_paths(vault_path):
+    global VAULT, TEMPLATES_DIR, OUTPUT_FILE
+    VAULT = os.path.abspath(vault_path)
+    TEMPLATES_DIR = os.path.join(VAULT, "_System", "Templates")
+    OUTPUT_FILE = os.path.join(TEMPLATES_DIR, "Template-Showcase.md")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="generate_template_showcase.py — Builds Template-Showcase.md (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+def get_templates_meta():
+    """Build template metadata with vault-resolved paths."""
+    return [
     {
         "file": "Project.md",
         "path": os.path.join(TEMPLATES_DIR, "Project.md"),
@@ -79,7 +106,7 @@ TEMPLATES_META = [
     },
     {
         "file": "TEMPLATE.md",
-        "path": os.path.join(VAULT_ROOT, "04-Archives", "Memory-Review", "TEMPLATE.md"),
+        "path": os.path.join(VAULT, "04-Archives", "Memory-Review", "TEMPLATE.md"),
         "title": "Memory Review Candidate",
         "badge": "🧠 Memory Staging",
         "target": "04-Archives/Memory-Review/<Candidate-Name>.md",
@@ -113,7 +140,7 @@ def build_showcase():
         "<div class=\"dashboard-kpi-strip\">",
         "  <div class=\"dashboard-kpi-card\">",
         "    <div class=\"dashboard-kpi-label\">Total Templates</div>",
-        f"    <div class=\"dashboard-kpi-value\" style=\"font-size: 1.25em; color: var(--text-accent);\">{len(TEMPLATES_META)} SCHEMAS</div>",
+        f"    <div class=\"dashboard-kpi-value\" style=\"font-size: 1.25em; color: var(--text-accent);\">{len(get_templates_meta())} SCHEMAS</div>",
         "  </div>",
         "  <div class=\"dashboard-kpi-card\">",
         "    <div class=\"dashboard-kpi-label\">View Mode</div>",
@@ -135,12 +162,12 @@ def build_showcase():
         "",
     ]
 
-    for idx, item in enumerate(TEMPLATES_META, 1):
+    for idx, item in enumerate(get_templates_meta(), 1):
         lines.append(f"- **[[#{idx}. {item['title']}|{idx}. {item['title']}]]** (`{item['file']}`) — *{item['desc'].split('.')[0]}*")
 
     lines.extend(["", "---", ""])
 
-    for idx, item in enumerate(TEMPLATES_META, 1):
+    for idx, item in enumerate(get_templates_meta(), 1):
         if not os.path.exists(item["path"]):
             continue
         with open(item["path"], "r", encoding="utf-8") as f:
@@ -183,8 +210,22 @@ def build_showcase():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-    print(f"✅ Generated {OUTPUT_FILE} with {len(TEMPLATES_META)} template schemas.")
+    print(f"✅ Generated {OUTPUT_FILE} with {len(get_templates_meta())} template schemas.")
+
+
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
+    build_showcase()
 
 
 if __name__ == "__main__":
-    build_showcase()
+    main(parse_args())

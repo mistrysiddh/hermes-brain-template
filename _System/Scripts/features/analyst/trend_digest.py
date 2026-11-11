@@ -1,7 +1,45 @@
 import os, sys, json, numpy as np
 from sentence_transformers import SentenceTransformer
+import argparse
 
-def main():
+
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+
+
+def init_paths(vault_path):
+    global VAULT
+    VAULT = os.path.abspath(vault_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="trend_digest.py — multi-harness compatible.",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+
+
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
     vault = sys.argv[1]
     query = sys.argv[2]
     top_n = int(sys.argv[3])
@@ -62,5 +100,5 @@ def main():
 
     print(json.dumps(results, ensure_ascii=False))
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    main(parse_args())

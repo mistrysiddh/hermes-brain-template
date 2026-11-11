@@ -15,51 +15,51 @@ Metrics:
 
 Run manually or via cron alongside hourly_archive.py / vault_audit.py.
 """
+import argparse
 import json
 import os
 import re
 import sys
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
+from pathlib import Path
 
-def get_vault():
-    # 1. Check command line argument (explicit argument always takes precedence)
-    for arg in sys.argv[1:]:
-        if not arg.startswith("--") and os.path.isdir(arg):
-            return os.path.abspath(arg)
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+REPORT_PATH = None
+DAILY = None
+MANIFEST = None
+SKILL_LINKS = None
 
-    # 2. Check environment variable
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return os.path.abspath(env_vault)
 
-    # 3. Heuristic: look for .obsidian or 01-Projects in parent directories
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    for cand in [
-        os.path.abspath(os.path.join(script_dir, "..", "..")),
-        os.path.abspath(os.path.join(script_dir, ".."))
-    ]:
-        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
-            return cand
+def init_paths(vault_path):
+    """Resolve vault-relative paths. Called from main() after arg parsing."""
+    global VAULT, REPORT_PATH, DAILY, MANIFEST, SKILL_LINKS
+    VAULT = os.path.abspath(vault_path)
+    report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+    os.makedirs(report_dir, exist_ok=True)
+    REPORT_PATH = os.path.join(report_dir, "Agent-Performance.md")
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    MANIFEST = os.path.join(DAILY, "manifest.jsonl")
+    skill_cand = os.path.join(VAULT, "02-Areas", "Skills", "Skill-to-Chat-Links.md")
+    SKILL_LINKS = skill_cand if os.path.exists(os.path.dirname(skill_cand)) else os.path.join(VAULT, "Skills-Notes", "Skill-to-Chat-Links.md")
 
-    return None
 
-VAULT = get_vault()
-if not VAULT:
-    print("Could not resolve vault path — set HERMES_VAULT_PATH or pass vault directory as argument.")
-    sys.exit(1)
-
-# Always write the report inside the resolved vault - never fall back to a different location
-report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
-os.makedirs(report_dir, exist_ok=True)
-REPORT_PATH = os.path.join(report_dir, "Agent-Performance.md")
-
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
-MANIFEST = os.path.join(DAILY, "manifest.jsonl")
-
-skill_cand = os.path.join(VAULT, "02-Areas", "Skills", "Skill-to-Chat-Links.md")
-SKILL_LINKS = skill_cand if os.path.exists(os.path.dirname(skill_cand)) else os.path.join(VAULT, "Skills-Notes", "Skill-to-Chat-Links.md")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Hermes Brain — Agent Performance Dashboard Generator (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
 
 # Patterns
 TOOL_CALL_FENCE = re.compile(r'```json\s*\n(.*?)\n```', re.S)
@@ -291,7 +291,18 @@ def generate_report(sessions, skill_usage, daily_stats, tool_usage):
     
     print(f"Report written to {REPORT_PATH}")
 
-def main():
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
+
     print("📊 Generating Agent Performance Dashboard...")
     sessions = scan_daily_sessions()
     print(f"  Scanned {len(sessions)} session files")
@@ -305,4 +316,4 @@ def main():
     print("✅ Done.")
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())

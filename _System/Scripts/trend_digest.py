@@ -1,10 +1,36 @@
+import argparse
 import os, sys, json, numpy as np
 from sentence_transformers import SentenceTransformer
 
-def main():
-    vault = sys.argv[1]
-    query = sys.argv[2]
-    top_n = int(sys.argv[3])
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="trend_digest.py — Trend digest analysis (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--query", help="Search query")
+    parser.add_argument("--top-n", type=int, default=10, help="Number of top results")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    vault = args.vault
+    query = args.query or ""
+    top_n = args.top_n
 
     # Collect markdown files
     docs = []
@@ -63,4 +89,4 @@ def main():
     print(json.dumps(results, ensure_ascii=False))
 
 if __name__ == '__main__':
-    main()
+    main(parse_args())

@@ -2,6 +2,7 @@
 # template_drift.py
 # Compares a user's vault against the latest template to show what's safe to update and what's customized.
 
+import argparse
 import os
 import sys
 import subprocess
@@ -10,6 +11,25 @@ import hashlib
 from pathlib import Path
 from typing import List, Dict, Tuple, Set
 from dataclasses import dataclass
+
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="template_drift.py — Compares a user's vault against the latest template (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--template-root", help="Path to template repo (default: current script's template)")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
 
 @dataclass
 class DriftItem:
@@ -223,25 +243,24 @@ def get_template_version(template_root: Path) -> str:
     
     return "unknown"
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python template_drift.py <user_vault_path> [--template-root <path>]")
-        print("  --template-root: Path to template repo (default: current script's template)")
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
         sys.exit(1)
-    
-    user_vault = Path(sys.argv[1]).resolve()
+
+    user_vault = Path(args.vault).resolve()
     if not user_vault.exists():
         print(f"❌ User vault not found: {user_vault}")
         sys.exit(1)
     
     # Determine template root
-    if "--template-root" in sys.argv:
-        idx = sys.argv.index("--template-root")
-        if idx + 1 < len(sys.argv):
-            template_root = Path(sys.argv[idx + 1]).resolve()
-        else:
-            print("❌ --template-root requires a path")
-            sys.exit(1)
+    if args.template_root:
+        template_root = Path(args.template_root).resolve()
     else:
         # Default: assume script is in template's _System/Scripts/
         script_dir = Path(__file__).resolve().parent
@@ -259,4 +278,4 @@ def main():
     print_drift_report(drift_items, user_vault, template_version)
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())
