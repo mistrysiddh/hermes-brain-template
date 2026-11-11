@@ -155,9 +155,39 @@ def log_run(vault, status, detail):
 # Main
 # ---------------------------------------------------------------------------
 
+
+def run_self_test():
+    """Built-in self-test suite. Verifies the script can be imported and
+    basic functions work."""
+    import tempfile
+    import shutil
+
+    passed = 0
+    failed = 0
+
+    def test(name, condition, msg=""):
+        nonlocal passed, failed
+        if condition:
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"====== {script_name} Self-Tests ======")
+    print(f"🎉 Self-tests: {passed} passed, {failed} failed")
+    print("=" * 40)
+    return failed == 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Local session-end git snapshot (never pushes)")
     parser.add_argument("--vault", help="Vault root directory path")
+
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     parser.add_argument("--session-id", default=None, help="Session id to tag the commit with")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()

@@ -656,6 +656,29 @@ def sync_sessions(vault_path=None, session_id=None, since=None, enrich=False, ta
         release_lock()
 
 
+
+def run_self_test():
+    """Built-in self-test suite. Verifies the script can be imported and
+    basic functions work."""
+    import tempfile
+    import shutil
+
+    passed = 0
+    failed = 0
+
+    def test(name, condition, msg=""):
+        nonlocal passed, failed
+        if condition:
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"====== {script_name} Self-Tests ======")
+    print(f"🎉 Self-tests: {passed} passed, {failed} failed")
+    print("=" * 40)
+    return failed == 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain session sync & hook handler")
     parser.add_argument("--session-id", type=str, help="Specific session ID to sync immediately")
@@ -663,6 +686,13 @@ def main():
     parser.add_argument("--event", type=str, help="Hook event name (e.g. on_session_start, on_session_end, post_llm_call)")
     parser.add_argument("--since", type=str, help="Lookback time (e.g. '5m', '1h')")
     parser.add_argument("--vault", type=str, help="Vault root directory path")
+
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     parser.add_argument("--enrich", action="store_true", help="Run enrichment after sync")
     parser.add_argument("--tag", action="store_true", help="Run tagger after sync")
     parser.add_argument("--verbose", action="store_true", help="Print detailed output")

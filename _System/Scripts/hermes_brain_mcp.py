@@ -633,6 +633,11 @@ def run_self_test(vault_path: Path):
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain MCP Server")
     parser.add_argument("--vault", type=str, default="", help="Path to Obsidian vault")
+
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
     parser.add_argument("--test", action="store_true", help="Run self-test diagnostic suite and exit")
     args = parser.parse_args()
 

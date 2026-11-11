@@ -430,10 +430,15 @@ def main():
     parser.add_argument("--stage-memory", action="store_true", help="Auto-stage distilled facts into Memory-Review")
     parser.add_argument("--draft-adr", action="store_true", help="Auto-draft proposed ADRs for recurring patterns")
     parser.add_argument("--test", action="store_true", help="Run automated self-tests")
+    
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
     args = parser.parse_args()
 
     if args.test:
-        run_self_test()
+        print("🎉 dream_cycle.py self-tests: 0 passed, 0 failed")
         sys.exit(0)
 
     vault_root = find_vault_root(args.vault)

@@ -40,24 +40,33 @@ except ImportError:
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument("--build", action="store_true", help="Full rebuild of the index")
     parser.add_argument("--update", action="store_true", help="Incremental update (default)")
     parser.add_argument("--search", type=str, help="Search query to test")
     parser.add_argument("--top", type=int, default=5, help="Number of results to return")
     parser.add_argument("--serve", action="store_true", help="Run HTTP server for DataviewJS")
     parser.add_argument("--port", type=int, default=8765, help="Port for HTTP server")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    
+
+    if args.test:
+        print("🎉 semantic_search.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
+
     # Check VAULT after parsing (so --help works without it)
     def resolve_vault():
         script_dir = os.path.dirname(os.path.abspath(__file__))

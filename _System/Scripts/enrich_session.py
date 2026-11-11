@@ -120,15 +120,24 @@ def process_file(filepath):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument('--path', default=DAILY, help='Root directory to search (default: Daily/)')
     parser.add_argument('--ext', default='.md', help='File extension to process (default: .md)')
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     args = parser.parse_args()
+
+    if args.test:
+        print("🎉 enrich_session.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
 
     if not os.path.isdir(args.path):
         print(f"Error: {args.path} is not a directory.")

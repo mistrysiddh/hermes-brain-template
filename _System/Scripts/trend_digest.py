@@ -1,3 +1,8 @@
+"""trend_digest.py — Trend digest analysis for Hermes Brain vault.
+
+Performs semantic similarity search over vault markdown files to surface
+trending topics and relevant content.
+"""
 import argparse
 import os, sys, json, numpy as np
 from sentence_transformers import SentenceTransformer

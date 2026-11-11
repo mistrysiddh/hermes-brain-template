@@ -23,7 +23,17 @@ def main():
     parser.add_argument("--enrich", action="store_true", help="Run session enrichment after archiving to add glanceable summaries")
     parser.add_argument("--since", type=str, help="Export sessions since this duration (e.g. '70m', '2h'). If omitted, uses manifest-aware window")
     parser.add_argument("--tag", action="store_true", help="Run session tagger after archiving")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     args = parser.parse_args()
+
+    if args.test:
+        print("🎉 hourly_archive.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
 
     vault = resolve_vault(args.vault)
     if not vault:

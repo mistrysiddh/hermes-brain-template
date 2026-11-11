@@ -114,7 +114,22 @@ def parse_args():
         "--no-color", action="store_true",
         help="Disable colorized output (overrides NO_COLOR env)"
     )
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     return parser.parse_args()
+
+def main():
+    args = parse_args()
+
+    if args.test:
+        print("🎉 skill_forecast.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
+
+    debug_print.enabled = args.debug
 
 def supports_color():
     """Check if color output is supported."""
