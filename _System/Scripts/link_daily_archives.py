@@ -8,11 +8,35 @@ conversations to relevant Domain MOCs, Projects, and Memory Review hubs.
 Ignores background automated cron logs to keep the graph high-signal.
 """
 
+import argparse
 import os
 import re
 
-VAULT_DIR = r"C:\Users\mistr\OneDrive - Mistry Siddh\27. Hermes Agent Vault\Brain\Hermes Brain"
-DAILY_DIR = os.path.join(VAULT_DIR, "04-Archives", "Daily")
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+DAILY_DIR = None
+
+
+def init_paths(vault_path):
+    global VAULT, DAILY_DIR
+    VAULT = os.path.abspath(vault_path)
+    DAILY_DIR = os.path.join(VAULT, "04-Archives", "Daily")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="link_daily_archives.py — Smart knowledge-graph enricher (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
 
 TOPIC_RULES = [
     {
@@ -121,7 +145,19 @@ def process_daily_archives(dry_run=False):
     print(f"[{status}] Processed: {processed} user sessions | Enriched: {enriched} sessions | Total links added: {total_links_added}")
     return enriched, total_links_added
 
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
+    return process_daily_archives(dry_run=args.dry_run)
+
+
 if __name__ == "__main__":
-    import sys
-    dry = "--dry-run" in sys.argv
-    process_daily_archives(dry_run=dry)
+    main(parse_args())
