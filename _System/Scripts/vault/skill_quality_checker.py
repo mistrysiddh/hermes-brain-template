@@ -930,7 +930,7 @@ def check_python_skill(py_path):
 
     # §9 — Stdlib-only: no external imports beyond stdlib
     external_imports = re.findall(r"^(?:import|from)\s+([a-zA-Z_][a-zA-Z0-9_]*)", content, re.M)
-    stdlib_modules = {"os", "sys", "json", "re", "argparse", "hashlib", "datetime", "pathlib", "tempfile", "shutil", "collections", "itertools", "functools", "typing", "urllib", "yaml"}
+    stdlib_modules = {"os", "sys", "json", "re", "argparse", "hashlib", "datetime", "pathlib", "tempfile", "shutil", "collections", "itertools", "functools", "typing", "urllib", "yaml", "math", "sqlite3"}
     non_stdlib = [imp for imp in external_imports if imp.split(".")[0] not in stdlib_modules and not imp.startswith("_")]
     findings.append(finding(
         "moderate", "§9", "stdlib_only", "D~",
