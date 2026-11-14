@@ -653,6 +653,58 @@ widget(4, "🏷️ Top tags", {}, body => {
 });
 
 // ============================================================
+//  ROW: BROKEN LINKS · SKILL QUALITY
+// ============================================================
+widget(6, "🔗 Broken links", {}, body => {
+  const scReport = getFile("04-Archives/Audit-Reports/Self-Critique-Report.md", "Skills-Notes/Self-Critique-Report.md");
+  if (!scReport) return empty(body, "Self-critique report not found.");
+  (async () => {
+    const content = await vault.read(scReport);
+    const broken = content.match(/Broken wikilink \[\[([^\]]+)\]\]/g) || [];
+    const uniqueTargets = new Set();
+    for (const b of broken) {
+      const m = b.match(/\[\[([^\]]+)\]\]/);
+      if (m) uniqueTargets.add(m[1]);
+    }
+    const count = broken.length;
+    const big = body.createEl("div", { cls: "hb-big" });
+    big.createEl("span", { cls: `hb-big-value ${count ? "is-warn" : ""}`.trim(), text: count.toLocaleString() });
+    big.createEl("span", { cls: "hb-muted", text: `${uniqueTargets.size} unique targets missing` });
+    const list = body.createEl("div", { cls: "hb-rows" });
+    if (count === 0) {
+      list.createEl("div", { cls: "hb-faint", text: "✅ No broken links — all clear!" });
+    } else {
+      list.createEl("div", { cls: "hb-faint hb-push", text: `[Open full report →](04-Archives/Audit-Reports/Self-Critique-Report.md)` });
+    }
+  })();
+});
+
+widget(6, "🎯 Skill quality", {}, body => {
+  const sqReport = getFile("04-Archives/Audit-Reports/Skill-Quality-Report.md", "Skills-Notes/Skill-Quality-Report.md");
+  if (!sqReport) return empty(body, "Skill quality report not found.");
+  (async () => {
+    const content = await vault.read(sqReport);
+    const ready = (content.match(/— READY/g) || []).length;
+    const rework = (content.match(/— NEEDS REWORK/g) || []).length;
+    const reject = (content.match(/— REJECT/g) || []).length;
+    const total = ready + rework + reject;
+    const pct = total ? Math.round((ready / total) * 100) : 0;
+
+    const big = body.createEl("div", { cls: "hb-big" });
+    big.createEl("span", { cls: `hb-big-value ${reject ? "is-warn" : ""}`.trim(), text: `${pct}%` });
+    big.createEl("span", { cls: "hb-muted", text: `${ready}/${total} skills READY` });
+
+    const list = body.createEl("div", { cls: "hb-checks" });
+    [[ready, "READY", "hb-badge-ok"], [rework, "Needs rework", "hb-badge-warn"], [reject, "Rejected", "hb-badge-warn"]].forEach(([n, label, cls]) => {
+      const r = list.createEl("div", { cls: "hb-check" });
+      r.createEl("span", { text: label });
+      r.createEl("span", { cls: `hb-badge ${cls}`, text: String(n) });
+    });
+    body.createEl("div", { cls: "hb-faint hb-push", text: `[Open full report →](04-Archives/Audit-Reports/Skill-Quality-Report.md)` });
+  })();
+});
+
+// ============================================================
 //  ROW: RECENT SESSIONS
 // ============================================================
 widget(12, "📜 Recent sessions", { action: "Full timeline →", actionPath: "04-Archives/Daily/Timeline.md" }, body => {
