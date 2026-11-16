@@ -282,7 +282,7 @@ function widget(span, title, opts, fill) {
 
   const firstKpi = strip.children[0];
   const sparkWrap = el("div", { style: { marginTop: T.spacing.md, height: "20px" } });
-  sparkline(sparkWrap, last14, "#22c55e");
+  sparkline(sparkWrap, last14, T.accent);
   firstKpi.appendChild(sparkWrap);
 
   root.appendChild(section);
