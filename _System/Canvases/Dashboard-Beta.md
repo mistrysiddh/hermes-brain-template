@@ -152,12 +152,12 @@ function kpi(label, value, sub, { accent = false, trend, color } = {}) {
   return k;
 }
 
-function sparkline(parent, vals) {
+function sparkline(parent, vals, color = T.accent) {
   const max = Math.max(1, ...vals);
   const w = 100, h = 24, bw = w / vals.length;
   const bars = vals.map((v, i) => {
     const bh = v ? Math.max(1.5, (v / max) * h) : 1;
-    return `<rect x="${(i * bw + bw * 0.2).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.6).toFixed(2)}" height="${bh.toFixed(2)}" rx="1"/>`;
+    return `<rect x="${(i * bw + bw * 0.2).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.6).toFixed(2)}" height="${bh.toFixed(2)}" rx="1" fill="${color}"/>`;
   }).join("");
   ce(parent, "div", { style: { width: "100%" } }).innerHTML =
     `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true" style="width:100%;height:${h}px;display:block">${bars}</svg>`;
@@ -282,7 +282,7 @@ function widget(span, title, opts, fill) {
 
   const firstKpi = strip.children[0];
   const sparkWrap = el("div", { style: { marginTop: T.spacing.md, height: "20px" } });
-  sparkline(sparkWrap, last14);
+  sparkline(sparkWrap, last14, "#22c55e");
   firstKpi.appendChild(sparkWrap);
 
   root.appendChild(section);
