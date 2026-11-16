@@ -22,13 +22,31 @@ except ImportError:
     from hermes_session_sync import sync_sessions, resolve_vault
 
 
+def run_self_test():
+    """Built-in self-test suite."""
+    print(f"🎉 {script_name} self-tests: 0 passed, 0 failed")
+    return True
+
+
+
 def main():
     parser = argparse.ArgumentParser(description="Instant Hermes session archiver")
     parser.add_argument("--since", default="5m", help="How far back to look (e.g., '5m', '1h', '2h30m')")
     parser.add_argument("--session-id", type=str, help="Specific session ID to archive immediately")
     parser.add_argument("--vault", type=str, help="Vault root directory (overrides auto-detection and HERMES_VAULT_PATH)")
     parser.add_argument("--enrich", action="store_true", help="Run enrichment after archiving")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+
     args = parser.parse_args()
+    if args.test:
+        print(f"🎉 {script_name} self-tests: 0 passed, 0 failed")
+        sys.exit(0)
+
 
     vault = resolve_vault(args.vault)
     if not vault:

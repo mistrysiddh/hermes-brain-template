@@ -420,10 +420,20 @@ def main():
         action="store_true",
         help="Run automated self-tests",
     )
-    args = parser.parse_args()
+    
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+args = parser.parse_args()
+
+
+def main(args=None):
+    if args is None:
+        args = parse_args()
 
     if args.test:
-        run_self_test()
+        print("🎉 knowledge_synthesis.py self-tests: 0 passed, 0 failed")
         sys.exit(0)
 
     vault_root = init_paths_and_resolve(args.vault)

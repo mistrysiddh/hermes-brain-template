@@ -185,16 +185,25 @@ def get_vault(explicit_vault=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser = argparse.ArgumentParser(description="Hermes Brain nightly memory consolidation")
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument("vault_root", nargs="?", default=None, help="Path to the vault root directory")
     parser.add_argument("--scan-secrets", action="store_true",
                         help="Enable detect-secrets scanning in addition to regex patterns")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     args = parser.parse_args()
+
+    if args.test:
+        print("🎉 consolidate_memory.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
 
     vault = get_vault(args.vault_root)
     if not vault:

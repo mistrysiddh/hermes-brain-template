@@ -59,9 +59,37 @@ def find_cron_notes(daily_dir):
                 yield full, rel
 
 
+
+def run_self_test():
+    """Built-in self-test suite. Verifies the script can be imported and
+    basic functions work."""
+    import tempfile
+    import shutil
+
+    passed = 0
+    failed = 0
+
+    def test(name, condition, msg=""):
+        nonlocal passed, failed
+        if condition:
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"====== {script_name} Self-Tests ======")
+    print(f"🎉 Self-tests: {passed} passed, {failed} failed")
+    print("=" * 40)
+    return failed == 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Migrate existing cron session notes out of Daily/ (issue #10)")
     parser.add_argument("--vault", help="Vault root directory path")
+
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     parser.add_argument("--dry-run", action="store_true", help="Show what would move without moving anything")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()

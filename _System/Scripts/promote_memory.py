@@ -366,6 +366,11 @@ source: "test-session"
 def main():
     parser = argparse.ArgumentParser(description="Hermes Brain Memory Promotion Engine")
     parser.add_argument("--vault", type=str, default="", help="Path to vault root")
+
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
     parser.add_argument("--hermes-memory", type=str, default="", help="Path to ~/.hermes/MEMORY.md")
     parser.add_argument("--list", action="store_true", help="List pending memory candidates")
     parser.add_argument("--file", type=str, default="", help="Relative or absolute path to candidate markdown file")

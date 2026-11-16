@@ -4,5 +4,6 @@
   "enabledCssSnippets": [
     "dashboard-beta",
     "hermes-komorebi"
-  ]
+  ],
+  "showRibbon": true
 }

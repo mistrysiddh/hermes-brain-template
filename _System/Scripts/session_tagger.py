@@ -12,56 +12,62 @@ YYYY/MM/DD/ directories. Uses lightweight rule-based keyword extraction
 (no external API, no heavy ML deps).
 """
 
+import argparse
 import json
 import os
 import re
+import sys
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
-def resolve_vault():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
-        return cand_para
-    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
-        return cand_flat
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return os.path.abspath(env_vault)
-    return None
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+DAILY = None
+MANIFEST = None
+TAG_CLOUD_LOG = None
+TAG_TRENDS_LOG = None
 
 
-VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.")
-    exit(1)
+def init_paths(vault_path):
+    global VAULT, DAILY, MANIFEST, TAG_CLOUD_LOG, TAG_TRENDS_LOG
+    VAULT = os.path.normpath(os.path.abspath(vault_path))
+    # Normalize VAULT path (handle forward/backward slashes from shell,
+    # and convert /c/... style paths from git-bash to C:\\...\)
+    # git-bash /c/Users/... -> C:\\Users\\...
+    if VAULT.startswith("/") and len(VAULT) > 2 and VAULT[2] == "/":
+        drive = VAULT[1].upper()
+        VAULT = drive + ":" + VAULT[2:].replace("/", "\\")
+    else:
+        VAULT = VAULT.replace("/", "\\")
+    VAULT = os.path.normpath(VAULT)
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    MANIFEST = os.path.join(DAILY, "manifest.jsonl")
+    tag_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports") if os.path.exists(os.path.join(VAULT, "04-Archives", "Audit-Reports")) else os.path.join(VAULT, "Skills-Notes")
+    TAG_CLOUD_LOG = os.path.join(tag_dir, "Tag-Cloud.log")
+    TAG_TRENDS_LOG = os.path.join(tag_dir, "Tag-Trends.log")
 
 
-# Normalize VAULT path (handle forward/backward slashes from shell,
-# and convert /c/... style paths from git-bash to C:\...)
-# git-bash /c/Users/... -> C:\Users\...
-if VAULT.startswith("/") and len(VAULT) > 2 and VAULT[2] == "/":
-    drive = VAULT[1].upper()
-    VAULT = drive + ":" + VAULT[2:].replace("/", "\\")
-else:
-    VAULT = VAULT.replace("/", "\\")
-VAULT = os.path.normpath(VAULT)
-
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
-MANIFEST = os.path.join(DAILY, "manifest.jsonl")
-
-tag_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports") if os.path.exists(os.path.join(VAULT, "04-Archives", "Audit-Reports")) else os.path.join(VAULT, "Skills-Notes")
-TAG_CLOUD_LOG = os.path.join(tag_dir, "Tag-Cloud.log")
-TAG_TRENDS_LOG = os.path.join(tag_dir, "Tag-Trends.log")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Hermes Brain — automated session tagging & topic tracking (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
 
 # Ensure output directories exist
-os.makedirs(os.path.dirname(TAG_CLOUD_LOG), exist_ok=True)
-os.makedirs(os.path.dirname(TAG_TRENDS_LOG), exist_ok=True)
+
 
 # ─── Topic extraction patterns ──────────────────────────────────────────────
 
@@ -300,7 +306,18 @@ def update_manifest_with_tags():
         print(f"Tagged {sum(1 for r in records if 'tags' in r and r['tags'])} session(s) in manifest.")
 
 
-def main():
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
+
     print("🏷️  Session tagging & topic tracking")
     update_manifest_with_tags()
 
@@ -315,4 +332,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())

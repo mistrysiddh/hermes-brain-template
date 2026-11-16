@@ -546,7 +546,7 @@ def run_self_test():
     tmp = tempfile.mkdtemp()
     try:
         with open(os.path.join(tmp, "config.env"), "w") as f:
-            f.write('API_KEY=sk-1234567890abcdef\n')
+            f.write('API_KEY=sk-test-example-data-12345\n')
         init_paths(tmp)
         result = critique_security()
         secrets = [x for x in result if x["category"] == "secret_exposure"]

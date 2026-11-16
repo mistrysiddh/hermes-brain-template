@@ -350,6 +350,49 @@ if (!auditReport) {
 
 _Updated by `Scripts/vault_audit.py` on schedule (weekly/monthly via cron). Click the link above to see full details._
 
+## Broken links
+
+```dataviewjs
+const scReport = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Self-Critique-Report.md") || app.vault.getAbstractFileByPath("Skills-Notes/Self-Critique-Report.md");
+if (!scReport) {
+  dv.paragraph("ℹ️ Self-critique report not found — run `_System/Scripts/self_critique.py` to generate.");
+} else {
+  const content = await vault.read(scReport);
+  const broken = content.match(/Broken wikilink \[\[([^\]]+)\]\]/g) || [];
+  const uniqueTargets = new Set();
+  for (const b of broken) {
+    const m = b.match(/\[\[([^\]]+)\]\]/);
+    if (m) uniqueTargets.add(m[1]);
+  }
+  const count = broken.length;
+  const icon = count > 0 ? "⚠️" : "✅";
+  dv.paragraph(`${icon} **${count.toLocaleString()}** broken wikilink reference${count !== 1 ? "s" : ""} across **${uniqueTargets.size}** unique missing targets.`);
+  dv.paragraph(`[Open full report →](04-Archives/Audit-Reports/Self-Critique-Report.md)`);
+}
+```
+
+## Skill quality
+
+```dataviewjs
+const sqReport = app.vault.getAbstractFileByPath("04-Archives/Audit-Reports/Skill-Quality-Report.md") || app.vault.getAbstractFileByPath("Skills-Notes/Skill-Quality-Report.md");
+if (!sqReport) {
+  dv.paragraph("ℹ️ Skill quality report not found — run `_System/Scripts/vault/skill_quality_checker.py` to generate.");
+} else {
+  const content = await vault.read(sqReport);
+  const ready = (content.match(/— READY/g) || []).length;
+  const rework = (content.match(/— NEEDS REWORK/g) || []).length;
+  const reject = (content.match(/— REJECT/g) || []).length;
+  const conditional = (content.match(/— CONDITIONAL/g) || []).length;
+  const total = ready + rework + reject + conditional;
+
+  const pct = total ? Math.round((ready / total) * 100) : 0;
+  dv.paragraph(`📋 **Skill quality: ${pct}% READY** (${ready}/${total} skills)`);
+  if (rework > 0) dv.paragraph(`⚠️ **${rework}** need rework`);
+  if (reject > 0) dv.paragraph(`🚫 **${reject}** rejected`);
+  dv.paragraph(`[Open full report →](04-Archives/Audit-Reports/Skill-Quality-Report.md)`);
+}
+```
+
 ## Agent performance
 
 ```dataviewjs

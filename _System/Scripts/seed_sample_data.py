@@ -19,6 +19,7 @@ Every generated file's frontmatter is tagged `sample: true` so it's easy to
 find and remove later:
     grep -rl "sample: true" Daily/ Memory-Review/ Projects/ | xargs rm
 """
+import argparse
 import json
 import os
 import sys
@@ -151,12 +152,26 @@ still need tuning for the Postgres wait condition.
 """
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Hermes Brain — sample/demo data seeder (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+
 def _write(path, content):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 
-
+def seed(vault_root):
     daily_cand = os.path.join(vault_root, "04-Archives", "Daily")
     daily = daily_cand if os.path.exists(daily_cand) else os.path.join(vault_root, "Daily")
 
@@ -279,8 +294,10 @@ sample: true
 
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("HERMES_VAULT_PATH")
-    if not target:
-        print("Usage: seed_sample_data.py <vault_root>  (or set HERMES_VAULT_PATH)")
+    args = parse_args()
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Usage: seed_sample_data.py --vault <vault_root>  (or set HERMES_VAULT_PATH)", file=sys.stderr)
         sys.exit(1)
-    seed(target)
+    seed(args.vault)

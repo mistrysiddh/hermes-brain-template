@@ -18,6 +18,34 @@ import re
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+import argparse
+
+
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+
+
+def init_paths(vault_path):
+    global VAULT
+    VAULT = os.path.abspath(vault_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="session_tagger.py — multi-harness compatible.",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
+
+
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -300,7 +328,17 @@ def update_manifest_with_tags():
         print(f"Tagged {sum(1 for r in records if 'tags' in r and r['tags'])} session(s) in manifest.")
 
 
-def main():
+def main(args=None):
+    if args is None:
+        args = parse_args()
+
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
+        sys.exit(1)
+
+    init_paths(args.vault)
     print("🏷️  Session tagging & topic tracking")
     update_manifest_with_tags()
 
@@ -315,4 +353,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())

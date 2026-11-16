@@ -27,11 +27,36 @@ Usage:
 
 Exit code 0 always (reporting/staging tool, not a gate).
 """
+import argparse
 import sys
 import os
 import re
 import json
 from datetime import datetime, timezone
+
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+
+
+def init_paths(vault_path):
+    global VAULT
+    VAULT = os.path.abspath(vault_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="generate_skill_links.py — regenerates Skills-Notes/Skill-to-Chat-Links.md (multi-harness compatible).",
+    )
+    parser.add_argument("--vault", help="Path to the Hermes Brain vault root")
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
+    return parser.parse_args()
 
 DAILY_EXCLUDE = {"readme", "manifest", "timeline", "chat-correlation"}
 SKILLS_NOTES_EXCLUDE = {
@@ -262,32 +287,22 @@ def render_prose_mode(vault, skills, sessions, matches):
     return lines
 
 
-def get_vault():
-    if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
-        return os.path.abspath(sys.argv[1])
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
-        return cand_para
-    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
-        return cand_flat
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return os.path.abspath(env_vault)
-    return None
+def main(args=None):
+    if args is None:
+        args = parse_args()
 
-
-def main():
-    vault = get_vault()
-    if not vault:
-        print("usage: generate_skill_links.py [vault_root]")
+    if not args.vault:
+        args.vault = os.environ.get("HERMES_VAULT_PATH")
+    if not args.vault:
+        print("Error: --vault <path> or HERMES_VAULT_PATH is required.", file=sys.stderr)
         sys.exit(1)
 
-    skills_cand = os.path.join(vault, "02-Areas", "Skills")
-    skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(vault, "Skills-Notes")
+    init_paths(args.vault)
+
+    skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
+    skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
     daily_cand = os.path.join(vault, "04-Archives", "Daily")
-    daily_dir = daily_cand if os.path.exists(daily_cand) else os.path.join(vault, "Daily")
+    daily_dir = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
     out_path = os.path.join(skills_dir, "Skill-to-Chat-Links.md")
 
     sessions = find_session_files(daily_dir)
@@ -299,7 +314,7 @@ def main():
             text = read(session_path)
             for skill in extract_invoked_skills(text):
                 hits.setdefault(skill, set()).add(session_path)
-        lines = render_tool_call_mode(vault, sessions, catalog, hits)
+        lines = render_tool_call_mode(VAULT, sessions, catalog, hits)
         total_skills = len(hits)
         total_links = sum(len(p) for p in hits.values())
         mode = "tool-call"
@@ -311,7 +326,7 @@ def main():
             for stem in skills:
                 if skill_pattern(stem).search(text):
                     matches[stem].append(session_path)
-        lines = render_prose_mode(vault, skills, sessions, matches)
+        lines = render_prose_mode(VAULT, skills, sessions, matches)
         total_skills = sum(1 for v in matches.values() if v)
         total_links = sum(len(v) for v in matches.values())
         mode = "prose"
@@ -328,4 +343,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())

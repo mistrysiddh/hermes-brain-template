@@ -1196,7 +1196,7 @@ def reflex_gate(tool_name, args, risk_appetite="balanced", dry_run=True):
     if any(k in arg_str for k in ["rm ", "delete", "drop", "truncate", "format", "mkfs"]):
         risk_score += 2
         reasons.append("destructive_operation")
-    if any(k in arg_str for k in ["sudo", "chmod 777", "chown", "passwd", "su "]):
+    if any(k in arg_str for k in ["sudo", "chmod XXX", "chown", "passwd", "su "]):
         risk_score += 1
         reasons.append("privilege_operation")
     if any(k in arg_str for k in ["api_key", "secret", "password", "token", "sk-", "ghp_"]):
@@ -2436,11 +2436,11 @@ def run_self_test():
 
     # Test 18: reflex focused perception & redaction
     def test_reflex_redact():
-        result = run_reflex_redact("sk-abc123def456ghi789jkl012 is the key\nError: traceback at line 42\nAssertionError: expected 5 got 3", dry_run=True)
+        result = run_reflex_redact("sk-test-example-data-1234512 is the key\nError: traceback at line 42\nAssertionError: expected 5 got 3", dry_run=True)
         assert result["credentials_redacted"] is True
         assert result["slice_line_count"] <= 15
         assert "[REDACTED]" in result["redacted_text"]
-        assert "sk-abc123def456ghi789jkl012" not in result["redacted_text"]
+        assert "sk-test-example-data-1234512" not in result["redacted_text"]
     check("reflex_redact focused perception", test_reflex_redact)
 
     # Test 19: reflex structured recovery

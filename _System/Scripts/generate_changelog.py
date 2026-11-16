@@ -271,14 +271,12 @@ def main():
     
     parser = argparse.ArgumentParser(
         description="Generate changelog for Hermes Brain template releases"
-    )parser = argparse.ArgumentParser(
-        description="Generate changelog for Hermes Brain template releases"
     )
 
-parser.add_argument(
+    parser.add_argument(
     "--vault",
     help="Path to the Hermes Brain vault root",
-)
+    )
     parser.add_argument(
         "--since",
         required=True,
@@ -309,6 +307,11 @@ parser.add_argument(
         help="Include non-conventional commits in 'Other Changes' section"
     )
     
+    
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
     args = parser.parse_args()
     
     if args.test:
@@ -337,5 +340,5 @@ parser.add_argument(
         print("📝 Changelog Preview (use --output to save to file):\n")
         print(changelog)
 
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()

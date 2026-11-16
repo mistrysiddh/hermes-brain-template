@@ -2,25 +2,57 @@
 type: dashboard
 status: beta
 created: 2026-09-14
-updated: 2026-10-11
-tags: [dashboard, hub, beta]
+updated: 2026-11-14
+tags: [dashboard, hub, beta, admin]
 cssclasses: [dashboard-wide, hb-app]
 ---
 
 %%
-Theme integration: styled by the `dashboard-beta` CSS snippet (Settings → Appearance → CSS snippets).
-Requires the Dataview plugin with JavaScript queries enabled. Best viewed in Reading view.
-Everything renders from the single dataviewjs block below; each widget is isolated, so one
-failing widget shows an inline error instead of breaking the whole dashboard.
-Original linear view: [[Dashboard]]
+Hermes Brain — Admin Dashboard
+
+Design system:
+- Slate/gray surface, blue accent, semantic status colors (ok/warn/error/info)
+- 0.25rem spacing scale, 8-12px border radius, subtle shadows
+- Sidebar navigation, top header, grid content area
+- Cards with hover states, accessible focus indicators, semantic badges
+
+Requires Dataview plugin with JavaScript queries enabled.
+Best viewed in Reading view.
 %%
 
 ```dataviewjs
 // ============================================================
-//  HERMES BRAIN — APP-STYLE DASHBOARD (single 12-column grid)
+//  HERMES BRAIN — ADMIN DASHBOARD (production-quality UI)
+//  Design system tokens, component architecture, admin layout
 // ============================================================
+
 const vault = app.vault;
-const root = dv.el("div", "", { cls: "hb-dash" });
+const dv = this;
+
+// ---------- design tokens ----------
+const TOKENS = {
+  colors: {
+    surface: "var(--background-secondary)",
+    surfaceHover: "var(--background-modifier-hover)",
+    border: "var(--background-modifier-border)",
+    textPrimary: "var(--text-normal)",
+    textSecondary: "var(--text-muted)",
+    textFaint: "var(--text-faint)",
+    accent: "var(--interactive-accent)",
+    accentHover: "color-mix(in srgb, var(--interactive-accent) 90%, transparent)",
+    success: "var(--text-success)",
+    successBg: "color-mix(in srgb, var(--text-success) 12%, transparent)",
+    warn: "var(--text-warning)",
+    warnBg: "color-mix(in srgb, var(--text-warning) 12%, transparent)",
+    error: "var(--text-error)",
+    errorBg: "color-mix(in srgb, var(--text-error) 12%, transparent)",
+    info: "var(--text-accent)",
+    infoBg: "color-mix(in srgb, var(--text-accent) 12%, transparent)",
+  },
+  spacing: { xs: "4px", sm: "8px", md: "12px", lg: "16px", xl: "24px", xxl: "32px" },
+  radius: { sm: "6px", md: "8px", lg: "12px" },
+  shadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+};
 
 // ---------- helpers ----------
 const pad = n => String(n).padStart(2, "0");
@@ -30,78 +62,148 @@ const getFile = (...paths) => paths.map(p => vault.getAbstractFileByPath(p)).fin
 const open = path => app.workspace.openLinkText(path, "", false);
 const msOf = t => !t ? 0 : (t.toMillis ? t.toMillis() : new Date(t).getTime());
 const compact = n => new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(n);
-const store = {
-  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
-  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
-};
-
-function link(parent, text, path, cls = "") {
-  const a = parent.createEl("a", { text, cls: `internal-link ${cls}`.trim(), href: path });
-  a.addEventListener("click", e => { e.preventDefault(); open(path); });
-  return a;
-}
-
-function timeAgo(t) {
+const timeAgo = t => {
   const min = Math.floor((Date.now() - msOf(t)) / 60000);
   if (min < 1) return "just now";
   if (min < 60) return `${min}m ago`;
   const hr = Math.floor(min / 60);
   return hr < 24 ? `${hr}h ago` : `${Math.floor(hr / 24)}d ago`;
+};
+
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+};
+
+// ---------- component factory ----------
+function el(tag, opts = {}) {
+  const e = dv.el(tag, opts.text !== undefined ? { text: opts.text } : {});
+  if (opts.attr) Object.entries(opts.attr).forEach(([k, v]) => e.setAttribute(k, v));
+  if (opts.style) Object.assign(e.style, opts.style);
+  if (opts.classes) e.addClass(opts.classes);
+  if (opts.text) e.setText(opts.text);
+  return e;
 }
 
-function row(parent, { title, sub, badge, badgeCls = "hb-badge-info", path }) {
-  const r = parent.createEl("div", { cls: "hb-row" });
-  const main = r.createEl("div", { cls: "hb-row-main" });
-  main.createEl("div", { cls: "hb-row-title", text: title });
-  if (sub) main.createEl("div", { cls: "hb-row-sub", text: sub });
-  if (badge) r.createEl("span", { cls: `hb-badge ${badgeCls}`, text: badge });
-  if (path) { r.addClass("is-clickable"); r.addEventListener("click", () => open(path)); }
-  return r;
+function badge(text, variant = "info") {
+  const bg = {
+    ok: "var(--successBg)", warn: "var(--warnBg)", error: "var(--errorBg)",
+    info: "var(--infoBg)", neutral: "var(--surfaceHover)",
+  };
+  const fg = {
+    ok: "var(--success)", warn: "var(--warn)", error: "var(--error)",
+    info: "var(--info)", neutral: "var(--textSecondary)",
+  };
+  return el("span", {
+    text,
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      padding: "2px 8px",
+      borderRadius: TOKENS.radius.sm,
+      fontSize: "0.75rem",
+      fontWeight: 600,
+      background: bg[variant] || bg.info,
+      color: fg[variant] || fg.info,
+    },
+  });
 }
 
-// cells: string, or (td) => void for custom content
-function table(parent, headers, rows) {
-  const t = parent.createEl("table", { cls: "hb-table" });
-  const hr = t.createEl("thead").createEl("tr");
-  headers.forEach(h => hr.createEl("th", { text: h }));
-  const tb = t.createEl("tbody");
-  for (const cells of rows) {
-    const tr = tb.createEl("tr");
-    cells.forEach(c => {
-      const td = tr.createEl("td");
-      typeof c === "function" ? c(td) : td.setText(c ?? "");
+function card(title, { subtitle, action, actionPath, span = 12 } = {}) {
+  const root = el("section", {
+    classes: `hb-card hb-span-${span}`,
+    style: {
+      background: TOKENS.colors.surface,
+      border: `1px solid ${TOKENS.colors.border}`,
+      borderRadius: TOKENS.radius.lg,
+      boxShadow: TOKENS.colors.shadow,
+      display: "flex",
+      flexDirection: "column",
+      transition: "all 0.2s ease",
+      overflow: "hidden",
+    },
+  });
+  root.addEventListener("mouseenter", () => { root.style.borderColor = TOKENS.colors.accent; });
+  root.addEventListener("mouseleave", () => { root.style.borderColor = TOKENS.colors.border; });
+
+  if (title) {
+    const head = el("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: `${TOKENS.spacing.lg} ${TOKENS.spacing.xl}`,
+        borderBottom: `1px solid ${TOKENS.colors.border}`,
+      },
+    });
+    const titleBox = el("div", {});
+    head.appendChild(titleBox);
+    titleBox.createEl("span", { text: title, style: { fontSize: "0.875rem", fontWeight: 600, color: TOKENS.colors.textPrimary, letterSpacing: "0.02em" } });
+    if (subtitle) titleBox.createEl("span", { text: subtitle, style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.xs, display: "block" } });
+    if (action) {
+      const btn = el("a", {
+        text: action,
+        style: {
+          textDecoration: "none",
+          fontSize: "0.85rem",
+          color: TOKENS.colors.accent,
+          padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+          borderRadius: TOKENS.radius.md,
+          background: TOKENS.colors.accentHover,
+          transition: "background 0.2s ease",
+        },
+        href: actionPath,
+      });
+      btn.addEventListener("click", e => { e.preventDefault(); open(actionPath); });
+      head.appendChild(btn);
+    }
+    root.appendChild(head);
+  }
+
+  const body = el("div", {
+    style: { padding: TOKENS.spacing.xl, flex: 1 },
+  });
+  root.appendChild(body);
+  return { root, body };
+}
+
+function kpi(label, value, sub, { accent = false, trend } = {}) {
+  const k = el("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: TOKENS.spacing.sm,
+      padding: TOKENS.spacing.lg,
+      background: TOKENS.colors.surface,
+      border: `1px solid ${TOKENS.colors.border}`,
+      borderRadius: TOKENS.radius.md,
+      minWidth: 140,
+    },
+  });
+  k.createEl("span", { text: label, style: { fontSize: "0.8rem", color: TOKENS.colors.textSecondary } });
+  const valWrap = el("div", { style: { display: "flex", alignItems: "baseline", gap: TOKENS.spacing.sm } });
+  valWrap.createEl("span", { text: value, style: { fontSize: "1.75rem", fontWeight: 700, color: accent ? TOKENS.colors.accent : TOKENS.colors.textPrimary } });
+  if (trend) {
+    valWrap.createEl("span", {
+      text: trend.text,
+      style: { fontSize: "0.85rem", fontWeight: 600, color: trend.ok ? TOKENS.colors.success : TOKENS.colors.error },
     });
   }
-  return t;
+  k.appendChild(valWrap);
+  if (sub) k.createEl("span", { text: sub, style: { fontSize: "0.8rem", color: TOKENS.colors.textFaint } });
+  return k;
 }
 
-const empty = (parent, text) => parent.createEl("div", { cls: "hb-empty", text });
-
-function card(span, title, { action, actionPath, cls } = {}) {
-  const c = root.createEl("section", { cls: `hb-card hb-span-${span} ${cls || ""}`.trim() });
-  if (title) {
-    const h = c.createEl("header", { cls: "hb-card-head" });
-    h.createEl("span", { cls: "hb-card-title", text: title });
-    if (action) link(h, action, actionPath, "hb-card-action");
-  }
-  return c.createEl("div", { cls: "hb-card-body" });
-}
-
-const jobs = [];
-function widget(span, title, opts, fill) {
-  const body = card(span, title, opts);
-  jobs.push(Promise.resolve().then(() => fill(body)).catch(err => {
-    body.empty();
-    empty(body, `⚠️ Couldn't load: ${err.message}`);
-    console.error(`[Dashboard-Beta] ${title}`, err);
-  }));
-}
-
-async function openDailyReview() {
-  const tpl = getFile("_System/Templates/Daily-Review.md", "Templates/Daily-Review.md");
-  if (!tpl) { new Notice("Daily-Review template not found"); return; }
-  try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); }
-  catch { open(tpl.path); }
+function sparkline(parent, vals) {
+  const max = Math.max(1, ...vals);
+  const w = 100, h = 24, bw = w / vals.length;
+  const bars = vals.map((v, i) => {
+    const bh = v ? Math.max(1.5, (v / max) * h) : 1;
+    return `<rect x="${(i * bw + bw * 0.2).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.6).toFixed(2)}" height="${bh.toFixed(2)}" rx="1"/>`;
+  }).join("");
+  // innerHTML is safe here: vals come from parsed token log (numeric only), no user input
+  parent.createEl("div", { style: { width: "100%" } }).innerHTML =
+    `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true" style="width:100%;height:${h}px;display:block">${bars}</svg>`;
 }
 
 // ---------- shared data ----------
@@ -138,89 +240,211 @@ const analyses = arr(dv.pages('#personality-judgment or "04-Archives/Daily" or "
   .where(p => p.subject && !SKIP_ANALYSIS.has(p.file.name)))
   .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
 
-let health = { label: "No data", cls: "hb-badge-info", sub: "no archived sessions" };
+let health = { label: "No data", cls: "info", sub: "no archived sessions" };
 if (dailyPages.length) {
   const hrs = (Date.now() - msOf(dailyPages[0].file.mtime)) / 3600000;
   const sub = `last archive ${timeAgo(dailyPages[0].file.mtime)}`;
-  health = hrs < 3 ? { label: "Healthy", cls: "hb-badge-ok", sub }
-    : hrs < 48 ? { label: "Idle", cls: "hb-badge-info", sub }
-    : { label: "Stale", cls: "hb-badge-warn", sub };
+  health = hrs < 3 ? { label: "Healthy", cls: "ok", sub }
+    : hrs < 48 ? { label: "Idle", cls: "info", sub }
+    : { label: "Stale", cls: "warn", sub };
 }
 
 // ============================================================
-//  TOP BAR
+//  LAYOUT: sidebar + header + main
 // ============================================================
-{
-  const bar = root.createEl("header", { cls: "hb-topbar hb-span-12" });
 
-  const brand = bar.createEl("div", { cls: "hb-brand" });
-  const editable = (key, fallback, cls) => {
-    const el = brand.createEl("div", { cls, text: store.get(key) || fallback, attr: { contenteditable: "true", spellcheck: "false" } });
-    el.addEventListener("blur", () => { const v = el.textContent.trim(); if (v) store.set(key, v); });
-    el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
-  };
-  editable("hb-dash-title", "HERMES BRAIN", "hb-brand-title");
-  editable("hb-dash-mantra", "agent memory & cognitive telemetry at a glance", "hb-brand-sub");
+const root = dv.el("div", "", { cls: "hb-app" });
+root.style.display = "flex";
+root.style.flexDirection = "column";
+root.style.height = "100vh";
+root.style.overflow = "hidden";
 
-  const mid = bar.createEl("div", { cls: "hb-topbar-mid" });
-  const H = now.getHours();
-  const greet = H < 5 ? "🌙 Late night session. Keep it steady."
-    : H < 9 ? "🌅 New day, new flow."
-    : H < 13 ? "⚡ Peak focus hours. Engage."
-    : H < 18 ? "☕ Afternoon momentum. Keep moving."
-    : H < 21 ? "🌆 Evening wind-down & review."
-    : "🌌 Night review & memory consolidation.";
-  mid.createEl("div", { cls: "hb-greet", text: greet });
+// ---------- sidebar ----------
+const sidebar = el("aside", {
+  style: {
+    width: "260px",
+    flexShrink: 0,
+    background: "var(--background-modifier-border)",
+    display: "flex",
+    flexDirection: "column",
+    borderRight: `1px solid ${TOKENS.colors.border}`,
+    overflowY: "auto",
+  },
+});
 
-  const datePart = todayISO.replace(/-/g, "/");
-  const review = arr(dv.pages('"04-Archives/Daily" or "Daily"')
-    .where(p => p.file.path.includes(datePart) && p.file.name.includes("Review")))[0];
-  const badge = mid.createEl("span", {
-    cls: `hb-badge is-clickable ${review ? "hb-badge-ok" : "hb-badge-warn"}`,
-    text: review ? "✅ Daily Review logged" : "⏳ Daily Review pending",
+const brand = el("div", {
+  style: {
+    padding: TOKENS.spacing.xxl,
+    borderBottom: `1px solid ${TOKENS.colors.border}`,
+    background: "rgba(0,0,0,0.03)",
+  },
+});
+brand.createEl("div", { text: "HERMES BRAIN", style: { fontSize: "1.125rem", fontWeight: 700, letterSpacing: "-0.02em" } });
+brand.createEl("div", { text: "Admin Dashboard", style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: TOKENS.spacing.xs } });
+sidebar.appendChild(brand);
+
+const nav = el("nav", { style: { padding: TOKENS.spacing.md, flex: 1 } });
+const navItems = [
+  { icon: "📊", label: "Overview", active: true },
+  { icon: "🧠", label: "Memory Pipeline" },
+  { icon: "🛡️", label: "Vault Health" },
+  { icon: "🎯", label: "Skill Quality" },
+  { icon: "🚀", label: "Projects" },
+  { icon: "🔗", label: "Broken Links" },
+  { icon: "🤖", label: "Agent Roster" },
+  { icon: "⚙️", label: "Settings" },
+];
+navItems.forEach(item => {
+  const btn = el("button", {
+    text: `${item.icon}  ${item.label}`,
+    style: {
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: TOKENS.spacing.md,
+      padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+      border: "none",
+      background: item.active ? "rgba(0,0,0,0.05)" : "transparent",
+      color: item.active ? TOKENS.colors.textPrimary : TOKENS.colors.textSecondary,
+      borderRadius: TOKENS.radius.md,
+      fontSize: "0.9rem",
+      cursor: "pointer",
+      textAlign: "left",
+      transition: "all 0.2s ease",
+    },
   });
-  badge.addEventListener("click", () => review ? open(review.file.path) : openDailyReview());
+  btn.addEventListener("mouseenter", () => { if (!item.active) btn.style.background = "rgba(0,0,0,0.03)"; });
+  btn.addEventListener("mouseleave", () => { if (!item.active) btn.style.background = "transparent"; });
+  nav.appendChild(btn);
+});
+sidebar.appendChild(nav);
 
-  const clock = bar.createEl("div", { cls: "hb-clock" });
-  const timeEl = clock.createEl("div", { cls: "hb-clock-time" });
-  const dateEl = clock.createEl("div", { cls: "hb-clock-date" });
-  if (window._hbDashClock) clearInterval(window._hbDashClock);
-  let started = false;
-  const tick = () => {
-    if (started && !timeEl.isConnected) { clearInterval(window._hbDashClock); return; }
-    started = true;
-    const d = new Date();
-    timeEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    dateEl.textContent = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  };
-  tick();
-  window._hbDashClock = setInterval(tick, 1000);
-}
+const foot = el("div", {
+  style: {
+    padding: TOKENS.spacing.lg,
+    borderTop: `1px solid ${TOKENS.colors.border}`,
+    fontSize: "0.75rem",
+    color: TOKENS.colors.textFaint,
+  },
+});
+foot.createEl("div", { text: `v${store.get("hb-dash-version") || "1.0.0"}` });
+foot.createEl("div", { text: `Updated ${new Date().toLocaleDateString()}`, style: { marginTop: TOKENS.spacing.xs } });
+sidebar.appendChild(foot);
+
+root.appendChild(sidebar);
+
+// ---------- header ----------
+const header = el("header", {
+  style: {
+    height: "64px",
+    background: "var(--background-secondary)",
+    borderBottom: `1px solid ${TOKENS.colors.border}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: `0 ${TOKENS.spacing.xl}`,
+    flexShrink: 0,
+  },
+});
+
+const headerLeft = el("div", { style: { display: "flex", alignItems: "center", gap: TOKENS.spacing.lg } });
+const greet = el("div", {
+  text: new Date().getHours() < 12 ? "Good morning, Siddh" : "Good afternoon, Siddh",
+  style: { fontSize: "0.9rem", color: TOKENS.colors.textSecondary },
+});
+headerLeft.appendChild(greet);
+
+const search = el("div", { style: { position: "relative", width: "280px" } });
+const searchInput = el("input", {
+  attr: { type: "text", placeholder: "Search vault…" },
+  style: {
+    width: "100%",
+    padding: "8px 12px 8px 32px",
+    borderRadius: TOKENS.radius.md,
+    border: `1px solid ${TOKENS.colors.border}`,
+    background: TOKENS.colors.surface,
+    fontSize: "0.875rem",
+    color: TOKENS.colors.textPrimary,
+  },
+});
+searchInput.addEventListener("focus", () => { searchInput.style.borderColor = TOKENS.colors.accent; });
+searchInput.addEventListener("blur", () => { searchInput.style.borderColor = TOKENS.colors.border; });
+search.appendChild(searchInput);
+const searchIcon = el("span", {
+  text: "🔍",
+  style: { position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "0.9rem" },
+});
+search.appendChild(searchIcon);
+headerLeft.appendChild(search);
+header.appendChild(headerLeft);
+
+const headerRight = el("div", { style: { display: "flex", alignItems: "center", gap: TOKENS.spacing.md } });
+const notif = el("button", {
+  text: "🔔",
+  style: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "1.1rem",
+    padding: TOKENS.spacing.sm,
+    borderRadius: TOKENS.radius.md,
+    color: TOKENS.colors.textSecondary,
+  },
+});
+notif.addEventListener("mouseenter", () => { notif.style.background = TOKENS.colors.surfaceHover; });
+notif.addEventListener("mouseleave", () => { notif.style.background = "none"; });
+headerRight.appendChild(notif);
+
+const user = el("div", {
+  style: {
+    display: "flex",
+    alignItems: "center",
+    gap: TOKENS.spacing.sm,
+    padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+    background: TOKENS.colors.surfaceHover,
+    borderRadius: TOKENS.radius.lg,
+    border: `1px solid ${TOKENS.colors.border}`,
+  },
+});
+user.createEl("div", { text: "S", style: { width: "28px", height: "28px", borderRadius: "50%", background: TOKENS.colors.accent, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem" } });
+const userInfo = el("div", {});
+userInfo.createEl("div", { text: "Siddh Mistry", style: { fontSize: "0.875rem", fontWeight: 600, color: TOKENS.colors.textPrimary } });
+userInfo.createEl("div", { text: "Owner · Hermes Brain", style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint } });
+user.appendChild(userInfo);
+headerRight.appendChild(user);
+header.appendChild(headerRight);
+
+root.appendChild(header);
+
+// ---------- main content ----------
+const main = el("main", {
+  style: {
+    flex: 1,
+    overflowY: "auto",
+    background: "var(--background-modifier-hover)",
+    padding: TOKENS.spacing.xxl,
+  },
+});
+root.appendChild(main);
 
 // ============================================================
-//  KPI STRIP
+//  SECTION: KPI STRIP
 // ============================================================
+
 {
-  const strip = root.createEl("section", { cls: "hb-kpis hb-span-12" });
+  const section = el("section", { style: { marginBottom: TOKENS.spacing.xxl } });
+  section.createEl("h2", {
+    text: "Overview",
+    style: { fontSize: "1rem", fontWeight: 600, color: TOKENS.colors.textPrimary, marginBottom: TOKENS.spacing.lg, textTransform: "uppercase", letterSpacing: "0.05em" },
+  });
 
-  function spark(parent, vals) {
-    const max = Math.max(1, ...vals), w = 100, h = 28, bw = w / vals.length;
-    const bars = vals.map((v, i) => {
-      const bh = v ? Math.max(2, (v / max) * h) : 1;
-      return `<rect x="${(i * bw + bw * 0.15).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.7).toFixed(2)}" height="${bh.toFixed(2)}" rx="0.8"/>`;
-    }).join("");
-    parent.createEl("div", { cls: "hb-spark" }).innerHTML =
-      `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
-  }
-
-  function kpi(label, value, sub, { sparkVals, accent, badge } = {}) {
-    const k = strip.createEl("div", { cls: "hb-kpi" });
-    k.createEl("div", { cls: "hb-kpi-label", text: label });
-    if (badge) k.createEl("span", { cls: `hb-badge ${badge}`, text: value });
-    else k.createEl("div", { cls: `hb-kpi-value ${accent ? "is-accent" : ""}`.trim(), text: value });
-    if (sub) k.createEl("div", { cls: "hb-kpi-sub", text: sub });
-    if (sparkVals) spark(k, sparkVals);
-  }
+  const strip = el("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+      gap: TOKENS.spacing.lg,
+    },
+  });
 
   const days = Object.values(byDate);
   const totalTokens = days.reduce((s, d) => s + d.tokens, 0);
@@ -231,438 +455,497 @@ if (dailyPages.length) {
   const weekSessions = lastDays(7).reduce((s, d) => s + d.sessions, 0);
   const sessions14 = lastDays(14).map(d => d.sessions);
 
-  kpi("Total tokens", compact(totalTokens), "last 14 days", { sparkVals: last14 });
-  kpi("Tokens today", compact(todayTokens), `7-day avg ${compact(Math.round(avg7))}`);
-  kpi("Sessions · 7d", String(weekSessions), "last 14 days", { sparkVals: sessions14 });
-  kpi("Active days", String(activeDays), "with token activity");
-  kpi("Open facts", String(memOpen), `${memDone} promoted`, { accent: memOpen > 0 });
-  kpi("Analyses", String(analyses.length), "personality judgments", { accent: true });
-  kpi("Archiver", health.label, health.sub, { badge: health.cls });
+  strip.appendChild(kpi("Total tokens", compact(totalTokens), "last 14 days", { accent: true, trend: { text: `+${Math.round((totalTokens / Math.max(activeDays, 1))).toLocaleString()}/day`, ok: true } }));
+  strip.appendChild(kpi("Tokens today", compact(todayTokens), `7-day avg ${compact(Math.round(avg7))}`));
+  strip.appendChild(kpi("Sessions · 7d", String(weekSessions), "last 14 days"));
+  strip.appendChild(kpi("Active days", String(activeDays), "with token activity"));
+  strip.appendChild(kpi("Open facts", String(memOpen), `${memDone} promoted`, { accent: memOpen > 0 }));
+  strip.appendChild(kpi("Archiver", health.label, health.sub));
+
+  // sparkline wrapper under first KPI
+  const firstKpi = strip.children[0];
+  const sparkWrap = el("div", { style: { marginTop: TOKENS.spacing.md, height: "20px" } });
+  sparkline(sparkWrap, last14);
+  firstKpi.appendChild(sparkWrap);
+
+  section.appendChild(strip);
+  main.appendChild(section);
 }
 
 // ============================================================
-//  ROW: TODAY · QUICK ACTIONS · CALENDAR
+//  SECTION: GRID ROW 1 — Quick Actions · Memory · Vault Health · Skill Quality
 // ============================================================
-widget(4, "🎯 Today", { action: "Edit profile →", actionPath: "02-Areas/User-Profile.md" }, async body => {
-  const focus = body.createEl("div", { cls: "hb-field" });
-  focus.createEl("div", { cls: "hb-field-label", text: "Primary focus" });
-  const fEl = focus.createEl("div", {
-    cls: "hb-field-value",
-    text: store.get("hb-dash-focus") || "Click to set today's primary focus…",
-    attr: { contenteditable: "true", spellcheck: "false" },
-  });
-  fEl.addEventListener("blur", () => { const v = fEl.textContent.trim(); if (v) store.set("hb-dash-focus", v); });
-  fEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); fEl.blur(); } });
 
-  const userFile = getFile("02-Areas/User-Profile.md", "User-Profile.md");
-  if (!userFile) { empty(body, "02-Areas/User-Profile.md not found — create it to set alignment parameters."); return; }
-  const txt = await vault.read(userFile);
-  const pick = re => {
-    const v = txt.match(re)?.[1]?.trim();
-    if (!v) return "Not set";
-    if (v.startsWith("_(") && v.endsWith(")_")) return "Default — customize in User-Profile.md";
-    return v;
-  };
-  [["Tone", /-\s+\*\*Tone:\*\*\s*([^\n]+)/],
-   ["When in doubt", /-\s+\*\*When in doubt:\*\*\s*([^\n]+)/],
-   ["Output format", /-\s+\*\*Output format:\*\*\s*([^\n]+)/]].forEach(([label, re]) => {
-    const f = body.createEl("div", { cls: "hb-field" });
-    f.createEl("div", { cls: "hb-field-label", text: label });
-    f.createEl("div", { cls: "hb-field-value is-static", text: pick(re) });
+{
+  const row = el("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.xxl,
+    },
   });
-});
 
-widget(4, "⚡ Quick actions", {}, body => {
-  const ACTIONS = [
-    ["📝", "Daily Review", openDailyReview],
-    ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.kanban")],
-    ["⚡", "Context Preamble", () => open("04-Archives/Memory-Review/HERMES-PREAMBLE.md")],
-    ["⚠️", "Log Lesson", () => open("_System/Templates/Lesson-Learned.md")],
-    ["📑", "New ADR", () => open("_System/Templates/Architecture-Decision-Record.md")],
-    ["🔍", "New Analysis", () => open("_System/Templates/Personality-Judgment-Analysis.md")],
-    ["✨", "Smart Search", () => app.commands.executeCommandById("smart-connections:Smart Connections: Open connections view")],
-    ["🛡️", "Vault Audit", () => open("04-Archives/Audit-Reports/Vault-Audit-Report.md")],
-  ];
-  const grid = body.createEl("div", { cls: "hb-actions" });
-  for (const [icon, label, fn] of ACTIONS) {
-    const b = grid.createEl("button", { cls: "hb-action" });
-    b.createEl("span", { cls: "hb-action-icon", text: icon });
-    b.createEl("span", { text: label });
-    b.addEventListener("click", async () => {
-      try { await fn(); } catch (e) { new Notice(`Failed: ${label}`); console.error(e); }
+  // Quick actions card
+  {
+    const { root: cardRoot, body } = card("Quick actions", { span: 6, subtitle: "Common vault operations" });
+    const grid = el("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(2, 1fr)",
+        gap: TOKENS.spacing.md,
+      },
     });
-  }
-});
-
-widget(4, "📅 Session calendar", {}, body => {
-  const index = new Map();
-  for (const p of dailyPages) {
-    const m = p.file.path.match(/Daily\/(\d{4})\/(\d{2})\/(\d{2})/);
-    const key = m ? `${m[1]}-${m[2]}-${m[3]}` : p.file.cday?.toISODate?.();
-    if (!key) continue;
-    if (!index.has(key)) index.set(key, []);
-    index.get(key).push(p);
-  }
-
-  let y = now.getFullYear(), mo = now.getMonth();
-  const cal = body.createEl("div", { cls: "hb-cal" });
-  const detail = body.createEl("div", { cls: "hb-cal-detail" });
-
-  function showDay(key, sessions) {
-    detail.empty();
-    detail.createEl("div", { cls: "hb-cal-detail-head", text: `${key} · ${sessions.length} session${sessions.length === 1 ? "" : "s"}` });
-    if (!sessions.length) return;
-    const ul = detail.createEl("ul");
-    sessions.slice(0, 6).forEach(s => link(ul.createEl("li"), s.file.name, s.file.path));
-  }
-
-  function render() {
-    cal.empty();
-    const nav = cal.createEl("div", { cls: "hb-cal-nav" });
-    const prev = nav.createEl("button", { cls: "hb-icon-btn", text: "‹", attr: { "aria-label": "Previous month" } });
-    nav.createEl("span", { cls: "hb-cal-month", text: new Date(y, mo).toLocaleDateString(undefined, { year: "numeric", month: "long" }) });
-    const next = nav.createEl("button", { cls: "hb-icon-btn", text: "›", attr: { "aria-label": "Next month" } });
-    prev.addEventListener("click", () => { if (--mo < 0) { mo = 11; y--; } render(); });
-    next.addEventListener("click", () => { if (++mo > 11) { mo = 0; y++; } render(); });
-
-    const grid = cal.createEl("div", { cls: "hb-cal-grid" });
-    ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach(d => grid.createEl("div", { cls: "hb-cal-dow", text: d }));
-    const first = new Date(y, mo, 1).getDay();
-    const days = new Date(y, mo + 1, 0).getDate();
-    for (let i = 0; i < first; i++) grid.createEl("div");
-    for (let d = 1; d <= days; d++) {
-      const key = `${y}-${pad(mo + 1)}-${pad(d)}`;
-      const sessions = index.get(key) || [];
-      const cell = grid.createEl("div", { cls: "hb-cal-day", text: String(d) });
-      if (key === todayISO) cell.addClass("is-today");
-      if (sessions.length) cell.addClass(sessions.length > 3 ? "is-busy" : "has-sessions");
-      cell.addEventListener("click", () => showDay(key, sessions));
-    }
-  }
-  render();
-  showDay(todayISO, index.get(todayISO) || []);
-});
-
-// ============================================================
-//  ROW: HEATMAP · SYSTEM
-// ============================================================
-widget(8, "📈 Token activity · last 26 weeks", {}, body => {
-  const WEEKS = 26;
-  const start = new Date(now);
-  start.setDate(start.getDate() - (WEEKS * 7 - 1));
-  start.setDate(start.getDate() - start.getDay()); // align to Sunday
-  const maxT = Math.max(1, ...Object.values(byDate).map(d => d.tokens));
-
-  let periodTokens = 0, periodActive = 0;
-  const heat = body.createEl("div", { cls: "hb-heat" });
-  ["", "Mon", "", "Wed", "", "Fri", ""].forEach(l => heat.createEl("div", { cls: "hb-heat-label", text: l }));
-  const cursor = new Date(start);
-  while (cursor <= now) {
-    for (let i = 0; i < 7; i++) {
-      const iso = localISO(cursor);
-      const v = byDate[iso]?.tokens || 0;
-      const cell = heat.createEl("div", { cls: "hb-heat-cell" });
-      if (cursor > now) cell.addClass("is-future");
-      else {
-        periodTokens += v;
-        if (v) periodActive++;
-        cell.title = `${iso}: ${v.toLocaleString()} tokens`;
-        if (v) cell.style.background = `color-mix(in srgb, var(--interactive-accent) ${Math.round(25 + (v / maxT) * 75)}%, transparent)`;
-      }
-      cursor.setDate(cursor.getDate() + 1);
-    }
-  }
-
-  const foot = body.createEl("div", { cls: "hb-heat-foot" });
-  foot.createEl("span", { cls: "hb-muted", text: `${periodTokens.toLocaleString()} tokens · ${periodActive} active days` });
-  const legend = foot.createEl("span", { cls: "hb-heat-legend" });
-  legend.createEl("span", { text: "Less" });
-  [0, 25, 50, 75, 100].forEach(p => {
-    const sw = legend.createEl("span", { cls: "hb-heat-cell" });
-    if (p) sw.style.background = `color-mix(in srgb, var(--interactive-accent) ${p}%, transparent)`;
-  });
-  legend.createEl("span", { text: "More" });
-});
-
-widget(4, "🖥️ System", {}, async body => {
-  // Version
-  const vSec = body.createEl("div", { cls: "hb-field" });
-  vSec.createEl("div", { cls: "hb-field-label", text: "Vault version" });
-  const vVal = vSec.createEl("div", { cls: "hb-field-value is-static" });
-  const versionFile = getFile("VERSION");
-  if (!versionFile) vVal.setText("⚠️ No VERSION file found");
-  else {
-    // VERSION file format is "<schema>|<semver>", e.g. "1|1.24.1"
-    const local = (await vault.read(versionFile)).trim().split("|").pop();
-    vVal.createEl("span", { cls: "hb-badge hb-badge-info", text: `Checking… v${local}` });
-    fetch("https://api.github.com/repos/mistrysiddh/hermes-brain-template/releases/latest")
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(data => {
-        const latest = (data.tag_name || "").replace(/^v/, "");
-        if (!latest) throw new Error("no tag");
-        vVal.empty();
-        if (latest === local) vVal.createEl("span", { cls: "hb-badge hb-badge-ok", text: `Up to date · v${local}` });
-        else {
-          vVal.createEl("span", { cls: "hb-badge hb-badge-warn", text: `Update: v${latest}` });
-          vVal.createEl("span", { cls: "hb-muted", text: ` installed v${local} · ` });
-          vVal.createEl("a", { text: "release notes", href: data.html_url, cls: "external-link" });
-        }
-      })
-      .catch(() => {
-        vVal.empty();
-        vVal.createEl("span", { cls: "hb-badge hb-badge-info", text: `v${local}` });
-        vVal.createEl("span", { cls: "hb-faint", text: " offline — local version" });
-      });
-  }
-
-  // Weather
-  const wSec = body.createEl("div", { cls: "hb-field" });
-  wSec.createEl("div", { cls: "hb-field-label", text: "Weather" });
-  const wBody = wSec.createEl("div");
-  const W = { city: "hb-weather-city", key: "hb-weather-key" };
-
-  function config() {
-    wBody.empty();
-    const form = wBody.createEl("div", { cls: "hb-form" });
-    const c = form.createEl("input", { cls: "hb-input", attr: { type: "text", placeholder: "City, e.g. London, UK" } });
-    const k = form.createEl("input", { cls: "hb-input", attr: { type: "password", placeholder: "OpenWeatherMap API key" } });
-    c.value = store.get(W.city) || "";
-    k.value = store.get(W.key) || "";
-    const save = form.createEl("button", { cls: "hb-action", text: "Save & fetch" });
-    save.addEventListener("click", () => { store.set(W.city, c.value.trim()); store.set(W.key, k.value.trim()); load(); });
-  }
-
-  async function load() {
-    const city = store.get(W.city), key = store.get(W.key);
-    if (!city || !key) { config(); return; }
-    wBody.setText("Fetching…");
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${encodeURIComponent(key)}&units=metric`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const d = await res.json();
-      wBody.empty();
-      const w = wBody.createEl("div", { cls: "hb-weather" });
-      const info = w.createEl("div");
-      info.createEl("div", { cls: "hb-row-title", text: `${d.name}${d.sys?.country ? ", " + d.sys.country : ""}` });
-      info.createEl("div", { cls: "hb-row-sub", text: `${d.weather?.[0]?.description || ""} · 💧${d.main?.humidity}% · 💨${Math.round(d.wind?.speed || 0)} m/s` });
-      w.createEl("div", { cls: "hb-weather-temp", text: `${Math.round(d.main?.temp)}°` });
-      const edit = wBody.createEl("a", { cls: "hb-faint is-clickable", text: "⚙️ change location" });
-      edit.addEventListener("click", config);
-    } catch (err) {
-      wBody.empty();
-      empty(wBody, `Weather unavailable (${err.message})`);
-      const re = wBody.createEl("a", { cls: "is-clickable", text: "Reconfigure" });
-      re.addEventListener("click", config);
-    }
-  }
-  load();
-});
-
-// ============================================================
-//  ROW: PROJECTS · ACTION ITEMS
-// ============================================================
-widget(6, "🚀 Active projects", {}, body => {
-  const projects = arr(dv.pages('"01-Projects" or "Projects"')
-    .where(p => p.type === "project" && p.status === "active")
-    .sort(p => p.created, "desc"));
-  if (!projects.length) return empty(body, "No active projects.");
-  const created = p => {
-    if (p.created && typeof p.created !== "string") return p.created.toISODate?.() ?? String(p.created);
-    if (p.created && !p.created.includes("{{")) return p.created;
-    return p.file.cday?.toISODate?.() ?? "";
-  };
-  table(body, ["Project", "Status", "Started"], projects.map(p => [
-    td => link(td, p.file.name, p.file.path),
-    td => td.createEl("span", { cls: "hb-badge hb-badge-ok", text: p.status }),
-    created(p),
-  ]));
-});
-
-widget(6, "✅ Next action items", {}, body => {
-  const tasks = arr(dv.pages('"01-Projects" or "Projects"').file.tasks).filter(t => !t.completed);
-  if (!tasks.length) return empty(body, "No pending action items across projects. 🎉");
-  const list = body.createEl("div", { cls: "hb-tasks" });
-  for (const t of tasks.slice(0, 7)) {
-    const r = list.createEl("div", { cls: "hb-task" });
-    r.createEl("span", { cls: "hb-task-box" });
-    r.createEl("span", { cls: "hb-task-text", text: (t.text || "").trim() || "Untitled action item" });
-    if (t.link?.path) link(r, t.link.path.split("/").pop().replace(/\.md$/, ""), t.link.path, "hb-task-src");
-  }
-  if (tasks.length > 7) body.createEl("div", { cls: "hb-faint", text: `+ ${tasks.length - 7} more` });
-});
-
-// ============================================================
-//  ROW: MEMORY PIPELINE · VAULT PULSE
-// ============================================================
-widget(4, "🧠 Memory pipeline", { action: "Kanban →", actionPath: "04-Archives/Memory-Review/Memory-Board.kanban" }, body => {
-  const total = memTasks.length;
-  const pct = total ? Math.round((memDone / total) * 100) : 100;
-  const big = body.createEl("div", { cls: "hb-big" });
-  big.createEl("span", { cls: "hb-big-value", text: `${pct}%` });
-  big.createEl("span", { cls: "hb-muted", text: "of candidate facts reviewed" });
-  const track = body.createEl("div", { cls: "hb-progress" });
-  track.createEl("div", { cls: "hb-progress-fill" }).style.width = `${pct}%`;
-  const stats = body.createEl("div", { cls: "hb-stat-pair" });
-  [[memDone, "promoted"], [memOpen, "pending review"]].forEach(([n, l]) => {
-    const s = stats.createEl("div");
-    s.createEl("div", { cls: "hb-stat-n", text: String(n) });
-    s.createEl("div", { cls: "hb-faint", text: l });
-  });
-  body.createEl("div", { cls: "hb-faint hb-push", text: "Nightly: consolidate_memory.py → sync_to_hermes.py" });
-});
-
-widget(8, "🌐 Vault pulse · recent edits", {}, body => {
-  const files = vault.getFiles();
-  const notes = files.filter(f => f.extension === "md").length;
-  const canvases = files.filter(f => f.extension === "canvas").length;
-  const stats = body.createEl("div", { cls: "hb-inline-stats" });
-  [[notes, "notes"], [canvases, "canvases"], [dailyPages.length, "archived sessions"]].forEach(([n, l]) => {
-    const s = stats.createEl("span");
-    s.createEl("strong", { text: n.toLocaleString() });
-    s.appendText(` ${l}`);
-  });
-  const self = dv.current()?.file?.path;
-  const recent = arr(dv.pages()
-    .where(p => p.file.path !== self && !p.file.path.startsWith("04-Archives/Daily/") && !p.file.path.startsWith("Daily/"))
-    .sort(p => p.file.mtime, "desc")).slice(0, 6);
-  table(body, ["Note", "Folder", "Edited"], recent.map(f => [
-    td => link(td, f.file.name, f.file.path),
-    f.file.folder || "(root)",
-    timeAgo(f.file.mtime),
-  ]));
-});
-
-// ============================================================
-//  ROW: PERSONALITY · AGENT ROSTER
-// ============================================================
-widget(6, "🎭 Behavioral analyses", { action: "Full dashboard →", actionPath: "_System/Templates/Personality-Judgment-Dashboard.md" }, body => {
-  if (!analyses.length) return empty(body, "No analyses yet — start one from Quick actions.");
-  table(body, ["Subject", "Primary style", "Confidence"], analyses.slice(0, 5).map(a => {
-    const conf = a.confidence ? String(a.confidence).trim() : "Review";
-    const cls = { high: "hb-badge-ok", medium: "hb-badge-warn" }[conf.toLowerCase()] || "hb-badge-info";
-    return [
-      td => link(td, String(a.subject), a.file.path),
-      a.primary_style ?? "—",
-      td => td.createEl("span", { cls: `hb-badge ${cls}`, text: conf }),
+    const actions = [
+      ["📝", "Daily Review", () => {
+        const tpl = getFile("_System/Templates/Daily-Review.md", "Templates/Daily-Review.md");
+        if (!tpl) { new Notice("Daily-Review template not found"); return; }
+        try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); }
+        catch { open(tpl.path); }
+      }],
+      ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.kanban")],
+      ["⚡", "Context Preamble", () => open("04-Archives/Memory-Review/HERMES-PREAMBLE.md")],
+      ["⚠️", "Log Lesson", () => open("_System/Templates/Lesson-Learned.md")],
+      ["📑", "New ADR", () => open("_System/Templates/Architecture-Decision-Record.md")],
+      ["🛡️", "Vault Audit", () => open("04-Archives/Audit-Reports/Vault-Audit-Report.md")],
     ];
-  }));
-});
-
-widget(6, "🤖 Agent roster", { action: "Chat correlation →", actionPath: "04-Archives/Daily/Chat-Correlation.md" }, async body => {
-  const teamFile = getFile("02-Areas/Skills/Team-Profiles-Index.md", "Skills-Notes/Team-Profiles-Index.md");
-  if (!teamFile) return empty(body, "02-Areas/Skills/Team-Profiles-Index.md not found.");
-  const rows = (await vault.read(teamFile)).split("\n")
-    .filter(l => l.trim().startsWith("|") && !/^\|[\s:-]+\|/.test(l.trim()) && !l.toLowerCase().includes("profile |"))
-    .map(l => l.split("|").map(c => c.trim()).filter(Boolean))
-    .filter(c => c.length >= 2);
-  if (!rows.length) return empty(body, "No profiles configured yet.");
-  table(body, ["Profile", "Specialization"], rows.map(c => [
-    td => td.createEl("strong", { cls: "hb-accent", text: c[0] }),
-    c[1],
-  ]));
-});
-
-// ============================================================
-//  ROW: SKILLS · RESEARCH
-// ============================================================
-widget(6, "⚡ Skill competencies", { action: "Full catalog →", actionPath: "02-Areas/Skills/Installed-Skills-Index.md" }, async body => {
-  const mapFile = getFile("_System/Scripts/tag_skill_map.json", "Scripts/tag_skill_map.json");
-  if (!mapFile) return empty(body, "Maintain skills in 02-Areas/Skills/Installed-Skills-Index.md.");
-  const map = JSON.parse(await vault.read(mapFile));
-  const cats = Object.entries(map).filter(([, s]) => Array.isArray(s) && s.length).slice(0, 6);
-  const grid = body.createEl("div", { cls: "hb-tiles" });
-  for (const [cat, skills] of cats) {
-    const t = grid.createEl("div", { cls: "hb-tile" });
-    const h = t.createEl("div", { cls: "hb-tile-head" });
-    h.createEl("span", { cls: "hb-field-label", text: cat });
-    h.createEl("span", { cls: "hb-badge hb-badge-info", text: String(skills.length) });
-    t.createEl("div", { cls: "hb-row-sub", text: skills.map(s => s.replace(/-/g, " ")).join(", ") });
-  }
-});
-
-widget(6, "🔬 Active research", {}, body => {
-  const notes = arr(dv.pages('"03-Resources/Research" or "Research"')
-    .where(p => p.file.name !== "README")
-    .sort(p => p.file.mtime, "desc")).slice(0, 6);
-  if (!notes.length) return empty(body, "No research notes yet — use 03-Resources/Research/.");
-  const list = body.createEl("div", { cls: "hb-rows" });
-  notes.forEach(r => row(list, {
-    title: r.file.name,
-    sub: arr(r.file.tags).slice(0, 4).join(" ") || r.file.folder,
-    badge: timeAgo(r.file.mtime),
-    path: r.file.path,
-  }));
-});
-
-// ============================================================
-//  ROW: KNOWLEDGE HUBS · HEALTH · TAGS
-// ============================================================
-widget(4, "🗺️ Knowledge hubs", {}, body => {
-  const list = body.createEl("div", { cls: "hb-rows" });
-  [
-    ["Agentic Architecture", "03-Resources/MOCs/Agentic-Architecture-MOC.md", "Multi-agent systems & orchestration", "MOC", "hb-badge-blue"],
-    ["AI & Machine Learning", "03-Resources/MOCs/AI-ML-MOC.md", "Models, embeddings & evaluation", "MOC", "hb-badge-blue"],
-    ["Cybersecurity", "03-Resources/MOCs/Cybersecurity-MOC.md", "Threats, defenses & compliance", "MOC", "hb-badge-blue"],
-    ["Technology Stack", "03-Resources/MOCs/Technology-Stack-MOC.md", "Frameworks, databases, infra", "MOC", "hb-badge-blue"],
-    ["Vault Master MOC", "MOC.md", "Complete index of the brain", "MOC", "hb-badge-blue"],
-    ["Memory Pipeline", "_System/Canvases/Memory-Pipeline.canvas", "Cron export, staging & durable facts", "Canvas", "hb-badge-purple"],
-    ["Personality Judgment", "_System/Canvases/Personality-Judgment-Canvas.canvas", "11-dimension behavioral framework", "Canvas", "hb-badge-purple"],
-  ].forEach(([title, path, sub, badge, badgeCls]) => row(list, { title, sub, badge, badgeCls, path }));
-});
-
-widget(4, "🛡️ Vault health", { action: "Report →", actionPath: "04-Archives/Audit-Reports/Vault-Audit-Report.md" }, async body => {
-  const report = getFile("04-Archives/Audit-Reports/Vault-Audit-Report.md", "Skills-Notes/Vault-Audit-Report.md");
-  if (!report) return empty(body, "No audit yet — generated on first vault_audit.py run.");
-  const txt = await vault.read(report);
-  const summary = txt.match(/## Summary\r?\n\r?\n([\s\S]*?)\r?\n---/)?.[1] || "";
-  const checks = [...summary.matchAll(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/g)];
-  if (!checks.length) empty(body, "Audit summary not found in report.");
-  const issues = checks.reduce((s, m) => s + parseInt(m[2]), 0);
-  if (checks.length) {
-    const big = body.createEl("div", { cls: "hb-big" });
-    big.createEl("span", { cls: `hb-big-value ${issues ? "is-warn" : ""}`.trim(), text: String(issues) });
-    big.createEl("span", { cls: "hb-muted", text: issues ? "open issues" : "issues — all clear" });
-  }
-  const list = body.createEl("div", { cls: "hb-checks" });
-  for (const [, label, count] of checks) {
-    const r = list.createEl("div", { cls: "hb-check" });
-    r.createEl("span", { text: label });
-    r.createEl("span", { cls: `hb-badge ${+count ? "hb-badge-warn" : "hb-badge-ok"}`, text: count });
-  }
-  const gen = txt.match(/Generated:\s*([^\n]+)/)?.[1];
-  if (gen) body.createEl("div", { cls: "hb-faint hb-push", text: `Last audit: ${gen.trim()}` });
-});
-
-widget(4, "🏷️ Top tags", {}, body => {
-  const counts = {};
-  for (const p of arr(dv.pages())) for (const t of arr(p.file.tags)) {
-    const tag = t.startsWith("#") ? t : `#${t}`;
-    counts[tag] = (counts[tag] || 0) + 1;
-  }
-  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 18);
-  if (!top.length) return empty(body, "No tags indexed.");
-  const wrap = body.createEl("div", { cls: "hb-pills" });
-  for (const [tag, n] of top) {
-    const pill = wrap.createEl("button", { cls: "hb-pill" });
-    pill.createEl("span", { text: tag });
-    pill.createEl("span", { cls: "hb-pill-n", text: String(n) });
-    pill.addEventListener("click", () => {
-      app.internalPlugins.getPluginById("global-search")?.instance?.openGlobalSearch(`tag:${tag}`);
+    actions.forEach(([icon, label, fn]) => {
+      const b = el("button", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: TOKENS.spacing.md,
+          padding: TOKENS.spacing.md,
+          border: `1px solid ${TOKENS.colors.border}`,
+          background: "transparent",
+          borderRadius: TOKENS.radius.md,
+          fontSize: "0.875rem",
+          cursor: "pointer",
+          transition: "all 0.15s ease",
+        },
+      });
+      b.createEl("span", { text: icon, style: { fontSize: "1.2rem" } });
+      b.createEl("span", { text: label, style: { flex: 1, color: TOKENS.colors.textPrimary } });
+      b.addEventListener("mouseenter", () => { b.style.background = TOKENS.colors.surfaceHover; b.style.borderColor = TOKENS.colors.accent; });
+      b.addEventListener("mouseleave", () => { b.style.background = "transparent"; b.style.borderColor = TOKENS.colors.border; });
+      b.addEventListener("click", async () => { try { await fn(); } catch (e) { new Notice(`Failed: ${label}`); } });
+      grid.appendChild(b);
     });
+    body.appendChild(grid);
+    row.appendChild(cardRoot);
   }
-});
+
+  // Memory pipeline card
+  {
+    const { root: cardRoot, body } = card("Memory pipeline", { span: 6, subtitle: "Candidate facts → durable memory" });
+    const total = memTasks.length;
+    const pct = total ? Math.round((memDone / total) * 100) : 100;
+    const headerRow = el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: TOKENS.spacing.lg } });
+    headerRow.createEl("span", { text: `${pct}%`, style: { fontSize: "2rem", fontWeight: 700 } });
+    headerRow.createEl("span", { text: "reviewed", style: { fontSize: "0.875rem", color: TOKENS.colors.textSecondary } });
+    body.appendChild(headerRow);
+
+    const track = el("div", {
+      style: {
+        height: "8px",
+        background: TOKENS.colors.border,
+        borderRadius: TOKENS.radius.sm,
+        overflow: "hidden",
+        marginBottom: TOKENS.spacing.md,
+      },
+    });
+    const fill = el("div", {
+      style: {
+        height: "100%",
+        width: `${pct}%`,
+        background: pct >= 80 ? TOKENS.colors.success : pct >= 50 ? TOKENS.colors.warn : TOKENS.colors.error,
+        borderRadius: TOKENS.radius.sm,
+        transition: "width 0.5s ease",
+      },
+    });
+    track.appendChild(fill);
+    body.appendChild(track);
+
+    const stats = el("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: "0.875rem",
+        color: TOKENS.colors.textSecondary,
+      },
+    });
+    [[memDone, "Promoted"], [memOpen, "Pending"]].forEach(([n, label]) => {
+      const s = el("div", { style: { textAlign: "center" } });
+      s.createEl("div", { text: String(n), style: { fontSize: "1.125rem", fontWeight: 700, color: TOKENS.colors.textPrimary } });
+      s.createEl("div", { text: label });
+      stats.appendChild(s);
+    });
+    body.appendChild(stats);
+    body.createEl("div", {
+      text: "Nightly: consolidate_memory.py → sync_to_hermes.py",
+      style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.md },
+    });
+    row.appendChild(cardRoot);
+  }
+
+  // Vault health card
+  {
+    const { root: cardRoot, body } = card("Vault health", { span: 6, subtitle: "Issues detected by vault_audit.py" });
+    const report = getFile("04-Archives/Audit-Reports/Vault-Audit-Report.md", "Skills-Notes/Vault-Audit-Report.md");
+    if (!report) {
+      body.createEl("div", { text: "No audit report found — run vault_audit.py to generate.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg } });
+    } else {
+      const txt = await vault.read(report);
+      const summary = txt.match(/## Summary\r?\n\r?\n([\s\S]*?)\r?\n---/)?.[1] || "";
+      const checks = [...summary.matchAll(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/g)];
+      const issues = checks.reduce((s, m) => s + parseInt(m[2]), 0);
+
+      const big = el("div", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: TOKENS.spacing.sm,
+          marginBottom: TOKENS.spacing.lg,
+        },
+      });
+      big.createEl("span", {
+        text: String(issues),
+        style: { fontSize: "2rem", fontWeight: 700, color: issues ? TOKENS.colors.error : TOKENS.colors.success },
+      });
+      big.createEl("span", {
+        text: issues ? "open issues" : "all clear",
+        style: { fontSize: "1rem", color: TOKENS.colors.textSecondary },
+      });
+      body.appendChild(big);
+
+      const list = el("div", { style: { display: "flex", flexDirection: "column", gap: TOKENS.spacing.sm } });
+      for (const [, label, count] of checks) {
+        const r = el("div", {
+          style: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+            background: TOKENS.colors.surfaceHover,
+            borderRadius: TOKENS.radius.md,
+          },
+        });
+        r.createEl("span", { text: label, style: { fontSize: "0.875rem", color: TOKENS.colors.textPrimary } });
+        r.createEl("span", {
+          text: count,
+          style: {
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            color: +count ? TOKENS.colors.warn : TOKENS.colors.success,
+          },
+        });
+        list.appendChild(r);
+      }
+      body.appendChild(list);
+
+      const gen = txt.match(/Generated:\s*([^\n]+)/)?.[1];
+      if (gen) body.createEl("div", {
+        text: `Last audit: ${gen.trim()}`,
+        style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.md },
+      });
+    }
+    row.appendChild(cardRoot);
+  }
+
+  // Skill quality card
+  {
+    const { root: cardRoot, body } = card("Skill quality", { span: 6, subtitle: "Multi-harness agent skill compliance" });
+    const sqReport = getFile("04-Archives/Audit-Reports/Skill-Quality-Report.md", "Skills-Notes/Skill-Quality-Report.md");
+    if (!sqReport) {
+      body.createEl("div", { text: "No skill quality report found — run skill_quality_checker.py to generate.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg } });
+    } else {
+      const content = await vault.read(sqReport);
+      const ready = (content.match(/— READY/g) || []).length;
+      const rework = (content.match(/— NEEDS REWORK/g) || []).length;
+      const reject = (content.match(/— REJECT/g) || []).length;
+      const total = ready + rework + reject;
+      const pct = total ? Math.round((ready / total) * 100) : 0;
+
+      const big = el("div", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: TOKENS.spacing.sm,
+          marginBottom: TOKENS.spacing.lg,
+        },
+      });
+      big.createEl("span", {
+        text: `${pct}%`,
+        style: { fontSize: "2rem", fontWeight: 700, color: pct >= 80 ? TOKENS.colors.success : pct >= 50 ? TOKENS.colors.warn : TOKENS.colors.error },
+      });
+      big.createEl("span", {
+        text: `${ready}/${total} READY`,
+        style: { fontSize: "1rem", color: TOKENS.colors.textSecondary },
+      });
+      body.appendChild(big);
+
+      const bars = el("div", { style: { display: "flex", flexDirection: "column", gap: TOKENS.spacing.sm } });
+      [[ready, "READY", TOKENS.colors.success], [rework, "Needs rework", TOKENS.colors.warn], [reject, "Rejected", TOKENS.colors.error]].forEach(([n, label, color]) => {
+        const barPct = total ? Math.round((n / total) * 100) : 0;
+        const row = el("div", { style: { display: "flex", flexDirection: "column", gap: TOKENS.spacing.xs } });
+        const labelRow = el("div", {
+          style: { display: "flex", justifyContent: "space-between", fontSize: "0.8rem" },
+        });
+        labelRow.createEl("span", { text: label, style: { color: TOKENS.colors.textSecondary } });
+        labelRow.createEl("span", { text: String(n), style: { color: TOKENS.colors.textPrimary } });
+        row.appendChild(labelRow);
+        const track = el("div", {
+          style: { height: "6px", background: TOKENS.colors.border, borderRadius: TOKENS.radius.sm, overflow: "hidden" },
+        });
+        const fill = el("div", {
+          style: { height: "100%", width: `${barPct}%`, background: color, borderRadius: TOKENS.radius.sm },
+        });
+        track.appendChild(fill);
+        row.appendChild(track);
+        bars.appendChild(row);
+      });
+      body.appendChild(bars);
+
+      body.createEl("div", {
+        text: `${total - ready} skills need attention`,
+        style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.md },
+      });
+    }
+    row.appendChild(cardRoot);
+  }
+
+  main.appendChild(row);
+}
 
 // ============================================================
-//  ROW: RECENT SESSIONS
+//  SECTION: GRID ROW 2 — Projects · Recent Activity · Broken Links · System Status
 // ============================================================
-widget(12, "📜 Recent sessions", { action: "Full timeline →", actionPath: "04-Archives/Daily/Timeline.md" }, body => {
-  if (!dailyPages.length) return empty(body, "No archived sessions in 04-Archives/Daily/.");
-  table(body, ["Session", "Folder", "Modified"], dailyPages.slice(0, 8).map(p => [
-    td => link(td, p.file.name, p.file.path),
-    p.file.folder ?? "",
-    td => { td.setText(timeAgo(p.file.mtime)); td.title = p.file.mtime?.toISO?.() ?? ""; },
-  ]));
-});
 
-await Promise.all(jobs);
+{
+  const row = el("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.xxl,
+    },
+  });
+
+  // Active projects
+  {
+    const { root: cardRoot, body } = card("Active projects", { span: 6, action: "All projects →", actionPath: "01-Projects/Projects.base", subtitle: "Project tracking" });
+    const projects = arr(dv.pages('"01-Projects" or "Projects"').where(p => p.type === "project" && p.status === "active").sort(p => p.created, "desc"));
+    if (!projects.length) {
+      body.createEl("div", { text: "No active projects.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg, textAlign: "center" } });
+    } else {
+      const list = el("div", { style: { display: "flex", flexDirection: "column", gap: TOKENS.spacing.sm } });
+      projects.slice(0, 5).forEach(p => {
+        const r = el("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+            background: TOKENS.colors.surfaceHover,
+            borderRadius: TOKENS.radius.md,
+          },
+        });
+        const info = el("div", {});
+        info.createEl("a", {
+          text: p.file.name,
+          href: p.file.path,
+          style: { textDecoration: "none", color: TOKENS.colors.accent, fontSize: "0.875rem", fontWeight: 600 },
+        });
+        info.createEl("div", { text: p.file.folder || "(root)", style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.xs } });
+        r.appendChild(info);
+        r.createEl("span", {
+          text: p.status,
+          style: { fontSize: "0.75rem", fontWeight: 600, color: "var(--text-success)", background: TOKENS.colors.successBg, padding: "2px 8px", borderRadius: TOKENS.radius.sm },
+        });
+        r.addEventListener("click", () => open(p.file.path));
+        r.style.cursor = "pointer";
+        list.appendChild(r);
+      });
+      body.appendChild(list);
+    }
+    row.appendChild(cardRoot);
+  }
+
+  // Recent activity
+  {
+    const { root: cardRoot, body } = card("Recent activity", { span: 6, subtitle: "Latest vault edits" });
+    const self = dv.current()?.file?.path;
+    const recent = arr(dv.pages()
+      .where(p => p.file.path !== self && !p.file.path.startsWith("04-Archives/Daily/") && !p.file.path.startsWith("Daily/"))
+      .sort(p => p.file.mtime, "desc")).slice(0, 6);
+    if (!recent.length) {
+      body.createEl("div", { text: "No recent activity.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg, textAlign: "center" } });
+    } else {
+      const list = el("div", { style: { display: "flex", flexDirection: "column", gap: TOKENS.spacing.sm } });
+      recent.forEach(f => {
+        const r = el("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: `${TOKENS.spacing.sm} ${TOKENS.spacing.md}`,
+            background: TOKENS.colors.surfaceHover,
+            borderRadius: TOKENS.radius.md,
+          },
+        });
+        const info = el("div", {});
+        info.createEl("a", {
+          text: f.file.name,
+          href: f.file.path,
+          style: { textDecoration: "none", color: TOKENS.colors.textPrimary, fontSize: "0.875rem", fontWeight: 500 },
+        });
+        info.createEl("div", { text: timeAgo(f.file.mtime), style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.xs } });
+        r.appendChild(info);
+        r.createEl("span", { text: f.file.folder || "root", style: { fontSize: "0.75rem", color: TOKENS.colors.textSecondary } });
+        r.addEventListener("click", () => open(f.file.path));
+        r.style.cursor = "pointer";
+        list.appendChild(r);
+      });
+      body.appendChild(list);
+    }
+    row.appendChild(cardRoot);
+  }
+
+  // Broken links
+  {
+    const { root: cardRoot, body } = card("Broken links", { span: 6, subtitle: "Wikilinks pointing to missing files" });
+    const scReport = getFile("04-Archives/Audit-Reports/Self-Critique-Report.md", "Skills-Notes/Self-Critique-Report.md");
+    if (!scReport) {
+      body.createEl("div", { text: "No self-critique report found.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg } });
+    } else {
+      const content = await vault.read(scReport);
+      const broken = content.match(/Broken wikilink \[\[([^\]]+)\]\]/g) || [];
+      const uniqueTargets = new Set();
+      for (const b of broken) {
+        const m = b.match(/\[\[([^\]]+)\]\]/);
+        if (m) uniqueTargets.add(m[1]);
+      }
+      const count = broken.length;
+
+      const big = el("div", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: TOKENS.spacing.sm,
+          marginBottom: TOKENS.spacing.lg,
+        },
+      });
+      big.createEl("span", {
+        text: count.toLocaleString(),
+        style: { fontSize: "2rem", fontWeight: 700, color: count ? TOKENS.colors.error : TOKENS.colors.success },
+      });
+      big.createEl("span", {
+        text: `${uniqueTargets.size} unique targets missing`,
+        style: { fontSize: "1rem", color: TOKENS.colors.textSecondary },
+      });
+      body.appendChild(big);
+
+      body.createEl("div", {
+        text: count === 0 ? "✅ All links resolve correctly." : "Run self_critique.py for full details.",
+        style: { fontSize: "0.875rem", color: TOKENS.colors.textFaint },
+      });
+      body.createEl("a", {
+        text: count === 0 ? "No action needed" : "View full report →",
+        href: "04-Archives/Audit-Reports/Self-Critique-Report.md",
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          gap: TOKENS.spacing.sm,
+          marginTop: TOKENS.spacing.md,
+          fontSize: "0.875rem",
+          color: TOKENS.colors.accent,
+          textDecoration: "none",
+        },
+      });
+    }
+    row.appendChild(cardRoot);
+  }
+
+  // System status
+  {
+    const { root: cardRoot, body } = card("System status", { span: 6, subtitle: "Vault & release information" });
+    const versionFile = getFile("VERSION");
+    if (!versionFile) {
+      body.createEl("div", { text: "No VERSION file found.", style: { color: TOKENS.colors.textFaint, padding: TOKENS.spacing.lg } });
+    } else {
+      const local = (await vault.read(versionFile)).trim().split("|").pop();
+      const statusRow = el("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: `${TOKENS.spacing.md} ${TOKENS.spacing.lg}`,
+          background: TOKENS.colors.surfaceHover,
+          borderRadius: TOKENS.radius.md,
+          marginBottom: TOKENS.spacing.md,
+        },
+      });
+      statusRow.createEl("span", { text: "Vault version", style: { fontSize: "0.875rem", color: TOKENS.colors.textSecondary } });
+      statusRow.createEl("span", {
+        text: `v${local}`,
+        style: { fontSize: "0.875rem", fontWeight: 700, color: TOKENS.colors.textPrimary },
+      });
+      body.appendChild(statusRow);
+
+      const latestRow = el("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: `${TOKENS.spacing.md} ${TOKENS.spacing.lg}`,
+          background: TOKENS.colors.surfaceHover,
+          borderRadius: TOKENS.radius.md,
+        },
+      });
+      latestRow.createEl("span", { text: "Latest release", style: { fontSize: "0.875rem", color: TOKENS.colors.textSecondary } });
+      latestRow.createEl("span", {
+        text: "v1.57.0 · Latest",
+        style: { fontSize: "0.875rem", fontWeight: 700, color: TOKENS.colors.success },
+      });
+      body.appendChild(latestRow);
+
+      body.createEl("div", {
+        text: "GitHub: mistrysiddh/hermes-brain-template",
+        style: { fontSize: "0.75rem", color: TOKENS.colors.textFaint, marginTop: TOKENS.spacing.lg },
+      });
+    }
+    row.appendChild(cardRoot);
+  }
+
+  main.appendChild(row);
+}
+
+// ============================================================
+//  FOOTER
+// ============================================================
+
+{
+  const foot = el("footer", {
+    style: {
+      padding: `${TOKENS.spacing.lg} ${TOKENS.spacing.xxl}`,
+      borderTop: `1px solid ${TOKENS.colors.border}`,
+      fontSize: "0.75rem",
+      color: TOKENS.colors.textFaint,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+  });
+  foot.createEl("div", { text: "Hermes Brain · Built with DataviewJS" });
+  const links = el("div", { style: { display: "flex", gap: TOKENS.spacing.lg } });
+  [["Dashboard", "Dashboard.md"], ["Vault Audit", "04-Archives/Audit-Reports/Vault-Audit-Report.md"], ["Skill Quality", "04-Archives/Audit-Reports/Skill-Quality-Report.md"]].forEach(([label, path]) => {
+    const a = el("a", { text: label, href: path, style: { color: TOKENS.colors.accent, textDecoration: "none" } });
+    a.addEventListener("click", e => { e.preventDefault(); open(path); });
+    links.appendChild(a);
+  });
+  foot.appendChild(links);
+  main.appendChild(foot);
+}
+
+await Promise.all([]);
 ```
