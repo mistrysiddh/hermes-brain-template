@@ -130,6 +130,16 @@ Infrastructure, containerization, scheduling, and self-hosting.
 
 ---
 
+## 📚 Inquiries & Syntheses
+
+- [[03-Resources/Research/Weekly-Synthesis-2026-W39|Weekly Synthesis Sample (2026-W39)]] — sample weekly synthesis and findings
+- [[03-Resources/Research/Weekly-Synthesis-2026-W44|Weekly Synthesis (2026-W44)]] — weekly synthesis and findings
+- [[03-Resources/Research/ai-ml-research-briefing|AI/ML Research Briefing]] — AI/ML research monitoring
+- [[03-Resources/Research/automated-information-briefings|Automated Information Briefings]] — scheduled research digests
+- [[03-Resources/Research/Supermemory/hermes-memories|Supermemory Memory Archive]] — 480+ durable memory entries pulled from Supermemory
+
+---
+
 ## 🗺️ Knowledge Mapping
 
 | Note | Description |
