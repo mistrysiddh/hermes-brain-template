@@ -58,6 +58,7 @@ Central map of content for AI/ML research, LLM integration, prompt engineering, 
 - [[automated-information-briefings]] — General research briefings
 - [[../Research/ArXiv-Monitoring.md|arXiv Category Alerts]]
 - [[../Research/Paper-Summarization.md|Auto-Summarization Pipeline]]
+- [[../Research/Weekly-Synthesis-2026-W39.md|Weekly Synthesis — 2026-W39]] — Weekly research synthesis & findings
 
 ### Knowledge Synthesis
 - [[../Research/Literature-Review-Process.md|Systematic Review Workflow]]

@@ -80,6 +80,7 @@ Central map of content for agentic systems, multi-agent orchestration, and auton
 - [[../Research/Session-Aware-Agents.md|Agents with Session Context]]
 - [[../Research/Long-Term-Agent-Memory.md|Persistent Agent Memory]]
 - [[../Research/Cross-Session-Learning.md|Learning Across Conversations]]
+- [[../Research/Interactive-Knowledge-Map.md|Interactive Knowledge Map]] — Visual knowledge graph navigation
 
 ## 🎯 Current Projects
 

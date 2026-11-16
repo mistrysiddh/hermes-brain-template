@@ -69,5 +69,12 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
   - `sync_to_hermes.py` — bidirectional sync to agent memory & preamble
   - `vault_audit.py` — health check and integrity reporter
 
+## 📚 Documentation
+- [[docs/CHANGELOG|CHANGELOG]] — vault release history & version notes
+- [[docs/CODE_OF_CONDUCT|Code of Conduct]] — community guidelines
+- [[docs/CONTRIBUTING|Contributing]] — how to contribute to the vault
+- [[docs/about-me|About Me]] — personal reference & context
+- [[docs/graph-view-enhancements|Graph View Enhancements]] — graph visualization improvements
+
 ---
 _See [[SETUP.md]] in repo root for environment setup and script automation._
