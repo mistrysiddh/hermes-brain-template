@@ -27,7 +27,7 @@ Best viewed in Reading view.
 // ============================================================
 
 const vault = app.vault;
-const dv = this;
+// `dv` is provided globally by DataviewJS — do not redeclare it
 
 // ---------- design tokens ----------
 const TOKENS = {
