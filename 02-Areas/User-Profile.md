@@ -55,7 +55,7 @@ This is distinct from [[02-Areas/Skills/Team-Profiles-Index|Team-Profiles-Index]
 ---
 
 ## Technical environment
-- **OS / primary machine(s):** Hostinger VPS (`mistrysiddh.in`, Linux), HermesPi (Pi 4B+ at 100.93.0.4, retired to local AI endpoint), Windows 11 secondary
+- **OS / primary machine(s):** Nisha's agent host — Fedora Linux 44 Cloud, AMD EPYC 9354P (8 vCPU), 31GB RAM, 400GB disk (upgraded Nov 2026); Hostinger VPS (`mistrysiddh.in`, Linux); HermesPi (Pi 4B+ at 100.93.0.4, retired to local AI endpoint); Windows 11 secondary
 - **Languages / stacks:** Bash, Python, Docker, JSON/YAML, occasional JS/TS
 - **Tools you have installed and expect the agent to use:**
   - Shells: bash, git, gh, curl, jq
@@ -79,7 +79,7 @@ Durable, rarely-changing context:
 - You enjoy automation and building technical tools
 - Your GitHub identity is `mistrysiddh`
 - You use Zen + Edge browsers, no Chrome
-- Hermes Brain Vault path: `/hermes/Brain/Hermes Brain` (Linux/HermesPi sessions) or `C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Brain/Hermes Brain` (Windows sessions)
+- Hermes Brain Vault path: `/hermes/Brain/Hermes Brain` (current — Linux agent host). Windows path (`C:/Users/mistr/OneDrive - Mistry Siddh/27. Hermes Agent Vault/Brain/Hermes Brain`) retired as primary, kept as backup/mirror only.
 - Template remote: `template` = https://github.com/mistrysiddh/hermes-brain-template (pull only, never push)
 - Telegram chat ID: 966014121 (for update notifications)
 - `gh` CLI authenticated as `mistrysiddh` on this host
