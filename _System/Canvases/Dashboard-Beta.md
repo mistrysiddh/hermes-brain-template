@@ -80,7 +80,10 @@ function el(tag, opts = {}) {
   const e = dv.el(tag, opts.text !== undefined ? { text: opts.text } : {});
   if (opts.attr) Object.entries(opts.attr).forEach(([k, v]) => e.setAttribute(k, v));
   if (opts.style) Object.assign(e.style, opts.style);
-  if (opts.classes) e.addClass(opts.classes);
+  if (opts.classes) {
+    // addClass doesn't accept space-separated strings — split them
+    opts.classes.split(/\s+/).forEach(c => e.addClass(c));
+  }
   if (opts.text) e.setText(opts.text);
   return e;
 }
