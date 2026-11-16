@@ -139,13 +139,13 @@ function card(title, { subtitle, action, actionPath, span = 12 } = {}) {
   return { root, body };
 }
 
-function kpi(label, value, sub, { accent = false, trend } = {}) {
+function kpi(label, value, sub, { accent = false, trend, color } = {}) {
   const k = el("div", {
     style: { display: "flex", flexDirection: "column", gap: T.spacing.sm, padding: T.spacing.lg, background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.radius.md, minWidth: 140 },
   });
   ce(k, "span", { text: label, style: { fontSize: "0.8rem", color: T.textSecondary } });
   const valWrap = el("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: T.spacing.sm } });
-  ce(valWrap, "span", { text: value, style: { fontSize: "1.75rem", fontWeight: 700, color: accent ? T.accent : T.textPrimary } });
+  ce(valWrap, "span", { text: value, style: { fontSize: "1.75rem", fontWeight: 700, color: color || (accent ? T.accent : T.textPrimary) } });
   if (trend) ce(valWrap, "span", { text: trend.text, style: { fontSize: "0.85rem", fontWeight: 600, color: trend.ok ? T.ok : T.error } });
   k.appendChild(valWrap);
   if (sub) ce(k, "span", { text: sub, style: { fontSize: "0.8rem", color: T.textFaint } });
@@ -273,7 +273,7 @@ function widget(span, title, opts, fill) {
   const weekSessions = lastDays(7).reduce((s, d) => s + d.sessions, 0);
   const sessions14 = lastDays(14).map(d => d.sessions);
 
-  strip.appendChild(kpi("Total tokens", compact(totalTokens), "last 14 days", { accent: true, trend: { text: `+${Math.round((totalTokens / Math.max(activeDays, 1))).toLocaleString()}/day`, ok: true } }));
+  strip.appendChild(kpi("Total tokens", compact(totalTokens), "last 14 days", { accent: true, color: "#22c55e", trend: { text: `+${Math.round((totalTokens / Math.max(activeDays, 1))).toLocaleString()}/day`, ok: true } }));
   strip.appendChild(kpi("Tokens today", compact(todayTokens), `7-day avg ${compact(Math.round(avg7))}`));
   strip.appendChild(kpi("Sessions · 7d", String(weekSessions), "last 14 days"));
   strip.appendChild(kpi("Active days", String(activeDays), "with token activity"));
