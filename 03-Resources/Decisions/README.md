@@ -69,5 +69,5 @@ See [[TEMPLATE]] for the structure every entry should follow — in particular, 
 
 - [[03-Resources/Principles/README|Principles]] — standing behavioral rules that
   decisions derive from, or that get promoted out of a repeated decision pattern
-- [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]] — where raw
+- [[04-Archives/Memory-Review/Memory-Board|Memory Review Board]] — where raw
   candidate facts get triaged before some of them graduate into a formal decision here

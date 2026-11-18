@@ -30,7 +30,7 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 - [[04-Archives/Daily/Chat-Correlation|Chat Correlation]] — live pattern/agent profile breakdown (Dataview)
 - [[04-Archives/Memory-Review/TEMPLATE|Memory Review Criteria]] — durable / non-sensitive / verified / actionable standards
 - [[04-Archives/Memory-Review/Promotion-Candidates|Memory Promotion Candidates]] — active checklist of staged facts awaiting review
-- [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]] — 3-stage visual promotion Kanban board
+- [[04-Archives/Memory-Review/Memory-Board|Memory Review Board]] — 3-stage visual promotion Kanban board
 - [[04-Archives/Memory-Review/Consolidation-Log|Memory Consolidation Log]] — nocturnal memory distillation & synthesis log
 - [[03-Resources/Guides/Dataview-Query-Library|Dataview Query Library]] — copy-paste Dataview queries for this vault
 - [[03-Resources/Guides/Kanban-Usage|Kanban Usage Guide]] — board workflow, card/project note links

@@ -66,7 +66,7 @@ SORT date DESC
 
 - **Parent Hub:** [[01-Projects/README|Projects Overview]]
 - **Vault Setup Project:** [[01-Projects/Hermes-Agent-Vault-Setup|Hermes Agent Vault Setup]]
-- **Memory Kanban:** [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]]
+- **Memory Kanban:** [[04-Archives/Memory-Review/Memory-Board|Memory Review Board]]
 - **Self-Correction Catalog:** [[02-Areas/Skills/Lessons-Learned/README|Lessons Learned]]
 
 </div>

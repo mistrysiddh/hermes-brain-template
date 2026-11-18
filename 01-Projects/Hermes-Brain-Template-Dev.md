@@ -137,7 +137,7 @@ Same squad as the vault setup, scoped to template product decisions:
 
 - **Vault Orientation:** [[Welcome]] · [[MOC]] · [[SETUP]]
 - **Dashboards:** [[Dashboard|Classic Dashboard]] · [[_System/Canvases/Dashboard-Beta|Widescreen Dashboard Beta]]
-- **Memory Subsystem:** [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Board]] · [[04-Archives/Memory-Review/HERMES-PREAMBLE|Hermes Preamble]]
+- **Memory Subsystem:** [[04-Archives/Memory-Review/Memory-Board|Memory Board]] · [[04-Archives/Memory-Review/HERMES-PREAMBLE|Hermes Preamble]]
 - **Skills & Telemetry:** [[02-Areas/Skills/Installed-Skills-Index|Installed Skills]] · [[04-Archives/Audit-Reports/Agent-Performance|Agent Performance]]
 - **Upstream Repository:** [hermes-brain-template on GitHub](https://github.com/mistrysiddh/hermes-brain-template)
 - **Releases:** [GitHub Releases](https://github.com/mistrysiddh/hermes-brain-template/releases)

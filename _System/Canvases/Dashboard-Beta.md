@@ -298,7 +298,7 @@ function widget(span, title, opts, fill) {
     const grid = ce(body, "div", { style: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: T.spacing.md } });
     const actions = [
       ["📝", "Daily Review", () => { const tpl = getFile("_System/Templates/Daily-Review.md", "Templates/Daily-Review.md"); if (!tpl) { new Notice("Daily-Review template not found"); return; } try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); } catch { open(tpl.path); } }],
-      ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.kanban")],
+      ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.md")],
       ["⚡", "Context Preamble", () => open("04-Archives/Memory-Review/HERMES-PREAMBLE.md")],
       ["⚠️", "Log Lesson", () => open("_System/Templates/Lesson-Learned.md")],
       ["📑", "New ADR", () => open("_System/Templates/Architecture-Decision-Record.md")],

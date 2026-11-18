@@ -6,7 +6,7 @@ Use this before promoting any candidate fact to Hermes's native MEMORY.md/USER.m
 
 **Staged review files**:
 - [[04-Archives/Memory-Review/Promotion-Candidates|Memory Promotion Candidates]] — active checklist of pending facts
-- [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]] — visual 3-stage promotion Kanban
+- [[04-Archives/Memory-Review/Memory-Board|Memory Review Board]] — visual 3-stage promotion Kanban
 - [[04-Archives/Memory-Review/Consolidation-Log|Consolidation Log]] — nightly distillation log
 
 **Where they attribute to**: if more than one agent works in this vault, check [[02-Areas/Skills/Team-Profiles-Index|Team-Profiles-Index]] for which one observed/produced the fact — record it in "Source/Session" below (a single-agent setup can skip this). Project context: [[01-Projects/Hermes-Agent-Vault-Setup]]. Navigation: [[MOC]].

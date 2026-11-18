@@ -20,4 +20,4 @@ These durable facts have been human-verified and promoted from conversation sess
 
 ## 🛡️ Standing Operational Boundaries
 - Never commit secrets, tokens, or personal chat histories into upstream template repositories.
-- Keep session files staged in `04-Archives/Daily/` and vetted through `04-Archives/Memory-Review/Memory-Board.kanban`.
+- Keep session files staged in `04-Archives/Daily/` and vetted through `04-Archives/Memory-Review/Memory-Board.md`.

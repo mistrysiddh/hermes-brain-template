@@ -71,7 +71,7 @@ Give an AI agent (or a specialized multi-agent squad) a durable memory it cannot
 | **`01-Projects/`** | Active engineering initiatives & repos, including this setup note and [[01-Projects/ADR/README\|ADR Index]]. |
 | **`02-Areas/`** | Long-term standards, [[02-Areas/User-Profile\|User Profile]], and [[02-Areas/Skills/Installed-Skills-Index\|Skills Catalog]]. |
 | **`03-Resources/`** | In-depth [[03-Resources/Research/README\|Research]], [[03-Resources/MOCs/Agentic-Architecture-MOC\|MOCs]], and technical manuals. |
-| **`04-Archives/`** | Historical [[04-Archives/Daily/README\|Daily Sessions]], [[04-Archives/Memory-Review/Memory-Board.kanban\|Memory Review Board]], and audit reports. |
+| **`04-Archives/`** | Historical [[04-Archives/Daily/README\|Daily Sessions]], [[04-Archives/Memory-Review/Memory-Board\|Memory Review Board]], and audit reports. |
 | **`_System/`** | Note [[_System/Templates/Project\|Templates]], automation [[_System/README\|Scripts]], and interactive [[_System/Canvases/Dashboard-Beta\|Canvases]]. |
 
 </div>
@@ -87,7 +87,7 @@ Give an AI agent (or a specialized multi-agent squad) a durable memory it cannot
   </div>
   <div style="display: flex; align-items: center; gap: 8px; font-size: 0.88em;">
     <span class="dashboard-badge dashboard-badge-blue">2. Review</span>
-    <span><b>Staging & Kanban:</b> <code>_System/Scripts/consolidate_memory.py</code> queues candidates in [[04-Archives/Memory-Review/Memory-Board.kanban|Memory-Board]].</span>
+    <span><b>Staging & Kanban:</b> <code>_System/Scripts/consolidate_memory.py</code> queues candidates in [[04-Archives/Memory-Review/Memory-Board|Memory-Board]].</span>
   </div>
   <div style="display: flex; align-items: center; gap: 8px; font-size: 0.88em;">
     <span class="dashboard-badge dashboard-badge-purple">3. Synthesis</span>
@@ -139,7 +139,7 @@ Give an AI agent (or a specialized multi-agent squad) a durable memory it cannot
 - [x] Implement hourly archive cron job with secret scrubbing
 - [x] Set up widescreen card dashboard in `_System/Canvases/Dashboard-Beta.md`
 - [x] Configure multi-agent Architecture Decision Records (`01-Projects/ADR/`)
-- [x] Build Memory Review Kanban Board (`04-Archives/Memory-Review/Memory-Board.kanban`)
+- [x] Build Memory Review Kanban Board (`04-Archives/Memory-Review/Memory-Board`)
 - [x] Deploy Bi-directional sync to Hermes runtime (`_System/Scripts/sync_to_hermes.py`)
 - [x] Implement Autonomous Dream Cycle script (`_System/Scripts/dream_cycle.py`)
 - [ ] Connect custom project repositories into `01-Projects/` folder
@@ -168,7 +168,7 @@ Give an AI agent (or a specialized multi-agent squad) a durable memory it cannot
 
 - **Vault Orientation:** [[Welcome]] · [[MOC]] · [[SETUP]]
 - **Dashboards:** [[Dashboard|Classic Dashboard]] · [[_System/Canvases/Dashboard-Beta|Widescreen Dashboard Beta]]
-- **Memory Subsystem:** [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Board]] · [[04-Archives/Memory-Review/HERMES-PREAMBLE|Hermes Preamble]]
+- **Memory Subsystem:** [[04-Archives/Memory-Review/Memory-Board|Memory Board]] · [[04-Archives/Memory-Review/HERMES-PREAMBLE|Hermes Preamble]]
 - **Skills & Telemetry:** [[02-Areas/Skills/Installed-Skills-Index|Installed Skills]] · [[04-Archives/Audit-Reports/Agent-Performance|Agent Performance]]
 - **Upstream Repository:** [hermes-brain-template on GitHub](https://github.com/mistrysiddh/hermes-brain-template)
 

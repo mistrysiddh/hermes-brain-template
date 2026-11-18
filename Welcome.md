@@ -17,13 +17,13 @@ The vault is structured according to the **PARA Method** (Projects, Areas, Resou
 - `01-Projects/` — Active projects with defined deadlines/outcomes, ADRs, and [[01-Projects/Projects.base|Projects Database]] (see [[01-Projects/README|01-Projects Index]])
 - `02-Areas/` — Ongoing domains of responsibility, [[02-Areas/User-Profile|User-Profile]] (human alignment parameters), and [[02-Areas/README|Areas Index]]
 - `03-Resources/` — Topics of ongoing interest, [[03-Resources/Research/README|Research Inquiries]], and [[03-Resources/README|Resources Index]]
-- `04-Archives/` — Inactive or completed items: [[04-Archives/Daily/README|Daily Session Archives]], [[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]], and [[04-Archives/README|Archives Index]]
+- `04-Archives/` — Inactive or completed items: [[04-Archives/Daily/README|Daily Session Archives]], [[04-Archives/Memory-Review/Memory-Board|Memory Review Board]], and [[04-Archives/README|Archives Index]]
 - `_System/` — Vault mechanics: Reusable templates in `_System/Templates/`, automation tools in `_System/Scripts/`, visual canvases in `_System/Canvases/`, and [[_System/README|System Index]]
 
 ## ✨ Core Features & Enhancements
 - **Domain Knowledge Hubs (MOCs)** — Deep-dive topical indexes: [[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack]], [[03-Resources/MOCs/Cybersecurity-MOC|Cybersecurity]], [[03-Resources/MOCs/AI-ML-MOC|AI/ML Workflows]], [[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture]]
 - **Personality Judgment Framework** — 11-dimension behavioral analysis framework, analysis template, dashboard, and canvas in `02-Areas/Skills/` and `_System/`
-- **Memory Consolidation & Promotion** — 3-stage visual board at [[04-Archives/Memory-Review/Memory-Board.kanban|Memory-Board]] with automated distillation via `_System/Scripts/dream_cycle.py`
+- **Memory Consolidation & Promotion** — 3-stage visual board at [[04-Archives/Memory-Review/Memory-Board|Memory-Board]] with automated distillation via `_System/Scripts/dream_cycle.py`
 - **Telemetry & Skill Analytics** — Token logging, session correlation, and skill forecasting via `_System/Scripts/hourly_archive.py` and `_System/Scripts/skill_forecast.py`
 - **Semantic Vector Layer** — Local embeddings and search via `_System/Scripts/semantic_search.py`
 - **Widescreen Dashboard** — Card-based dashboard with live clock, KPI strip, session heatmap, calendar, and quick-launch actions at [[_System/Canvases/Dashboard-Beta|Dashboard-Beta]]

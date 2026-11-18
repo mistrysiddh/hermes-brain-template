@@ -4,7 +4,7 @@ sync_to_hermes.py — Bidirectional Memory Sync & Context Preamble Generator.
 
 Connects the Obsidian Hermes Brain Vault to the active Hermes / OpenClaw runtime:
 1. Gathers approved facts (- [x]) from Memory-Review/Promotion-Candidates.md and
-   Memory-Review/Memory-Board.kanban.
+   Memory-Review/Memory-Board.md.
 2. Synchronizes approved facts directly into Hermes's native MEMORY.md file.
 3. Generates a calibrated Context Preamble (HERMES-PREAMBLE.md) with active
    projects, standing boundaries from User-Profile.md, and durable facts.
@@ -60,7 +60,7 @@ def find_dir(vault_root, *candidates):
     return vault_root.joinpath(*first) if isinstance(first, (list, tuple)) else vault_root / first
 
 def extract_approved_facts(vault_root):
-    """Extract all approved facts from Promotion-Candidates.md and Memory-Board.kanban."""
+    """Extract all approved facts from Promotion-Candidates.md and Memory-Board.md."""
     facts = []
     seen = set()
 
@@ -78,8 +78,8 @@ def extract_approved_facts(vault_root):
                     seen.add(clean.lower())
                     facts.append({"text": clean, "source": "Promotion-Candidates.md"})
 
-    # 2. Read from Memory-Board.kanban
-    kanban_file = mr_dir / "Memory-Board.kanban"
+    # 2. Read from Memory-Board.md
+    kanban_file = mr_dir / "Memory-Board.md"
     if kanban_file.exists():
         content = kanban_file.read_text(encoding="utf-8")
         in_approved = False
@@ -96,7 +96,7 @@ def extract_approved_facts(vault_root):
                     clean = m.group(1).strip()
                     if clean and clean.lower() not in seen:
                         seen.add(clean.lower())
-                        facts.append({"text": clean, "source": "Memory-Board.kanban"})
+                        facts.append({"text": clean, "source": "Memory-Board.md"})
 
     return facts
 

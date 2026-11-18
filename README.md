@@ -91,7 +91,7 @@ The vault is structured according to the **PARA Method** (Projects, Areas, Resou
 - **`01-Projects/`** — Active projects with goals and deadlines, architectural decision records (`01-Projects/ADR/`), and an Obsidian Dataview database (`Projects.base`).
 - **`02-Areas/`** — Long-term standards, human alignment parameters (`02-Areas/User-Profile.md`), installed skills catalog, team roster, and the 11-dimension [[02-Areas/Skills/Personality-Judgment-Framework|Personality Judgment Framework]].
 - **`03-Resources/`** — Domain knowledge hubs ([[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack]], [[03-Resources/MOCs/Cybersecurity-MOC|Cybersecurity]], [[03-Resources/MOCs/AI-ML-MOC|AI/ML]], [[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture]]), technical research inquiries (`03-Resources/Research/`), and reference guides (`03-Resources/Guides/`).
-- **`04-Archives/`** — Historical and completed items: [[04-Archives/Daily/Timeline|Daily Session Timeline]], [[04-Archives/Daily/Chat-Correlation|Chat Correlation]], 3-stage memory staging ([[04-Archives/Memory-Review/Memory-Board.kanban|Memory Kanban]]), and telemetry/audit reports (`04-Archives/Audit-Reports/`).
+- **`04-Archives/`** — Historical and completed items: [[04-Archives/Daily/Timeline|Daily Session Timeline]], [[04-Archives/Daily/Chat-Correlation|Chat Correlation]], 3-stage memory staging ([[04-Archives/Memory-Review/Memory-Board|Memory Kanban]]), and telemetry/audit reports (`04-Archives/Audit-Reports/`).
 - **`_System/`** — Operational core: Reusable note templates (`_System/Templates/`), cross-platform automation scripts (`_System/Scripts/`), and visual architecture canvases (`_System/Canvases/Memory-Pipeline.canvas`).
 - **`Dashboard.md` & `_System/Canvases/Dashboard-Beta.md`** — Live command centers providing immediate visibility into active projects, token telemetry, archiver health, recent sessions, and skill analytics.
 - Preconfigured Obsidian plugins: **Dataview**, **Smart Connections**, **Local REST API**, **Kanban**, plus two bundled themes — **Tokyo Night** and **Nemoclaw**.
@@ -336,7 +336,7 @@ Here is the organized folder structure of the Hermes Brain template:
 │   │   └── Timeline.md
 │   ├── Memory-Review/
 │   │   ├── HERMES-PREAMBLE.md
-│   │   ├── Memory-Board.kanban
+│   │   ├── Memory-Board.md
 │   │   └── TEMPLATE.md
 │   └── README.md
 ├── _System/

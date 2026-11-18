@@ -62,7 +62,7 @@ It works fine inside OneDrive/Dropbox/Google Drive for sync, or fully local — 
   - **Dataview** — powers the live tables in `04-Archives/Daily/Timeline.md` and Dashboards.
   - **Smart Connections** — semantic search/related-notes across the vault.
   - **Local REST API** — lets Hermes (or scripts) write/read notes over HTTP.
-  - **Kanban** — powers `04-Archives/Memory-Review/Memory-Board.kanban`.
+  - **Kanban** — powers `04-Archives/Memory-Review/Memory-Board.md`.
 - If Obsidian says a plugin is missing/disabled, go to Settings → Community Plugins and toggle it on manually.
 - **Minimum plugin versions** are documented in `.obsidian/plugin-versions.json`.
 

@@ -46,7 +46,7 @@ Inactive records, chronological session histories, memory review staging areas, 
 
 ### 🧠 Memory Review & Staging
 
-- **[[04-Archives/Memory-Review/Memory-Board.kanban|Memory Review Board]]:** Interactive Kanban board for approving candidate facts into permanent agent context.
+- **[[04-Archives/Memory-Review/Memory-Board|Memory Review Board]]:** Interactive Kanban board for approving candidate facts into permanent agent context.
 - **[[04-Archives/Memory-Review/HERMES-PREAMBLE|Hermes Preamble]]:** Active compiled runtime instructions injected on agent startup.
 - **[[04-Archives/Memory-Review/TEMPLATE|Review Template]]:** Guidelines for vetting memory promotions.
 
