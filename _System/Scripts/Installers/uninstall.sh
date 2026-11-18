@@ -9,6 +9,12 @@ info()  { printf '  %s\n' "$1"; }
 warn()  { printf '  \033[33m! %s\033[0m\n' "$1"; }
 ok()    { printf '  \033[32m✓ %s\033[0m\n' "$1"; }
 
+# Bash 3.2-compatible lowercase conversion (macOS ships Bash 3.2 which
+# lacks the ${var,,} parameter expansion introduced in Bash 4.0).
+to_lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 echo
 bold "Hermes Brain — vault uninstaller"
 info "Reverses what install.sh set up: Hermes CLI wiring, then (optionally)"
@@ -36,7 +42,7 @@ if command -v hermes >/dev/null 2>&1; then
   CURRENT=$(hermes config get env.HERMES_VAULT_PATH 2>/dev/null || true)
   if [ -n "$CURRENT" ] && [ "$CURRENT" = "$DEST" ]; then
     read -rp "  Unset env.HERMES_VAULT_PATH (currently set to this vault)? [Y/n]: " UNSET
-    if [ "${UNSET,,}" != "n" ]; then
+    if [ "$(to_lower "$UNSET")" != "n" ]; then
       hermes config unset env.HERMES_VAULT_PATH \
         && ok "Unset env.HERMES_VAULT_PATH" \
         || warn "Couldn't unset automatically — run manually: hermes config unset env.HERMES_VAULT_PATH"
@@ -58,7 +64,7 @@ bold "Cron job & hooks cleanup"
 if command -v hermes >/dev/null 2>&1; then
   if hermes cron list 2>/dev/null | grep -q "hermes-brain-archive-hourly"; then
     read -rp "  Found 'hermes-brain-archive-hourly' cron job. Remove it now? [Y/n]: " RM_CRON
-    if [ "${RM_CRON,,}" != "n" ]; then
+    if [ "$(to_lower "$RM_CRON")" != "n" ]; then
       hermes cron delete "hermes-brain-archive-hourly" \
         && ok "Removed 'hermes-brain-archive-hourly' cron job." \
         || warn "Could not remove cron job automatically — run: hermes cron delete hermes-brain-archive-hourly"

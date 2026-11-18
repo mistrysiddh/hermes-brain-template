@@ -55,6 +55,12 @@ info()  { printf '  %s\n' "$1"; }
 warn()  { printf '  \033[33m! %s\033[0m\n' "$1"; }
 ok()    { printf '  \033[32m✓ %s\033[0m\n' "$1"; }
 
+# Bash 3.2-compatible lowercase conversion (macOS ships Bash 3.2 which
+# lacks the ${var,,} parameter expansion introduced in Bash 4.0).
+to_lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 cd "$VAULT_ROOT"
 
 echo
@@ -100,7 +106,7 @@ else
     warn "You have uncommitted changes."
     if [ "$DRY_RUN" = false ]; then
       read -rp "  Commit them now before updating? [Y/n]: " DOCOMMIT
-      if [ "${DOCOMMIT,,}" != "n" ]; then
+      if [ "$(to_lower "$DOCOMMIT")" != "n" ]; then
         git add -A
         git commit -q -m "Snapshot before template update"
         ok "Committed."

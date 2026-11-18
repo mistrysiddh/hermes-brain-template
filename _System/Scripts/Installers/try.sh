@@ -17,6 +17,12 @@ info()  { printf '  %s\n' "$1"; }
 warn()  { printf '  \033[33m! %s\033[0m\n' "$1"; }
 ok()    { printf '  \033[32m✓ %s\033[0m\n' "$1"; }
 
+# Bash 3.2-compatible lowercase conversion (macOS ships Bash 3.2 which
+# lacks the ${var,,} parameter expansion introduced in Bash 4.0).
+to_lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 echo
 bold "Hermes Brain — try it (scratch vault, no install)"
 info "Copies the template to a temp directory you can throw away any time."
@@ -58,7 +64,7 @@ esac
 
 if [ "$FOUND_OBSIDIAN" = "1" ]; then
   read -rp "  Open in Obsidian now? [Y/n]: " OPENNOW
-  if [ "${OPENNOW,,}" != "n" ]; then
+  if [ "$(to_lower "$OPENNOW")" != "n" ]; then
     eval "$OPEN_CMD" &
     ok "Launched."
   fi

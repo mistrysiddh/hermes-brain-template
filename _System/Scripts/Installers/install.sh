@@ -83,6 +83,12 @@ find_python() {
   return 1
 }
 
+# Bash 3.2-compatible lowercase conversion (macOS ships Bash 3.2 which
+# lacks the ${var,,} parameter expansion introduced in Bash 4.0).
+to_lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 
 echo
 bold "Hermes Brain — vault installer"
@@ -117,7 +123,7 @@ if [ "$IS_REMOTE" = true ]; then
   if [ -e "$DEST" ] && [ -n "$(ls -A "$DEST" 2>/dev/null)" ] && [ "$TEST_MODE" = false ]; then
     warn "$DEST already exists and is not empty."
     read -rp "  Overwrite/merge into it? [y/N]: " CONFIRM
-    [ "${CONFIRM,,}" = "y" ] || { echo "Aborted."; exit 1; }
+    [ "$(to_lower "$CONFIRM")" = "y" ] || { echo "Aborted."; exit 1; }
   fi
   mkdir -p "$DEST"
   if command -v git >/dev/null 2>&1; then
@@ -155,7 +161,7 @@ else
     if [ -e "$DEST" ] && [ -n "$(ls -A "$DEST" 2>/dev/null)" ] && [ "$TEST_MODE" = false ]; then
       warn "$DEST already exists and is not empty."
       read -rp "  Overwrite/merge into it? [y/N]: " CONFIRM
-      [ "${CONFIRM,,}" = "y" ] || { echo "Aborted."; exit 1; }
+      [ "$(to_lower "$CONFIRM")" = "y" ] || { echo "Aborted."; exit 1; }
     fi
     mkdir -p "$DEST"
     info "Copying template to $DEST ..."
@@ -194,7 +200,7 @@ case "$BACKEND" in
       ok "Ollama found."
       if ! ollama list 2>/dev/null | grep -q nomic-embed-text; then
         read -rp "  Pull the nomic-embed-text model now? [Y/n]: " PULL
-        if [ "${PULL,,}" != "n" ]; then
+        if [ "$(to_lower "$PULL")" != "n" ]; then
           ollama pull nomic-embed-text || warn "Pull failed — run 'ollama pull nomic-embed-text' manually later."
         fi
       fi
@@ -212,7 +218,7 @@ case "$BACKEND" in
         ok "sentence-transformers already installed."
       else
         read -rp "  Install sentence-transformers + numpy now via pip? [Y/n]: " PIPINSTALL
-        if [ "${PIPINSTALL,,}" != "n" ]; then
+        if [ "$(to_lower "$PIPINSTALL")" != "n" ]; then
           "$PY" -m pip install --quiet sentence-transformers numpy && ok "Installed." \
             || warn "pip install failed — try manually: $PY -m pip install sentence-transformers numpy"
         fi
@@ -248,7 +254,7 @@ if command -v hermes >/dev/null 2>&1; then
   ok "Hermes CLI found."
   if [ "$TEST_MODE" = false ]; then
     read -rp "  Record this vault path in Hermes env as HERMES_VAULT_PATH now? [Y/n]: " SETENV
-    if [ "${SETENV,,}" != "n" ]; then
+    if [ "$(to_lower "$SETENV")" != "n" ]; then
       hermes config set env.HERMES_VAULT_PATH "$DEST" \
         && ok "Set env.HERMES_VAULT_PATH" \
         || warn "Couldn't set it automatically — run manually: hermes config set env.HERMES_VAULT_PATH \"$DEST\""
@@ -256,7 +262,7 @@ if command -v hermes >/dev/null 2>&1; then
     echo
     bold "Hourly session-archiving cron job"
     read -rp "  Set up hourly session archiving cron job in Hermes now? [Y/n]: " SETUP_CRON
-    if [ "${SETUP_CRON,,}" != "n" ]; then
+    if [ "$(to_lower "$SETUP_CRON")" != "n" ]; then
       if hermes cron list 2>/dev/null | grep -q "hermes-brain-archive-hourly"; then
         ok "Cron job 'hermes-brain-archive-hourly' is already registered."
       else
@@ -270,7 +276,7 @@ if command -v hermes >/dev/null 2>&1; then
     echo
     bold "Real-time session syncing hooks"
     read -rp "  Set up real-time session archiving hooks in Hermes now (syncs chats on start and every turn)? [Y/n]: " SETUP_HOOKS
-    if [ "${SETUP_HOOKS,,}" != "n" ]; then
+    if [ "$(to_lower "$SETUP_HOOKS")" != "n" ]; then
       HOOK_CMD="$DEST/_System/Scripts/hermes_session_sync.sh"
       chmod +x "$HOOK_CMD" 2>/dev/null || true
       PY=$(find_python || true)
@@ -318,7 +324,7 @@ fi
 if [ "$TEST_MODE" = false ]; then
   echo
   read -rp "Run _System/Scripts/consolidate_memory.py once now to verify it works? [y/N]: " RUNCONS
-  if [ "${RUNCONS,,}" = "y" ]; then
+  if [ "$(to_lower "$RUNCONS")" = "y" ]; then
     PY=$(find_python || true)
     if [ -n "$PY" ]; then
       CONS_SCRIPT="$DEST/_System/Scripts/consolidate_memory.py"
