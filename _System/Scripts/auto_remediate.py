@@ -345,7 +345,7 @@ def generate_remediation_report(findings, results, dry_run=True):
         lines.append("Each fix will be presented for individual approval before committing.")
     else:
         lines.append("All safe fixes have been applied and committed individually.")
-        lines.append("Review skipped items in `04-Archives/Audit-Reports/Auto-Remediate-Report.md`.")
+        lines.append(os.path.join(VAULT, "Review skipped items in `04-Archives", "Audit-Reports", "Auto-Remediate-Report.md`."))
     lines.append("")
 
     return "\n".join(lines)

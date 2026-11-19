@@ -1,0 +1,39 @@
+# S3 Directory — Skill Define Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S3): Roles × Skills ontology
+#
+# This sub-prompt governs defining a new skill in the directory ontology.
+
+TASK: Define a new skill in the directory ontology
+
+INPUT:
+- skill_name: unique identifier for the skill (e.g., "python-scripting", "threat-modeling")
+- description: human-readable description of the skill
+- category: skill category (e.g., "programming", "analysis", "communication", "governance")
+- difficulty: difficulty level (e.g., "beginner", "intermediate", "advanced", "expert")
+
+STEPS:
+1. Validate skill_name is unique (not already in directory)
+2. Normalize skill_name (lowercase, hyphens instead of spaces)
+3. Create skill record with name, description, category, difficulty
+4. Initialize empty role set for the skill
+5. Record creation timestamp
+
+OUTPUT SCHEMA:
+{
+  "skill": {
+    "name": "<normalized skill name>",
+    "description": "<human-readable description>",
+    "category": "<skill category>",
+    "difficulty": "<difficulty level>",
+    "roles": [],
+    "created_at": "<ISO 8601 timestamp>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Skill names must be unique within the directory
+- Normalize names to lowercase with hyphens
+- A skill with no roles is valid (roles can be mapped later)
+- Category and difficulty are optional but recommended

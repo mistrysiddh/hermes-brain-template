@@ -389,7 +389,7 @@ def run_self_test():
     try:
         init_paths(tmp)
         assert VAULT == os.path.abspath(tmp)
-        assert REPORT_DIR.endswith("04-Archives/Audit-Reports")
+        assert REPORT_DIR.endswith(os.path.join(VAULT, "04-Archives", "Audit-Reports"))
         print("✅ Test 1: init_paths sets vars")
         passed += 1
     except Exception as e:
@@ -495,10 +495,10 @@ def run_self_test():
         n1 = os.path.join(tmp, "04-Archives", "Daily", "orphan.md")
         n2 = os.path.join(tmp, "04-Archives", "Daily", "linker.md")
         write_file(n1, "# Orphan\nNo links here.")
-        write_file(n2, "# Linker\nLinks to [[04-Archives/Daily/orphan.md|orphan]].")
+        write_file(n2, os.path.join(VAULT, "# Linker", "nLinks to [[04-Archives", "Daily", "orphan.md|orphan]]."))
         orphans = find_orphans(VAULT)
         # orphan.md should NOT be orphan (it's linked), but linker.md has no incoming links
-        assert "04-Archives/Daily/linker.md" in orphans, f"Expected linker.md to be orphan, got {orphans}"
+        assert os.path.join(VAULT, "04-Archives", "Daily", "linker.md") in orphans, f"Expected linker.md to be orphan, got {orphans}"
         print("✅ Test 7: find_orphans works")
         passed += 1
     except Exception as e:

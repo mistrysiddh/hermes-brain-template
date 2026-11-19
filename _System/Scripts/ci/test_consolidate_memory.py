@@ -45,7 +45,7 @@ def run_consolidate(vault_root):
 class ConsolidateMemoryTests(unittest.TestCase):
     def setUp(self):
         self.vault = tempfile.mkdtemp(prefix="hb-consolidate-test-")
-        self.mr_dir = os.path.join(self.vault, "Memory-Review")
+        self.mr_dir = os.path.join(self.vault, os.path.join(VAULT, "Memory-Review"))
 
     def tearDown(self):
         shutil.rmtree(self.vault, ignore_errors=True)

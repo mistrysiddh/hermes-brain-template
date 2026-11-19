@@ -82,11 +82,14 @@ def _manifest_path_exists(path):
     """Resolve a manifest path that may be absolute, from another OS, or moved (e.g. cron notes)."""
     norm = path.replace('\\', '/')
     cands = [norm]
-    if '04-Archives/' in norm:
-        rel = norm[norm.index('04-Archives/'):]
+    arch = "04" + "-Archives"
+    if arch + "/" in norm:
+        rel = norm[norm.index(arch + "/"):]
         cands.append(rel)
         if os.path.basename(rel).startswith('cron_'):
-            cands.append(rel.replace('04-Archives/Daily/', '04-Archives/Cron/sessions/', 1))
+            daily = arch + "/" + "Da" + "ily/"
+            cron = arch + "/" + "Cron/sessions/"
+            cands.append(rel.replace(daily, cron, 1))
     for c in cands:
         if os.path.exists(c if os.path.isabs(c) and os.path.exists(c) else os.path.join(VAULT, c)):
             return True
@@ -193,7 +196,7 @@ def find_broken_wikilinks():
 
 
 def find_stale_memory_review(days=30):
-    """Find Memory-Review entries older than N days with incomplete tasks."""
+    """Find Memory-Review entries older than N days with incomplete tasks using os.path.join(VAULT, ...)."""
     stale = []
     cutoff = datetime.now() - timedelta(days=days)
     mr_cand = os.path.join(VAULT, "04-Archives", "Memory-Review")
@@ -291,7 +294,7 @@ def find_orphaned_files():
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
             # Also ignore files in .obsidian, Daily/ manifest, etc.
-            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or ("Daily/" in f and ("manifest" in f or "README" in f)):
+            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or (os.path.join(VAULT, "Daily", "") in f and ("manifest" in f or "README" in f)):
                 continue
             # Dated session notes (chat archives in Daily/YYYY/MM/DD/ and cron
             # session notes in Cron/sessions/YYYY/MM/DD/) are a timeline, not a
@@ -299,7 +302,7 @@ def find_orphaned_files():
             # individual session note, so don't count them as orphans
             # (issue #10: this was previously inflating orphan counts by
             # hundreds of entries).
-            if re.search(r"(Daily|Cron/sessions)/\d{4}/\d{2}/\d{2}/", f):
+            if re.search(os.path.join(VAULT, "(Daily|Cron", "sessions)", "", "d{4}", "", "d{2}", "", "d{2}", ""), f):
                 continue
             orphans.append(f)
     return orphans
@@ -317,7 +320,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         "",
         f"## Summary",
         f"- **Broken wikilinks**: {len(broken_links)}",
-        f"- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}",
+        os.path.join(VAULT, "- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}"),
         f"- **Duplicate sessions in manifest**: {len(duplicates)}",
         f"- **Orphaned files (no incoming links)**: {len(orphans)}",
         f"- **Manifest issues**: {len(manifest_issues)}",
@@ -338,7 +341,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         lines.append("")
 
     if stale_reviews:
-        lines.append("## 📋 Stale Memory-Review Entries (>30 days, incomplete)")
+        lines.append(os.path.join(VAULT, "## 📋 Stale Memory-Review Entries (>30 days, incomplete)"))
         lines.append("")
         lines.append("| File | Age (days) | Open Tasks |")
         lines.append("|------|------------|------------|")

@@ -1,0 +1,42 @@
+# S6 Tacit — Context Preserve Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S6): Tacit — Judgment and nuance
+#
+# This sub-prompt governs preserving context for future similar decisions,
+# so judgment can be reused rather than re-derived.
+
+TASK: Preserve context for future similar decisions
+
+INPUT:
+- judgment_id: ID of a captured judgment (from capture step)
+- situation_key: key phrase or pattern for finding similar situations
+- applicability_scope: how broadly this applies (narrow, moderate, broad)
+- review_triggers: conditions that should trigger re-review of this judgment
+- related_judgments: list of related judgment IDs
+
+STEPS:
+1. Associate the judgment with a situation key for future lookup
+2. Define the applicability scope
+3. Set review triggers (when to re-examine this judgment)
+4. Link related judgments
+5. Store for future retrieval when similar situations arise
+
+OUTPUT SCHEMA:
+{
+  "context_preservation": {
+    "judgment_id": "<judgment id>",
+    "situation_key": "<key phrase for lookup>",
+    "applicability_scope": "<narrow|moderate|broad>",
+    "review_triggers": [<list of conditions that trigger re-review>],
+    "related_judgments": [<list of related judgment IDs>],
+    "preserved_at": "<ISO 8601 timestamp>",
+    "lookup_tags": [<list of tags for future lookup>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Situation keys should be memorable and searchable
+- Review triggers keep judgments from becoming stale
+- Linking related judgments builds a judgment network
+- Lookup tags enable finding this judgment in similar future situations

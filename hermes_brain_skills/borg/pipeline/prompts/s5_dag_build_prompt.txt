@@ -1,0 +1,55 @@
+# S5 Decompose — DAG Build Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S5): Decompose — Composites → DAGs
+#
+# This sub-prompt governs building a directed acyclic graph from decomposed units.
+
+TASK: Build a DAG from decomposed composite units
+
+INPUT:
+- composite_id: ID of the composite to decompose
+- units: list of decomposed units (each with id, text, type, estimated duration)
+- dependencies: optional list of (from_unit_id, to_unit_id) dependency pairs
+
+STEPS:
+1. Create a node for each decomposed unit
+2. Add edges for each dependency (from_unit -> to_unit means from_unit must complete before to_unit starts)
+3. Detect cycles (should not exist in a valid DAG)
+4. Topologically sort the nodes
+5. Assign levels (longest path from any root node)
+6. Identify root nodes (no dependencies) and leaf nodes (no dependents)
+
+OUTPUT SCHEMA:
+{
+  "dag": {
+    "composite_id": "<composite_id>",
+    "nodes": [
+      {
+        "id": "<unit_id>",
+        "text": "<unit text>",
+        "type": "<unit type>",
+        "estimated_duration": <int minutes>,
+        "level": <int DAG level>,
+        "dependencies": [<list of dependency unit ids>],
+        "dependents": [<list of dependent unit ids>]
+      }
+    ],
+    "edges": [
+      {
+        "from": "<from_unit_id>",
+        "to": "<to_unit_id>"
+      }
+    ],
+    "roots": [<list of root node ids>],
+    "leaves": [<list of leaf node ids>],
+    "total_levels": <int>,
+    "is_acyclic": <bool>
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- The graph must be acyclic (is_acyclic should be true)
+- Each node has exactly one level (longest path from root)
+- Root nodes are at level 0
+- Edges point from prerequisite to dependent

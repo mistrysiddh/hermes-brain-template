@@ -32,10 +32,17 @@ def resolve_vault(explicit_vault=None):
     return None
 
 
-VAULT = resolve_vault()
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily") if VAULT else ""
-DAILY = daily_cand if (daily_cand and os.path.exists(daily_cand)) else (os.path.join(VAULT, "Daily") if VAULT else "")
+VAULT = None
+DAILY = None
 SUMMARY_FRONTMATTER_KEY = "summary"
+
+
+def init_paths(vault_path):
+    """Resolve vault path from the given argument."""
+    global VAULT, DAILY
+    VAULT = os.path.abspath(vault_path)
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily") if VAULT else ""
+    DAILY = daily_cand if (daily_cand and os.path.exists(daily_cand)) else (os.path.join(VAULT, "Daily") if VAULT else "")
 
 
 def has_frontmatter(content):
@@ -138,6 +145,12 @@ def main():
     if args.test:
         print("🎉 enrich_session.py self-tests: 0 passed, 0 failed")
         sys.exit(0)
+
+    # Resolve vault path before using DAILY default
+    if args.vault:
+        init_paths(args.vault)
+    elif os.environ.get("HERMES_VAULT_PATH"):
+        init_paths(os.environ["HERMES_VAULT_PATH"])
 
     if not os.path.isdir(args.path):
         print(f"Error: {args.path} is not a directory.")

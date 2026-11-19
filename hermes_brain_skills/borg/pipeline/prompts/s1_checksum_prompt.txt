@@ -1,0 +1,35 @@
+# S1 Ingestor — Checksum Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S1): Unpack, checksum, classify
+#
+# This sub-prompt governs the checksum step: compute cryptographic hashes
+# of the artifact for integrity verification and deduplication.
+
+TASK: Compute cryptographic checksums for an artifact
+
+INPUT:
+- artifact_path: path to the artifact file
+- algorithm: hash algorithm (default: sha256; supported: sha256, sha512, md5)
+
+STEPS:
+1. Read artifact bytes in chunks (64 KB buffer for large files)
+2. Compute the requested hash over the full byte stream
+3. Also compute SHA-256 as the canonical integrity hash
+4. Record file size and modification time for cache invalidation
+
+OUTPUT SCHEMA:
+{
+  "checksums": {
+    "sha256": "<hex digest>",
+    "<algorithm>": "<hex digest if different>"
+  },
+  "size_bytes": <int>,
+  "mtime": "<ISO 8601 timestamp>",
+  "checksum_ok": <bool>,
+  "checksum_errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- SHA-256 is always computed; other algorithms are additional
+- Chunked reading to avoid memory issues with large artifacts
+- If file is unreadable, checksum_ok=false with error details
+- Hashes are lowercase hex digests

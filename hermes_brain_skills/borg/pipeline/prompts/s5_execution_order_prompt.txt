@@ -1,0 +1,42 @@
+# S5 Decompose — Execution Order Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S5): Decompose — Composites → DAGs
+#
+# This sub-prompt governs determining topological execution order from a DAG.
+
+TASK: Determine execution order from a DAG
+
+INPUT:
+- dag: DAG object (from DAG build step) with nodes and edges
+- parallelizable: whether to identify parallelizable units (default: true)
+- max_parallel: maximum number of units to execute in parallel (default: 3)
+
+STEPS:
+1. Topologically sort the DAG nodes
+2. Group nodes into execution waves (units at the same level can run in parallel)
+3. Identify critical path (longest chain of dependencies)
+4. Estimate total duration (sum of critical path durations)
+5. Identify parallelization opportunities (waves with multiple units)
+6. Return execution plan with waves and critical path
+
+OUTPUT SCHEMA:
+{
+  "execution_order": [
+    {
+      "wave": <int wave number starting at 0>,
+      "units": [<list of unit ids in this wave, executable in parallel>],
+      "estimated_wave_duration": <int max duration among units in wave>
+    }
+  ],
+  "critical_path": [<list of unit ids on the critical path>],
+  "total_estimated_duration": <int total minutes>,
+  "total_waves": <int>,
+  "parallelizable_units": <int count of units that can run in parallel>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Units in the same wave have no dependencies on each other
+- All units in wave N must complete before any unit in wave N+1 starts
+- Critical path is the longest dependency chain (determines minimum total duration)
+- Parallelizable units are those that share a wave with at least one other unit

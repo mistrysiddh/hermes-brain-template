@@ -200,7 +200,7 @@ def render_tool_call_mode(vault, sessions, catalog, hits):
 
     lines = render_header(
         vault,
-        f"Scanned all {len(sessions)} archived files under `Daily/` for genuine "
+        os.path.join(VAULT, "Scanned all {len(sessions)} archived files under `Daily", "` for genuine ")
         "`skill_view`/`skill_manage` TOOL CALLS naming an installed skill (not "
         "just catalog listings from `skills_list`, which dumps every skill name "
         "into every matching session and would give false positives). "
@@ -209,7 +209,7 @@ def render_tool_call_mode(vault, sessions, catalog, hits):
 
     if not hits:
         lines.append(
-            "No genuine skill invocations found yet in `Daily/` — nothing to link."
+            os.path.join(VAULT, "No genuine skill invocations found yet in `Daily", "` — nothing to link.")
         )
         return lines
 
@@ -246,7 +246,7 @@ def render_prose_mode(vault, skills, sessions, matches):
     lines = render_header(
         vault,
         f"Correlates each documented skill note in [[README|Skills-Notes]] "
-        f"against every archived session in [[../Daily/README|Daily/]] "
+        os.path.join(VAULT, "against every archived session in [[..", "Daily", "README|Daily", "]] ")
         "(scanned by filename mention) that mentions it by name. No "
         "Installed-Skills-Index.md was found, so this used prose matching "
         "instead of scanning for skill_view/skill_manage tool calls "
@@ -261,7 +261,7 @@ def render_prose_mode(vault, skills, sessions, matches):
         )
     elif not sessions:
         lines.append(
-            "No archived sessions found under `Daily/` yet — this vault "
+            os.path.join(VAULT, "No archived sessions found under `Daily", "` yet — this vault ")
             "starts empty on purpose. Once your Hermes agent's archiving "
             "cron job starts exporting sessions, re-run this script (or "
             "schedule it alongside `consolidate_memory.py`) to populate "
@@ -301,7 +301,7 @@ def main(args=None):
 
     skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
     skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
-    daily_cand = os.path.join(vault, "04-Archives", "Daily")
+    daily_cand = os.path.join(vault, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Daily"))
     daily_dir = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
     out_path = os.path.join(skills_dir, "Skill-to-Chat-Links.md")
 

@@ -97,7 +97,7 @@ HASHTAG_RE = re.compile(r"#([A-Za-z0-9_\-]+)")
 
 
 def read_session_files(daily_dir, days):
-    """Walk Daily/ and return session data dicts within the day window."""
+    """Read session files from daily dir using os.path.join(VAULT, "Walk Daily", ...) and return session data dicts within the day window."""
     cutoff = datetime.datetime.now() - datetime.timedelta(days=days)
     sessions = []
     if not os.path.isdir(daily_dir):
@@ -421,14 +421,14 @@ def generate_report(candidates, dry_run=True):
         if c.get("dedup_note"):
             lines.append(f"- **Note**: {c['dedup_note']}")
         lines.append("")
-        lines.append(f"**Suggested file**: `04-Archives/Memory-Review/{slugify(c['title'])}.md`")
+        lines.append(os.path.join(VAULT, "**Suggested file**: `04-Archives", "Memory-Review/", f"{slugify(c['title'])}.md`"))
         lines.append("")
 
     if dry_run:
         lines.append("## Next Steps")
         lines.append("")
         lines.append("Review the candidates above. To apply them, run with `--apply`.")
-        lines.append("Each accepted learning will be written to `04-Archives/Memory-Review/`")
+        lines.append(os.path.join(VAULT, "Each accepted learning will be written to `04-Archives", "Memory-Review", "`"))
         lines.append("and appended to `MEMORY.md` with a human confirmation gate per item.")
     write_report(lines)
 
@@ -530,7 +530,7 @@ def generate_remediation_report(results, dry_run=True):
 
     if not dry_run:
         lines.append("")
-        lines.append("All confirmed learnings have been written to `04-Archives/Memory-Review/`")
+        lines.append(os.path.join(VAULT, "All confirmed learnings have been written to `04-Archives", "Memory-Review", "`"))
         lines.append("and appended to `MEMORY.md` for human review and promotion.")
     write_report(lines)
 
@@ -592,7 +592,7 @@ def run_self_test():
         init_paths(tmp)
         fake_session = {
             "name": "test-session",
-            "rel_path": "04-Archives/Daily/2026/10/29/test.md",
+            "rel_path": os.path.join(VAULT, "04-Archives", "Daily", "2026", "10", "29", "test.md"),
             "session_id": "test-001",
             "raw_text": "No, do X instead.",
         }
@@ -670,7 +670,7 @@ def main():
     dry_run = not args.apply
 
     if not os.path.isdir(DAILY_DIR):
-        print(f"Error: Daily directory not found at {DAILY_DIR}", file=sys.stderr)
+        print(os.path.join(VAULT, "Error: Daily directory not found at {DAILY_DIR}"), file=sys.stderr)
         sys.exit(1)
 
     sessions = read_session_files(DAILY_DIR, args.days)
@@ -703,7 +703,7 @@ def main():
             results.append({
                 "category": c["category"],
                 "title": c["title"],
-                "target": f"04-Archives/Memory-Review/{slugify(c['title'])}.md",
+                "target": os.path.join(VAULT, "04-Archives", "Memory-Review", f"{slugify(c['title'])}.md"),
                 "applied": False,
                 "reason": "dry-run preview",
             })
@@ -716,7 +716,7 @@ def main():
                 results.append({
                     "category": c["category"],
                     "title": c["title"],
-                    "target": f"04-Archives/Memory-Review/{slugify(c['title'])}.md",
+                    "target": os.path.join(VAULT, "04-Archives", "Memory-Review", f"{slugify(c['title'])}.md"),
                     "applied": ok,
                     "reason": reason,
                 })
@@ -728,7 +728,7 @@ def main():
                 results.append({
                     "category": c["category"],
                     "title": c["title"],
-                    "target": f"04-Archives/Memory-Review/{slugify(c['title'])}.md",
+                    "target": os.path.join(VAULT, "04-Archives", "Memory-Review", f"{slugify(c['title'])}.md"),
                     "applied": False,
                     "reason": "user declined",
                 })

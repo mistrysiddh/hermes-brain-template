@@ -1,3 +1,10 @@
+---
+title: Refactoring Frameworks Feature Checklist
+type: guide
+status: active
+tags: [refactoring, checklist, features, discussion-40]
+---
+
 # Feature Checklist: Refactoring Frameworks Applied to Thinking
 
 Drafted for [Discussion #40](https://github.com/mistrysiddh/hermes-brain-template/discussions/40)

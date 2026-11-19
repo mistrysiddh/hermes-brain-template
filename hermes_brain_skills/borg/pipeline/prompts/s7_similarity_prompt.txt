@@ -1,0 +1,36 @@
+# S7 Dedup — Similarity Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S7): Dedup — Canonicalize + diversity
+#
+# This sub-prompt governs computing similarity between records for dedup.
+
+TASK: Compute similarity between two records
+
+INPUT:
+- record_a: first record object
+- record_b: second record object
+- fields: list of fields to compare (default: all text fields)
+- weights: optional weights for each field
+
+STEPS:
+1. Extract comparable fields from both records
+2. Compute field-level similarity (text overlap, exact match, numeric proximity)
+3. Combine field similarities using weights
+4. Return overall similarity score and per-field breakdown
+
+OUTPUT SCHEMA:
+{
+  "similarity": <float 0.0-1.0>,
+  "field_similarities": {
+    "<field_name>": <float 0.0-1.0>
+  },
+  "matching_fields": [<list of fields that match exactly>],
+  "differing_fields": [<list of fields that differ>],
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Text similarity uses character 3-gram Jaccard
+- Exact match fields return 1.0 or 0.0
+- Numeric fields use normalized difference
+- Missing fields are treated as 0.0 similarity

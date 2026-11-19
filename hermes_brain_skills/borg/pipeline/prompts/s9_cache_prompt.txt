@@ -1,0 +1,46 @@
+# S9 Search — Cache Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S9): Search — Retrieval + routing
+#
+# This sub-prompt governs caching search results for faster repeated queries.
+
+TASK: Manage search result cache
+
+INPUT:
+- query: search query string
+- results: search results to cache (optional)
+- cache_ttl: time-to-live in seconds (default: 3600)
+- operation: operation type (store, retrieve, invalidate, stats)
+
+STEPS:
+1. If operation is "store": save results with query as key, TTL, and timestamp
+2. If operation is "retrieve": look up cached results by query key
+3. If operation is "invalidate": remove cached results for query key
+4. If operation is "stats": return cache statistics (hit rate, size, etc.)
+5. Check TTL expiration for cached entries
+6. Return cache operation result
+
+OUTPUT SCHEMA:
+{
+  "cache_operation": {
+    "operation": "<store|retrieve|invalidate|stats>",
+    "query": "<query string>",
+    "cached": <bool>,
+    "results": [<list of cached results or null>],
+    "ttl_remaining": <seconds or null>,
+    "cache_stats": {
+      "total_entries": <int>,
+      "hit_rate": <float 0.0-1.0>,
+      "expired_entries": <int>
+    },
+    "ok": <bool>,
+    "errors": [<list of error strings, empty if ok>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Expired entries must not be returned
+- Cache keys are query strings (normalized)
+- TTL defaults to 3600 seconds (1 hour)
+- Stats include hit rate and expired entry count

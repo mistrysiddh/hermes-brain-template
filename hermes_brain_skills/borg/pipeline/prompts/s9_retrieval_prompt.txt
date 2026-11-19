@@ -1,0 +1,52 @@
+# S9 Search — Retrieval Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S9): Search — Retrieval + routing
+#
+# This sub-prompt governs retrieving relevant records from the knowledge base.
+
+TASK: Retrieve relevant records from the knowledge base
+
+INPUT:
+- query: search query string
+- catalogs: list of catalog names to search (optional)
+- filters: optional filters (record type, domain, date range, etc.)
+- top_k: maximum number of results to return (default: 10)
+- min_score: minimum relevance score (0.0-1.0, default: 0.0)
+
+STEPS:
+1. Parse the query into search terms
+2. Search across specified catalogs using keyword matching
+3. Apply filters if provided
+4. Score results by relevance (keyword match, recency, confidence)
+5. Filter by min_score threshold
+6. Sort by relevance score descending
+7. Return top_k results
+
+OUTPUT SCHEMA:
+{
+  "retrieval": {
+    "query": "<original query>",
+    "catalogs_searched": [<list of catalog names>],
+    "results": [
+      {
+        "record_id": "<record id>",
+        "record_type": "<type>",
+        "title": "<title or summary>",
+        "content": "<relevant content snippet>",
+        "relevance_score": <float 0.0-1.0>,
+        "source": "<source catalog or location>",
+        "metadata": {<record metadata>}
+      }
+    ],
+    "total": <int>,
+    "ok": <bool>,
+    "errors": [<list of error strings, empty if ok>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Results must be sorted by relevance score descending
+- Records below min_score are excluded
+- If no catalogs specified, search all available catalogs
+- Empty results list is valid (no matches found)

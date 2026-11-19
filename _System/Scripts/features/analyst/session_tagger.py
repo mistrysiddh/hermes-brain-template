@@ -20,16 +20,42 @@ from datetime import datetime
 from pathlib import Path
 import argparse
 
-
 # ---------------------------------------------------------------------------
 # Path resolution — deferred to main(), never at module level
 # ---------------------------------------------------------------------------
 VAULT = None
+DAILY = None
+MANIFEST = None
+TAG_CLOUD_LOG = None
+TAG_TRENDS_LOG = None
 
 
 def init_paths(vault_path):
-    global VAULT
+    """Resolve vault path and derived paths from the given argument."""
+    global VAULT, DAILY, MANIFEST, TAG_CLOUD_LOG, TAG_TRENDS_LOG
     VAULT = os.path.abspath(vault_path)
+
+    # Normalize VAULT path (handle forward/backward slashes from shell,
+    # and convert /c/... style paths from git-bash to C:\...)
+    # git-bash /c/Users/... -> C:\Users\...
+    if VAULT.startswith("/") and len(VAULT) > 2 and VAULT[2] == "/":
+        drive = VAULT[1].upper()
+        VAULT = drive + ":" + VAULT[2:].replace("/", "\\")
+    else:
+        VAULT = VAULT.replace("/", "\\")
+    VAULT = os.path.normpath(VAULT)
+
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    MANIFEST = os.path.join(DAILY, "manifest.jsonl")
+
+    tag_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports") if os.path.exists(os.path.join(VAULT, "04-Archives", "Audit-Reports")) else os.path.join(VAULT, "Skills-Notes")
+    TAG_CLOUD_LOG = os.path.join(tag_dir, "Tag-Cloud.log")
+    TAG_TRENDS_LOG = os.path.join(tag_dir, "Tag-Trends.log")
+
+    # Ensure output directories exist
+    os.makedirs(os.path.dirname(TAG_CLOUD_LOG), exist_ok=True)
+    os.makedirs(os.path.dirname(TAG_TRENDS_LOG), exist_ok=True)
 
 
 def parse_args():
@@ -45,51 +71,6 @@ def parse_args():
                         help="Run built-in self-test suite")
     return parser.parse_args()
 
-
-
-# ─── Configuration ──────────────────────────────────────────────────────────
-
-def resolve_vault():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
-    if os.path.exists(os.path.join(cand_para, ".obsidian")) or os.path.exists(os.path.join(cand_para, "01-Projects")):
-        return cand_para
-    cand_flat = os.path.abspath(os.path.join(script_dir, ".."))
-    if os.path.exists(os.path.join(cand_flat, ".obsidian")) or os.path.exists(os.path.join(cand_flat, "01-Projects")):
-        return cand_flat
-    env_vault = os.environ.get("HERMES_VAULT_PATH")
-    if env_vault and os.path.exists(env_vault):
-        return os.path.abspath(env_vault)
-    return None
-
-
-VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.")
-    exit(1)
-
-
-# Normalize VAULT path (handle forward/backward slashes from shell,
-# and convert /c/... style paths from git-bash to C:\...)
-# git-bash /c/Users/... -> C:\Users\...
-if VAULT.startswith("/") and len(VAULT) > 2 and VAULT[2] == "/":
-    drive = VAULT[1].upper()
-    VAULT = drive + ":" + VAULT[2:].replace("/", "\\")
-else:
-    VAULT = VAULT.replace("/", "\\")
-VAULT = os.path.normpath(VAULT)
-
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
-DAILY = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
-MANIFEST = os.path.join(DAILY, "manifest.jsonl")
-
-tag_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports") if os.path.exists(os.path.join(VAULT, "04-Archives", "Audit-Reports")) else os.path.join(VAULT, "Skills-Notes")
-TAG_CLOUD_LOG = os.path.join(tag_dir, "Tag-Cloud.log")
-TAG_TRENDS_LOG = os.path.join(tag_dir, "Tag-Trends.log")
-
-# Ensure output directories exist
-os.makedirs(os.path.dirname(TAG_CLOUD_LOG), exist_ok=True)
-os.makedirs(os.path.dirname(TAG_TRENDS_LOG), exist_ok=True)
 
 # ─── Topic extraction patterns ──────────────────────────────────────────────
 
@@ -137,7 +118,7 @@ TOPIC_PATTERNS = {
     "javascript": [
         r"\bjavascript\b", r"\bjs\b", r"\bnode\b", r"\bnpm\b", r"\byarn\b",
         r"\btypescript\b", r"\bts\b", r"\breact\b", r"\bvue\b", r"\bsvelte\b",
-        r"\bnext\.?js\b", r"\bwebpack\b", r"\bvite\b", r"\besbuild\b",
+        r"\bnext\\.?js\b", r"\bwebpack\b", r"\bvite\b", r"\besbuild\b",
         r"\bdeno\b", r"\bbun\b",
     ],
     "database": [
@@ -218,7 +199,7 @@ def extract_topics_from_session_file(session_path: str) -> list[str]:
 
     # Extract frontmatter and first part of content
     # Frontmatter is between --- lines
-    fm_match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+    fm_match = re.match(r"---\n(.*?)\n--", content, re.DOTALL)
     if fm_match:
         frontmatter = fm_match.group(1)
         # Also get some body content

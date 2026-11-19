@@ -47,7 +47,7 @@ def find_vault_root(start_dir=None):
         return Path(env_vault).resolve()
     script_dir = Path(__file__).resolve().parent
     for p in [Path.cwd().resolve(), script_dir, script_dir.parent, script_dir.parent.parent]:
-        if (p / "01-Projects").exists() or (p / "Dashboard.md").exists() or (p / ".obsidian").exists():
+        if (p / os.path.join(VAULT, "01-Projects")).exists() or (p / "Dashboard.md").exists() or (p / ".obsidian").exists():
             return p.resolve()
     return Path.cwd().resolve()
 
@@ -58,13 +58,13 @@ def init_paths(vault_path):
     """
     global VAULT, DAILY_DIR, MEMORY_REVIEW_DIR, SYNTHESIS_DIR
     VAULT = Path(vault_path).resolve()
-    DAILY_DIR = VAULT / "04-Archives" / "Daily"
+    DAILY_DIR = VAULT / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily")
     if not DAILY_DIR.exists():
-        DAILY_DIR = VAULT / "Daily"
-    MEMORY_REVIEW_DIR = VAULT / "04-Archives" / "Memory-Review"
+        DAILY_DIR = VAULT / os.path.join(VAULT, "Daily")
+    MEMORY_REVIEW_DIR = VAULT / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")
     if not MEMORY_REVIEW_DIR.exists():
-        MEMORY_REVIEW_DIR = VAULT / "Memory-Review"
-    SYNTHESIS_DIR = VAULT / "03-Resources" / "Synthesis"
+        MEMORY_REVIEW_DIR = VAULT / os.path.join(VAULT, "Memory-Review")
+    SYNTHESIS_DIR = VAULT / os.path.join(VAULT, "03-Resources") / "Synthesis"
     SYNTHESIS_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -291,7 +291,7 @@ def write_moc_note(moc_cluster, vault_path):
 
     # Sanitize topic for filename
     safe_topic = re.sub(r"[^a-zA-Z0-9_\-]+", "-", topic).strip("-").lower()
-    moc_path = VAULT / "03-Resources" / "MOCs" / f"MOC-{safe_topic}.md"
+    moc_path = VAULT / os.path.join(VAULT, "03-Resources") / "MOCs" / f"MOC-{safe_topic}.md"
     moc_path.parent.mkdir(parents=True, exist_ok=True)
 
     lines = [
@@ -368,7 +368,7 @@ def inject_backlinks(sessions, moc_clusters):
         link_lines = ["\n## 🗺️ Related Topics", ""]
         for topic in topics:
             safe_topic = re.sub(r"[^a-zA-Z0-9_\-]+", "-", topic).strip("-").lower()
-            moc_path = f"03-Resources/MOCs/MOC-{safe_topic}.md"
+            moc_path = os.path.join(VAULT, "03-Resources", "MOCs", "MOC-{safe_topic}.md")
             link_lines.append(f"- [[{moc_path}|MOC: {topic}]]")
         link_lines.append("")
 
@@ -437,10 +437,10 @@ def main(args=None):
         sys.exit(0)
 
     vault_root = init_paths_and_resolve(args.vault)
-    daily_cand = VAULT / "04-Archives" / "Daily"
-    daily_dir = daily_cand if daily_cand.exists() else VAULT / "Daily"
+    daily_cand = VAULT / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily")
+    daily_dir = daily_cand if daily_cand.exists() else VAULT / os.path.join(VAULT, "Daily")
     if not daily_dir.exists():
-        print(f"❌ Daily directory not found at: {daily_dir}")
+        print(os.path.join(VAULT, "❌ Daily directory not found at: {daily_dir}"))
         return
 
     print(f"🧠 Running Hermes Brain Knowledge Synthesis — Scope: Last {args.days} days")
@@ -450,7 +450,7 @@ def main(args=None):
     cutoff = datetime.now() - timedelta(days=args.days)
     recent_sessions = []
     for f in daily_dir.rglob("*.md"):
-        m = re.search(r"Daily[/\\](\d{4})[/\\](\d{2})[/\\](\d{2})", str(f))
+        m = re.search(os.path.join(VAULT, "Daily[", "", "", "](", "d{4})[", "", "", "](", "d{2})[", "", "", "](", "d{2})"), str(f))
         if m:
             try:
                 s_date = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
@@ -640,15 +640,15 @@ def run_self_test():
     try:
         vault = test_dir / "Vault"
         vault.mkdir()
-        (vault / "01-Projects").mkdir(parents=True)
-        (vault / "02-Areas").mkdir(parents=True)
-        (vault / "03-Resources" / "MOCs").mkdir(parents=True)
-        (vault / "04-Archives" / "Daily" / "2026" / "09" / "25").mkdir(parents=True)
-        (vault / "04-Archives" / "Daily" / "2026" / "09" / "26").mkdir(parents=True)
-        (vault / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "01-Projects")).mkdir(parents=True)
+        (vault / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
+        (vault / os.path.join(VAULT, "03-Resources") / "MOCs").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "25").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
 
         # Session A: SQLite + WAL + MCP
-        sess_a = vault / "04-Archives" / "Daily" / "2026" / "09" / "25" / "session-sqlite.md"
+        sess_a = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "25" / "session-sqlite.md"
         sess_a.write_text(
             """---
 session_id: "sess-sqlite-001"
@@ -670,7 +670,7 @@ Tags: #sqlite #database #wal #architecture
 """, encoding="utf-8")
 
         # Session B: PostgreSQL + MCP (contradiction + shared MCP topic)
-        sess_b = vault / "04-Archives" / "Daily" / "2026" / "09" / "26" / "session-postgres.md"
+        sess_b = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26" / "session-postgres.md"
         sess_b.write_text(
             """---
 session_id: "sess-postgres-002"

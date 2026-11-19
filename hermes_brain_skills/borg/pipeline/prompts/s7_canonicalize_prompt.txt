@@ -1,0 +1,44 @@
+# S7 Dedup — Canonicalize Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S7): Dedup — Canonicalize + diversity
+#
+# This sub-prompt governs canonicalizing records — merging duplicate records
+# into a single canonical record while preserving all unique information.
+
+TASK: Canonicalize duplicate records into a single canonical record
+
+INPUT:
+- records: list of record objects that may be duplicates of each other
+- similarity_threshold: threshold for considering records as duplicates (default: 0.85)
+- merge_strategy: how to merge fields ("union", "intersection", "highest_confidence")
+
+STEPS:
+1. Compare records pairwise for similarity
+2. Group records that exceed the similarity threshold into duplicate clusters
+3. For each cluster, select a canonical record (highest confidence or most complete)
+4. Merge non-conflicting fields from all records into the canonical record
+5. Record which records were merged and why
+6. Return canonical records and merge mappings
+
+OUTPUT SCHEMA:
+{
+  "canonical_records": [
+    {
+      "canonical_id": "<canonical record id>",
+      "source_record_ids": [<list of merged record ids>],
+      "merged_fields": [<list of fields that were merged>],
+      "conflicts": [<list of fields with conflicting values>],
+      "record": "<the canonical record data>"
+    }
+  ],
+  "unmerged_records": [<list of records that had no duplicates>],
+  "total_clusters": <int>,
+  "total_duplicates_removed": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Records with similarity >= threshold are considered duplicates
+- Canonical record should be the most complete/highest confidence
+- Conflicts are documented, not silently resolved
+- All unique information from duplicates is preserved in merged_fields

@@ -1,0 +1,49 @@
+# S8 Measure — Test Analyze Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S8): Measure — Empirical tests
+#
+# This sub-prompt governs analyzing test results and drawing conclusions.
+
+TASK: Analyze empirical test results
+
+INPUT:
+- test_execution: the test execution results
+- test_design: the original test design
+- comparison_baseline: baseline results for comparison (optional)
+
+STEPS:
+1. Compare metrics against success criteria
+2. Compare against baseline if available
+3. Identify statistically significant differences
+4. Draw conclusions about the claim/hypothesis
+5. Assess confidence in the conclusion
+6. Identify limitations of the test
+7. Recommend next steps (accept, reject, refine, retest)
+
+OUTPUT SCHEMA:
+{
+  "test_analysis": {
+    "conclusion": "<supported|refuted|inconclusive>",
+    "confidence": <float 0.0-1.0>,
+    "evidence_for": [<list of evidence supporting conclusion>],
+    "evidence_against": [<list of evidence against conclusion>],
+    "metric_analysis": {
+      "<metric_name>": {
+        "value": <value>,
+        "baseline_value": <value or null>,
+        "change_percent": <float or null>,
+        "significant": <bool>
+      }
+    },
+    "limitations": [<list of limitations>],
+    "recommendation": "<accept|reject|refine|retest>",
+    "next_steps": [<list of next steps>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Conclusion must be supported by evidence
+- Confidence reflects uncertainty in the conclusion
+- Limitations must be acknowledged
+- Recommendation must follow from conclusion

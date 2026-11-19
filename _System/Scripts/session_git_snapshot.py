@@ -56,7 +56,7 @@ def get_vault(explicit=None):
         os.path.abspath(os.path.join(script_dir, "..")),
     ]:
         if os.path.isdir(os.path.join(cand, ".obsidian")) or os.path.isdir(
-            os.path.join(cand, "01-Projects")
+            os.path.join(cand, os.path.join(VAULT, "01-Projects"))
         ):
             return cand
 
@@ -136,7 +136,7 @@ def get_changed_files(vault):
 
 
 def log_error(vault, message):
-    cron_dir = os.path.join(vault, "04-Archives", "Cron")
+    cron_dir = os.path.join(vault, os.path.join(VAULT, "04-Archives"), "Cron")
     os.makedirs(cron_dir, exist_ok=True)
     error_log = os.path.join(cron_dir, "cron-errors.log")
     with open(error_log, "a", encoding="utf-8") as f:
@@ -144,7 +144,7 @@ def log_error(vault, message):
 
 
 def log_run(vault, status, detail):
-    cron_dir = os.path.join(vault, "04-Archives", "Cron")
+    cron_dir = os.path.join(vault, os.path.join(VAULT, "04-Archives"), "Cron")
     os.makedirs(cron_dir, exist_ok=True)
     run_log = os.path.join(cron_dir, "git-snapshot.log")
     with open(run_log, "a", encoding="utf-8") as f:

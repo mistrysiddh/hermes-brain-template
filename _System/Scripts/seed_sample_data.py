@@ -289,7 +289,7 @@ sample: true
     print()
     print("All sample files/entries are tagged `sample: true` in frontmatter")
     print("(or [sample] in the token log). To remove them later:")
-    print('  grep -rl "sample: true" Daily/ Memory-Review/ Projects/ | xargs rm')
+    print('  grep -rl "sample: true" <daily> <memory-review> <projects> | xargs rm')
     print("  (then re-run vault_audit.py / regenerate manifest.jsonl / Token-Usage.log by hand)")
 
 

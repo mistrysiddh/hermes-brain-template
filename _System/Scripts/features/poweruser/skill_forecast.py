@@ -11,7 +11,6 @@ Features:
 - Recency-weighted tag trends
 - Skill gap analysis and complementary skill suggestions
 - Skill health checks (imbalance detection)
-- Better error handling and guidance
 - Optional colorized output
 
 Outputs:
@@ -35,6 +34,37 @@ try:
 except ImportError:
     COLOR_AVAILABLE = False
 
+# ---------------------------------------------------------------------------
+# Path resolution — deferred to main(), never at module level
+# ---------------------------------------------------------------------------
+VAULT = None
+SKILLS_NOTES = None
+AUDIT_DIR = None
+TAG_TRENDS_LOG = None
+INSTALLED_INDEX = None
+FORECAST_LOG = None
+SKILL_TO_CHAT = None
+TAG_SKILL_MAP_JSON = None
+
+
+def init_paths(vault_path):
+    """Resolve vault path and derived paths from the given argument."""
+    global VAULT, SKILLS_NOTES, AUDIT_DIR, TAG_TRENDS_LOG, INSTALLED_INDEX, FORECAST_LOG, SKILL_TO_CHAT, TAG_SKILL_MAP_JSON
+    VAULT = os.path.abspath(vault_path)
+
+    skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
+    SKILLS_NOTES = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
+
+    audit_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports")
+    AUDIT_DIR = audit_cand if os.path.exists(audit_cand) else SKILLS_NOTES
+
+    TAG_TRENDS_LOG = os.path.join(AUDIT_DIR, "Tag-Trends.log")
+    INSTALLED_INDEX = os.path.join(SKILLS_NOTES, "Installed-Skills-Index.md")
+    FORECAST_LOG = os.path.join(AUDIT_DIR, "Skill-Forecast.log")
+    SKILL_TO_CHAT = os.path.join(SKILLS_NOTES, "Skill-to-Chat-Links.md")
+    TAG_SKILL_MAP_JSON = os.path.join(os.path.dirname(__file__), "tag_skill_map.json")
+
+
 def resolve_vault():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     cand_para = os.path.abspath(os.path.join(script_dir, "..", ".."))
@@ -49,25 +79,6 @@ def resolve_vault():
     return None
 
 
-# Constants
-VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
-if not VAULT:
-    print("HERMES_VAULT_PATH is not set — aborting.", file=sys.stderr)
-    sys.exit(1)
-
-
-skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
-SKILLS_NOTES = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
-
-audit_cand = os.path.join(VAULT, "04-Archives", "Audit-Reports")
-AUDIT_DIR = audit_cand if os.path.exists(audit_cand) else SKILLS_NOTES
-
-TAG_TRENDS_LOG = os.path.join(AUDIT_DIR, "Tag-Trends.log")
-INSTALLED_INDEX = os.path.join(SKILLS_NOTES, "Installed-Skills-Index.md")
-FORECAST_LOG = os.path.join(AUDIT_DIR, "Skill-Forecast.log")
-SKILL_TO_CHAT = os.path.join(SKILLS_NOTES, "Skill-to-Chat-Links.md")
-TAG_SKILL_MAP_JSON = os.path.join(os.path.dirname(__file__), "tag_skill_map.json")
-
 # ANSI color codes (fallback if colorama not available)
 if COLOR_AVAILABLE:
     GREEN = Fore.GREEN
@@ -79,17 +90,251 @@ if COLOR_AVAILABLE:
 else:
     GREEN = YELLOW = RED = BLUE = CYAN = RESET = ""
 
+# ─── Topic extraction patterns ──────────────────────────────────────────────
+
+# High-signal keywords grouped by semantic theme
+TOPIC_PATTERNS = {
+    "ai-agents": [
+        r"\bagent\b", r"\bautonomous\b", r"\bagentic\b", r"\bmulti.?agent\b",
+        r"\bcrewai\b", r"\bautogen\b", r"\blanggraph\b", r"\bhierarchical\b",
+    ],
+    "llm": [
+        r"\bllm\b", r"\blarge language model\b", r"\btransformer\b", r"\bgpt\b",
+        r"\bclaude\b", r"\bgemini\b", r"\bllama\b", r"\bmistral\b", r"\bphi\b",
+        r"\bnemotron\b", r"\bfine.?tune\b", r"\bprompt\b", r"\bcompletion\b",
+        r"\btokens?\b", r"\bcontext window\b", r"\binference\b",
+    ],
+    "hermes": [
+        r"\bhermes\b", r"\bopencrawl?\b", r"\bnisha\b", r"\bmemory vault\b",
+        r"\bbrain vault\b", r"\bdashboard\b", r"\bskill\b", r"\bplugin\b",
+        r"\barchive\b", r"\bsession\b", r"\bcron\b",
+    ],
+    "linux": [
+        r"\blinux\b", r"\bbash\b", r"\bshell\b", r"\bterminal\b", r"\bssh\b",
+        r"\bdocker\b", r"\bcontainer\b", r"\bkubernetes\b", r"\bk8s\b",
+        r"\bnginx\b", r"\bsystemd\b", r"\bcron\b", r"\bgrep\b", r"\bsed\b",
+        r"\bawk\b", r"\btmux\b", r"\bzsh\b",
+    ],
+    "cybersecurity": [
+        r"\bsecurity\b", r"\bpenetration\b", r"\bpentest\b", r"\bvulnerab\b",
+        r"\bexploit\b", r"\bcve\b", r"\bmalware\b", r"\bforensic\b",
+        r"\bsiem\b", r"\bids\b", r"\bips\b", r"\bfirewall\b", r"\bencryption\b",
+        r"\bcert\b", r"\btls\b", r"\bssl\b", r"\bhash\b", r"\bpassword\b",
+    ],
+    "devops": [
+        r"\bdevops\b", r"\bci/?cd\b", r"\bgithub actions?\b", r"\bgitlab\b",
+        r"\bjenkins\b", r"\bpipeline\b", r"\bdeploy\b", r"\bterraform\b",
+        r"\bansible\b", r"\bhelm\b", r"\bargocd\b", r"\bmonitoring\b",
+        r"\bobservability\b", r"\blogging\b", r"\bmetrics\b",
+    ],
+    "python": [
+        r"\bpython\b", r"\bpy\b", r"\bpip\b", r"\bvenv\b", r"\bconda\b",
+        r"\bpythonic\b", r"\basync\b", r"\bawait\b", r"\bdecorator\b",
+        r"\bdataclass\b", r"\btype.?hint\b", r"\bpydantic\b", r"\bfastapi\b",
+        r"\bflask\b", r"\bdjango\b", r"\bnumpy\b", r"\bpandas\b",
+    ],
+    "javascript": [
+        r"\bjavascript\b", r"\bjs\b", r"\bnode\b", r"\bnpm\b", r"\byarn\b",
+        r"\btypescript\b", r"\bts\b", r"\breact\b", r"\bvue\b", r"\bsvelte\b",
+        r"\bnext\\.?js\b", r"\bwebpack\b", r"\bvite\b", r"\besbuild\b",
+        r"\bdeno\b", r"\bbun\b",
+    ],
+    "database": [
+        r"\bsql\b", r"\bpostgres\b", r"\bmysql\b", r"\bsqlite\b", r"\bmongo\b",
+        r"\bredis\b", r"\bnosql\b", r"\bdatabase\b", r"\bquery\b", r"\bindex\b",
+        r"\bmigration\b", r"\borm\b", r"\bprisma\b", r"\bsqlalchemy\b",
+    ],
+    "automation": [
+        r"\bautomat\b", r"\bscript\b", r"\bworkflow\b", r"\bschedule\b",
+        r"\bcron\b", r"\btrigger\b", r"\bwebhook\b", r"\bapi\b", r"\bhook\b",
+        r"\bintegration\b", r"\bzapier\b", r"\bn8n\b",
+    ],
+    "networking": [
+        r"\bnetwork\b", r"\bip\b", r"\bdns\b", r"\bvpn\b", r"\bproxy\b",
+        r"\bload balanc\b", r"\brouter\b", r"\bswitch\b", r"\bsubnet\b",
+        r"\bport\b", r"\bfirewall\b", r"\bwireguard\b", r"\btailscale\b",
+    ],
+    "self-hosting": [
+        r"\bself.?host\b", r"\bhomelab\b", r"\bnas\b", r"\braid\b",
+        r"\bzfs\b", r"\bproxmox\b", r"\besxi\b", r"\bhypervisor\b",
+        r"\bvm\b", r"\bvirtualbox\b", r"\bvmware\b", r"\bunraid\b",
+        r"\btruenas\b", r"\bportainer\b",
+    ],
+    "obsidian": [
+        r"\bobsidian\b", r"\bvault\b", r"\bdataview\b", r"\bdataviewjs\b",
+        r"\bcanvas\b", r"\bgraph\b", r"\bbacklink\b", r"\bfrontmatter\b",
+        r"\btemplater\b", r"\bcalendar\b", r"\bdaily note\b", r"\bplugin\b",
+    ],
+    "video": [
+        r"\byoutube\b", r"\bvideo\b", r"\bstream\b", r"\brecord\b",
+        r"\bedit\b", r"\bffmpeg\b", r"\bobs\b", r"\bthumbnail\b",
+        r"\btitle\b", r"\bdescription\b", r"\balgorithm\b", r"\bviews\b",
+        r"\bsubscriber\b", r"\bmoneti\b",
+    ],
+    "productivity": [
+        r"\bproductiv\b", r"\bnote.?tak\b", r"\bsecond brain\b", r"\bzettel\b",
+        r"\btask\b", r"\bkanban\b", r"\btodo\b", r"\bproject\b",
+        r"\bplan\b", r"\bgoal\b", r"\bhabit\b", r"\broutine\b", r"\bfocus\b",
+    ],
+}
+
+# Compile all patterns
+COMPILED_PATTERNS = {
+    topic: [re.compile(p, re.IGNORECASE) for p in patterns]
+    for topic, patterns in TOPIC_PATTERNS.items()
+}
+
+# ─── Core functions ─────────────────────────────────────────────────────────
+
+
+def extract_topics_from_text(text: str, max_topics: int = 5) -> list[str]:
+    """
+    Extract topics from text using keyword pattern matching.
+    Returns list of topic names sorted by match count (descending).
+    """
+    text_lower = text.lower()
+    scores = {}
+
+    for topic, patterns in COMPILED_PATTERNS.items():
+        count = 0
+        for pattern in patterns:
+            count += len(pattern.findall(text_lower))
+        if count > 0:
+            scores[topic] = count
+
+    # Sort by score descending, take top N
+    sorted_topics = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return [topic for topic, _ in sorted_topics[:max_topics]]
+
+
+def extract_topics_from_session_file(session_path: str) -> list[str]:
+    """Extract topics from a session markdown file."""
+    try:
+        with open(session_path, encoding="utf-8") as f:
+            content = f.read(5000)  # Read first 5KB (frontmatter + start of content)
+    except Exception:
+        return []
+
+    # Extract frontmatter and first part of content
+    # Frontmatter is between --- lines
+    fm_match = re.match(r"---\n(.*?)\n--", content, re.DOTALL)
+    if fm_match:
+        frontmatter = fm_match.group(1)
+        # Also get some body content
+        body = content[fm_match.end(): fm_match.end() + 2000]
+        text = frontmatter + "\n" + body
+    else:
+        text = content[:3000]
+
+    # Also extract title specifically
+    title_match = re.search(r"title:\s*\"([^\"]*)\"", text)
+    if title_match:
+        text = title_match.group(1) + "\n" + text
+
+    return extract_topics_from_text(text)
+
+
+def load_existing_tag_cloud() -> Counter:
+    """Load existing tag cloud from log file."""
+    cloud = Counter()
+    if os.path.exists(TAG_TRENDS_LOG):
+        try:
+            with open(TAG_TRENDS_LOG, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    # Format: tag: count
+                    parts = line.split(": ")
+                    if len(parts) == 2:
+                        try:
+                            cloud[parts[0]] = int(parts[1])
+                        except ValueError:
+                            pass
+        except Exception:
+            pass
+    return cloud
+
+
+def save_tag_cloud(cloud: Counter):
+    """Save tag cloud to log file, sorted by count descending."""
+    with open(TAG_TRENDS_LOG, "w", encoding="utf-8") as f:
+        f.write("# Tag Cloud — updated " + datetime.now().isoformat() + "\n")
+        f.write("# Format: tag: count\n")
+        for tag, count in cloud.most_common():
+            f.write(f"{tag}: {count}\n")
+
+
+def append_tag_trend(date_str: str, tags: list[str]):
+    """Append daily tag trend entry."""
+    if not tags:
+        return
+    tag_str = ", ".join(tags)
+    with open(TAG_TRENDS_LOG, "a", encoding="utf-8") as f:
+        f.write(f"{date_str}: {tag_str}\n")
+
+
+def update_manifest_with_tags():
+    """Read manifest, add tags to entries that don't have them, rewrite manifest."""
+    if not os.path.exists(MANIFEST):
+        return
+
+    records = []
+    with open(MANIFEST, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            records.append(rec)
+
+    updated = False
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    for rec in records:
+        if "tags" in rec and rec["tags"]:
+            continue  # Already tagged
+
+        path = rec.get("path")
+        if not path:
+            continue
+
+        # Normalize path (handle both forward and back slashes)
+        path = path.replace(chr(92), "/")
+        if not os.path.exists(path):
+            continue
+
+        tags = extract_topics_from_session_file(path)
+        if tags:
+            rec["tags"] = tags
+            updated = True
+            # Update tag cloud
+            cloud = load_existing_tag_cloud()
+            for tag in tags:
+                cloud[tag] += 1
+            save_tag_cloud(cloud)
+            # Record daily trend
+            append_tag_trend(today, tags)
+
+    if updated:
+        # Rewrite manifest with tags
+        with open(MANIFEST, "w", encoding="utf-8") as f:
+            for rec in records:
+                f.write(json.dumps(rec) + "\n")
+        print(f"Tagged {sum(1 for r in records if 'tags' in r and r['tags'])} session(s) in manifest.")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Hermes Brain Future Skill Forecast - Suggest skills to learn based on vault activity."
-    )parser = argparse.ArgumentParser(
-        description="Hermes Brain Future Skill Forecast - Suggest skills to learn based on vault activity."
     )
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument(
         "--days", type=int, default=14,
         help="Number of days to look back for tag trends (default: 14)"
@@ -112,6 +357,7 @@ parser.add_argument(
     )
     return parser.parse_args()
 
+
 def supports_color():
     """Check if color output is supported."""
     # Check if --no-color was used (need to get from args)
@@ -122,10 +368,12 @@ def supports_color():
         return False
     return True
 
+
 def color_text(text, color):
     """Apply color to text if supported."""
     # We'll check NO_COLOR and --no-color in the actual printing functions
     return f"{color}{text}{RESET}"
+
 
 def debug_print(*args, **kwargs):
     """Print debug message if debug flag is set."""
@@ -133,6 +381,7 @@ def debug_print(*args, **kwargs):
     if getattr(debug_print, 'enabled', False):
         timestamp = datetime.now().strftime("%H:%M:%S")
         print(f"[DEBUG {timestamp}]", *args, **kwargs)
+
 
 def parse_installed_skills():
     """Parse installed skills from the index file."""
@@ -178,6 +427,7 @@ def parse_installed_skills():
     debug_print(f"Parsed {len(installed)} installed skills")
     return installed
 
+
 def parse_recent_tag_trends(days=14):
     """Parse recent tag trends from the log file with recency weighting."""
     if not os.path.exists(TAG_TRENDS_LOG):
@@ -221,6 +471,7 @@ def parse_recent_tag_trends(days=14):
     debug_print(f"Parsed trends from {TAG_TRENDS_LOG} (last {days} days) with recency weighting")
     return trends
 
+
 def parse_skill_to_chat_links():
     """Parse which skills were actually used in sessions."""
     used_skills = set()
@@ -261,6 +512,7 @@ def parse_skill_to_chat_links():
     debug_print(f"Parsed {len(used_skills)} used skills from sessions")
     return used_skills
 
+
 def get_skill_categories():
     """Get skill categories from installed skills index."""
     categories = {}
@@ -292,6 +544,7 @@ def get_skill_categories():
 
     debug_print(f"Found {len(categories)} skill categories")
     return categories
+
 
 def load_tag_skill_mapping():
     """Load tag->skill mapping from JSON file with fallback to built-in."""
@@ -333,6 +586,7 @@ def load_tag_skill_mapping():
         print(f"Warning: Could not read tag skill map: {e}, using built-in", file=sys.stderr)
         return built_in_mapping
 
+
 def analyze_skill_gaps(categories):
     """Analyze skill distribution across categories to identify underrepresented areas."""
     if not categories:
@@ -360,6 +614,7 @@ def analyze_skill_gaps(categories):
 
     debug_print(f"Identified skill gaps in categories: {list(gaps.keys())}")
     return gaps
+
 
 def get_complementary_skills(used_skills, categories):
     """Suggest complementary skills based on frequently used skills."""
@@ -392,6 +647,7 @@ def get_complementary_skills(used_skills, categories):
     complementary -= used_skills
     debug_print(f"Found {len(complementary)} complementary skills based on usage")
     return list(complementary)
+
 
 def suggest_skills(args):
     """Generate skill suggestions based on trends, installed skills, and smart algorithms."""
@@ -477,9 +733,20 @@ def suggest_skills(args):
 
     return unique_suggested[:args.top], installed, recent_trends, used_skills, categories, skill_gaps, complementary_skills
 
+
 def main():
     args = parse_args()
     debug_print.enabled = args.debug
+
+    # Resolve vault path before using any vault-dependent variables
+    if args.vault:
+        init_paths(args.vault)
+    elif os.environ.get("HERMES_VAULT_PATH"):
+        init_paths(os.environ["HERMES_VAULT_PATH"])
+
+    if not VAULT:
+        print("HERMES_VAULT_PATH is not set — aborting.", file=sys.stderr)
+        sys.exit(1)
 
     # Handle NO_COLOR env and --no-color flag
     no_color = args.no_color or bool(os.environ.get('NO_COLOR'))
@@ -576,6 +843,7 @@ def main():
         print(f"   4. Adjust look-back period with --days <value> (current: {args.days})")
     if args.top != 10:
         print(f"   5. Adjust number of suggestions with --top <value> (current: {args.top})")
+
 
 if __name__ == "__main__":
     main()

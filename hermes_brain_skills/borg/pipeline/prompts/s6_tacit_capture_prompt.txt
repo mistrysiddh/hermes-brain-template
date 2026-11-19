@@ -1,0 +1,47 @@
+# S6 Tacit — Capture Judgment Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S6): Tacit — Judgment and nuance
+#
+# This sub-prompt governs capturing tacit judgment calls and nuanced decisions
+# that are hard to codify into explicit rules.
+
+TASK: Capture a tacit judgment call or nuanced decision
+
+INPUT:
+- situation: description of the situation/context
+- decision: the decision made or judgment called
+- reasoning: the reasoning behind the decision (may include intuition, heuristics)
+- context_factors: list of context factors that influenced the decision
+- outcome: optional outcome of the decision (if known)
+- confidence: confidence level in the decision (0.0-1.0)
+
+STEPS:
+1. Record the situation description
+2. Record the decision/judgment made
+3. Record the reasoning (including intuition, heuristics, rules of thumb)
+4. Record context factors (what made this situation unique)
+5. Record outcome if known
+6. Assign a unique ID
+7. Tag with relevant categories
+
+OUTPUT SCHEMA:
+{
+  "judgment": {
+    "id": "<judgment_id>",
+    "situation": "<situation description>",
+    "decision": "<decision made>",
+    "reasoning": "<reasoning behind decision>",
+    "context_factors": [<list of context factors>],
+    "outcome": "<outcome if known, else null>",
+    "confidence": <float 0.0-1.0>,
+    "tags": [<list of tags>],
+    "captured_at": "<ISO 8601 timestamp>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Capture the reasoning honestly, even if it includes intuition or heuristics
+- Context factors are what make this situation non-obvious
+- Confidence reflects how sure you are about the decision
+- Tags help find similar situations later

@@ -1,0 +1,44 @@
+# S5 Decompose — Composite Detect Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S5): Decompose — Composites → DAGs
+#
+# This sub-prompt governs detecting composite tasks that can be decomposed
+# into smaller, independently-executable units.
+
+TASK: Detect composite tasks from raw input
+
+INPUT:
+- content: raw text material describing tasks, projects, or workflows
+- min_composite_size: minimum size in characters for a composite (default: 100)
+- keywords: optional list of keywords that indicate composite nature (e.g., "and then", "followed by", "after", "then", "next", "step")
+
+STEPS:
+1. Scan content for composite indicators (multi-step language, sequences, dependencies)
+2. Identify composite boundaries where multiple distinct actions are described
+3. Filter composites by size (>= min_composite_size)
+4. Classify each composite by domain (implementation, research, analysis, operations, etc.)
+5. Assign complexity score (0.0-1.0) based on step count and dependency density
+6. Return composites sorted by complexity (highest first)
+
+OUTPUT SCHEMA:
+{
+  "composites": [
+    {
+      "id": "<composite_id>",
+      "text": "<composite text>",
+      "domain": "<domain>",
+      "complexity": <float 0.0-1.0>,
+      "step_estimate": <int estimated number of sub-steps>,
+      "source_location": "<line number or character offset>",
+      "size": <int character count>
+    }
+  ],
+  "total": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Composites are multi-step tasks that benefit from decomposition
+- A composite should contain at least 2 distinct actions or steps
+- Single atomic actions are not composites (they're L0 primitives from S4)
+- Complexity increases with step count, dependency density, and domain unfamiliarity

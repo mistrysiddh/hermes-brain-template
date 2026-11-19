@@ -1,0 +1,45 @@
+# S7 Dedup — Diversity Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S7): Dedup — Canonicalize + diversity
+#
+# This sub-prompt governs promoting diversity — ensuring records from different
+# sources, types, and perspectives are not over-represented or under-represented.
+
+TASK: Promote diversity across records
+
+INPUT:
+- records: list of canonical records
+- diversity_dimensions: list of dimensions to diversify across (e.g., source, type, domain, author)
+- max_per_dimension: maximum records per dimension value (default: 3)
+- min_representation: minimum records to keep for each dimension value (default: 1)
+
+STEPS:
+1. Group records by each diversity dimension
+2. For each dimension value, check if it exceeds max_per_dimension
+3. If over-represented, select the most diverse subset to keep
+4. For under-represented values, ensure at least min_representation records
+5. Calculate diversity score before and after
+6. Return diversified record set with diversity metrics
+
+OUTPUT SCHEMA:
+{
+  "diversified_records": [<list of records after diversity filtering>],
+  "removed_records": [<list of records removed for diversity>],
+  "diversity_metrics": {
+    "before": <float diversity score 0.0-1.0>,
+    "after": <float diversity score 0.0-1.0>,
+    "improvement": <float>
+  },
+  "dimension_distribution": {
+    "<dimension>": {
+      "<value>": <count>
+    }
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Never remove the only record for a dimension value (min_representation guard)
+- Prefer keeping records with higher confidence when removing for diversity
+- Diversity score measures entropy across dimensions
+- Track which records were removed and why

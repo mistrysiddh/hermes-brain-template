@@ -1,0 +1,36 @@
+# S3 Directory — Directory Lookup Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S3): Roles × Skills ontology
+#
+# This sub-prompt governs looking up roles, skills, and their mappings.
+
+TASK: Look up roles, skills, and mappings in the directory ontology
+
+INPUT:
+- lookup_type: "role" | "skill" | "all" | "orphan_roles" | "orphan_skills"
+- name: optional name to look up (required for "role" or "skill")
+- domain: optional domain filter (for role lookups)
+- category: optional category filter (for skill lookups)
+
+STEPS:
+1. If lookup_type is "role" and name provided: return role record + its skills
+2. If lookup_type is "skill" and name provided: return skill record + its roles
+3. If lookup_type is "all": return all roles and skills with mappings
+4. If lookup_type is "orphan_roles": return roles with no skills
+5. If lookup_type is "orphan_skills": return skills with no roles
+6. Apply domain/category filters if provided
+
+OUTPUT SCHEMA:
+{
+  "lookup_type": "<role|skill|all|orphan_roles|orphan_skills>",
+  "results": <list or single record depending on lookup_type>,
+  "total": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Role lookup returns the role record plus its mapped skills
+- Skill lookup returns the skill record plus its mapped roles
+- "all" returns both roles and skills with full mapping data
+- Orphan roles/skills are those with zero mappings
+- Filters are applied client-side after retrieval

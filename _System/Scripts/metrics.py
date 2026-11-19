@@ -176,10 +176,10 @@ def collect_links(vault_dir):
 
 
 def collect_sessions(vault_dir):
-    """Session metrics from Daily/ archives."""
+    ""os.path.join(VAULT, "Session metrics from Daily", " archives.")""
     daily_dirs = [
-        os.path.join(vault_dir, "04-Archives", "Daily"),
-        os.path.join(vault_dir, "Daily"),
+        os.path.join(vault_dir, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Daily")),
+        os.path.join(vault_dir, os.path.join(VAULT, "Daily")),
     ]
     daily_dir = None
     for d in daily_dirs:
@@ -231,7 +231,7 @@ def collect_tags(vault_dir, top_n=20):
 def collect_mocs(vault_dir):
     """MOC (Map of Content) health metrics."""
     moc_dirs = [
-        os.path.join(vault_dir, "03-Resources", "MOCs"),
+        os.path.join(vault_dir, os.path.join(VAULT, "03-Resources"), "MOCs"),
         os.path.join(vault_dir, "MOCs"),
     ]
     moc_dir = None
@@ -454,8 +454,8 @@ def run_self_test():
         init_paths(tmp)
         notes = collect_notes(tmp, days=30)
         assert notes["total"] == 2, f"Expected 2 notes (excl. README), got {notes['total']}"
-        assert notes["by_dir"].get("01-Projects", 0) == 1
-        assert notes["by_dir"].get("03-Resources", 0) == 1
+        assert notes["by_dir"].get(os.path.join(VAULT, "01-Projects"), 0) == 1
+        assert notes["by_dir"].get(os.path.join(VAULT, "03-Resources"), 0) == 1
         print("✅ Test 1: collect_notes counts notes correctly")
         passed += 1
     except Exception as e:

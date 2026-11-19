@@ -1,0 +1,44 @@
+# S8 Measure — Metrics Store Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S8): Measure — Empirical tests
+#
+# This sub-prompt governs storing and retrieving test metrics for longitudinal tracking.
+
+TASK: Store and retrieve test metrics
+
+INPUT:
+- test_id: unique test identifier
+- metrics: dictionary of metric names to values
+- tags: tags for categorization (optional)
+- timestamp: when the test was run (optional)
+- context: additional context (optional)
+
+STEPS:
+1. Store metrics with test_id, tags, timestamp, context
+2. Index metrics by test_id, tags, and timestamp for retrieval
+3. Allow querying by test_id, tag, time range, metric name
+4. Return stored metrics and any historical comparisons
+
+OUTPUT SCHEMA:
+{
+  "stored": {
+    "test_id": "<test id>",
+    "metrics_stored": <count>,
+    "tags": [<list>],
+    "timestamp": "<ISO 8601 timestamp>"
+  },
+  "historical": {
+    "previous_runs": <count>,
+    "trend": "<improving|declining|stable|insufficient_data>",
+    "metric_trends": {
+      "<metric_name>": "<improving|declining|stable>"
+    }
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Metrics must be stored immutably (no modification of past results)
+- Tags enable categorization and retrieval
+- Historical comparisons require at least 2 runs
+- Trend direction requires at least 3 runs

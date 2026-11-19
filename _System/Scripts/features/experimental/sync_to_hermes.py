@@ -48,7 +48,7 @@ def detect_hermes_memory_target(vault_root):
             return c
 
     # 3. Fallback to vault-local replica in Memory-Review/
-    mr_dir = find_dir(vault_root, ("04-Archives", "Memory-Review"), "Memory-Review")
+    mr_dir = find_dir(vault_root, (os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review"))), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review")))
     return mr_dir / "ACTIVE-HERMES-MEMORY.md"
 
 def find_dir(vault_root, *candidates):
@@ -64,7 +64,7 @@ def extract_approved_facts(vault_root):
     facts = []
     seen = set()
 
-    mr_dir = find_dir(vault_root, ("04-Archives", "Memory-Review"), "Memory-Review")
+    mr_dir = find_dir(vault_root, (os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review"))), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review")))
 
     # 1. Read from Promotion-Candidates.md
     cand_file = mr_dir / "Promotion-Candidates.md"
@@ -136,7 +136,7 @@ def sync_facts_to_memory(target_file, facts, dry_run=False):
 def generate_context_preamble(vault_root, facts, dry_run=False):
     """Build an executive system prompt preamble string from vault state."""
     # 1. Read User Profile operational boundaries
-    user_file = find_dir(vault_root, ("02-Areas", "User-Profile.md"), "User-Profile.md")
+    user_file = find_dir(vault_root, (os.path.join(VAULT, "02-Areas"), "User-Profile.md"), "User-Profile.md")
     tone = "Direct, code first, zero fluff"
     rule = "Proceed unless destructive; verify before irreversible changes"
     out_format = "Concise markdown with actionable code snippets"
@@ -151,7 +151,7 @@ def generate_context_preamble(vault_root, facts, dry_run=False):
         if f_m and not f_m.group(1).startswith("_("): out_format = f_m.group(1).strip()
 
     # 2. Get active projects
-    projects_dir = find_dir(vault_root, "01-Projects", "Projects")
+    projects_dir = find_dir(vault_root, os.path.join(VAULT, "01-Projects"), "Projects")
     active_projects = []
     if projects_dir.exists():
         for pf in projects_dir.glob("*.md"):
@@ -175,10 +175,10 @@ def generate_context_preamble(vault_root, facts, dry_run=False):
     ]
     if active_projects:
         for ap in active_projects[:5]:
-            proj_link = f"01-Projects/{ap}" if (vault_root / "01-Projects").exists() else f"Projects/{ap}"
+            proj_link = os.path.join(VAULT, os.path.join(VAULT, "01-Projects"), "{ap}") if (vault_root / os.path.join(VAULT, "01-Projects")).exists() else f"Projects/{ap}"
             lines.append(f"- [[{proj_link}|{ap}]]")
     else:
-        lines.append("- (No active projects tagged in 01-Projects/)")
+        lines.append(os.path.join(VAULT, "- (No active projects tagged in 01-Projects", ")"))
 
     lines.extend([
         "",
@@ -193,7 +193,7 @@ def generate_context_preamble(vault_root, facts, dry_run=False):
     preamble_text = "\n".join(lines) + "\n"
 
     # Write preamble to 04-Archives/Memory-Review/HERMES-PREAMBLE.md
-    mr_dir = find_dir(vault_root, ("04-Archives", "Memory-Review"), "Memory-Review")
+    mr_dir = find_dir(vault_root, (os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review"))), os.path.join(VAULT, os.path.join(VAULT, "Memory-Review")))
     out_file = mr_dir / "HERMES-PREAMBLE.md"
     if not dry_run:
         out_file.write_text(preamble_text, encoding="utf-8")
@@ -224,7 +224,7 @@ parser.add_argument(
 
     # 1. Extract approved facts
     facts = extract_approved_facts(vault_root)
-    print(f"  Found {len(facts)} approved durable facts in Memory-Review.")
+    print(os.path.join(VAULT, "  Found {len(facts)} approved durable facts in Memory-Review."))
 
     # 2. Sync to native memory target
     if not args.preamble_only:

@@ -1,3 +1,10 @@
+---
+title: Hermes Brain Agent Skill Packages
+type: guide
+status: active
+tags: [skills, packages, installation]
+---
+
 # Hermes Brain Agent Skill Packages
 
 Installable packages for the Hermes Brain multi-harness agent skills. Each package is a standalone zip containing a skill's full source — extract into your vault's `_System/Scripts/` directory and run with `--vault <path>`.

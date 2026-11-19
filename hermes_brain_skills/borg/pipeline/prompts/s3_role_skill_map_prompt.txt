@@ -1,0 +1,36 @@
+# S3 Directory — Role-Skill Map Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S3): Roles × Skills ontology
+#
+# This sub-prompt governs mapping a role to skills (and vice versa).
+
+TASK: Map a role to skills in the directory ontology
+
+INPUT:
+- role_name: name of the role
+- skill_names: list of skill names to map to the role
+- mapping_type: "add" (default) or "replace" — add to existing or replace all
+
+STEPS:
+1. Validate role_name exists in directory
+2. Validate each skill_name exists in directory
+3. If mapping_type is "replace", clear existing role→skill mappings first
+4. Add each skill to the role's skill set
+5. Add the role to each skill's role set (bidirectional)
+6. Record mapping timestamp
+
+OUTPUT SCHEMA:
+{
+  "role_name": "<role name>",
+  "mapped_skills": [<list of skill names added>],
+  "mapping_type": "<add|replace>",
+  "total_role_skills": <int>,
+  "bidirectional_mapped": <bool>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Both role and skill must exist before mapping
+- Mapping is bidirectional (role→skill and skill→role)
+- Duplicate mappings are silently ignored
+- "replace" clears all existing role→skill mappings before adding new ones

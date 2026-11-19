@@ -1,0 +1,44 @@
+# S4 Skids — Primitive Detect Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S4): Skids — Find L0 primitives
+#
+# This sub-prompt governs detecting L0 primitives in raw material — the
+# smallest irreducible units of actionable knowledge.
+
+TASK: Detect L0 primitives from raw input material
+
+INPUT:
+- content: raw text material to analyze (session notes, docs, code comments, etc.)
+- min_primitive_size: minimum size in characters for a primitive (default: 20)
+- max_primitive_size: maximum size in characters for a primitive (default: 500)
+
+STEPS:
+1. Scan content for candidate primitive boundaries (sentences, bullet points, code lines)
+2. Filter candidates by size (between min_primitive_size and max_primitive_size)
+3. Classify each primitive by type (action, fact, decision, question, reference, warning)
+4. Assign confidence score (0.0-1.0) based on clarity and completeness
+5. Deduplicate near-identical primitives
+6. Return primitives sorted by confidence (highest first)
+
+OUTPUT SCHEMA:
+{
+  "primitives": [
+    {
+      "id": "<primitive_id>",
+      "text": "<primitive text>",
+      "type": "<action|fact|decision|question|reference|warning>",
+      "confidence": <float 0.0-1.0>,
+      "source_location": "<line number or character offset>",
+      "size": <int character count>
+    }
+  ],
+  "total": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- L0 primitives are the smallest irreducible units — cannot be split further without losing meaning
+- Each primitive must be self-contained (understandable without surrounding context)
+- Primitives under min_primitive_size are too fragmented to be useful
+- Primitives over max_primitive_size should be decomposed further
+- Deduplicate: if two primitives are 90%+ similar, keep only the higher-confidence one

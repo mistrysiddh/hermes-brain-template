@@ -1,0 +1,36 @@
+# S7 Dedup — Merge Resolve Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S7): Dedup — Canonicalize + diversity
+#
+# This sub-prompt governs resolving conflicts when merging duplicate records.
+
+TASK: Resolve merge conflicts between duplicate records
+
+INPUT:
+- field_name: name of the conflicting field
+- values: list of values from different records for this field
+- confidences: list of confidence scores for each value
+- sources: list of source record IDs for each value
+
+STEPS:
+1. If all values are identical, no conflict — return the value
+2. If confidences differ, prefer the highest confidence value
+3. If confidences are similar, prefer the value from the most recent source
+4. If still tied, prefer the value that appears most frequently
+5. Document the resolution rationale
+
+OUTPUT SCHEMA:
+{
+  "field_name": "<field name>",
+  "resolved_value": "<resolved value>",
+  "resolution_method": "<highest_confidence|most_recent|most_frequent|manual>",
+  "rationale": "<human-readable explanation>",
+  "alternative_values": [<list of values that were not selected>],
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Highest confidence wins when confidences differ meaningfully
+- Manual resolution flagged when automatic resolution is ambiguous
+- All alternative values are documented for future reference
+- Never silently drop information

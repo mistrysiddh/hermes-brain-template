@@ -1,3 +1,9 @@
+---
+title: Vault-Audit-Report-Copyable
+type: note
+status: active
+---
+
 # Hermes Brain Vault Audit Report — Copyable for Developer
 
 **Vault:** /hermes/Brain/Hermes Brain  

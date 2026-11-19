@@ -40,14 +40,14 @@ def get_vault(explicit=None):
         os.path.abspath(os.path.join(script_dir, "..")),
     ]:
         if os.path.isdir(os.path.join(cand, ".obsidian")) or os.path.isdir(
-            os.path.join(cand, "01-Projects")
+            os.path.join(cand, os.path.join(VAULT, "01-Projects"))
         ):
             return cand
     return os.path.abspath(os.path.join(script_dir, "..", ".."))
 
 
 def find_cron_notes(daily_dir):
-    """Yield (full_path, rel_to_daily) for every cron_*.md under Daily/."""
+    ""os.path.join(VAULT, "Yield (full_path, rel_to_daily) for every cron_*.md under Daily", ".")""
     for root, dirs, files in os.walk(daily_dir):
         # Don't descend into an already-migrated Cron/ folder if it's
         # somehow nested, and skip hidden dirs.
@@ -95,12 +95,12 @@ def main():
     args = parser.parse_args()
 
     vault = get_vault(args.vault)
-    daily_cand = os.path.join(vault, "04-Archives", "Daily")
-    daily = daily_cand if os.path.isdir(daily_cand) else os.path.join(vault, "Daily")
-    cron_sessions_dir = os.path.join(vault, "04-Archives", "Cron", "sessions")
+    daily_cand = os.path.join(vault, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Daily"))
+    daily = daily_cand if os.path.isdir(daily_cand) else os.path.join(vault, os.path.join(VAULT, "Daily"))
+    cron_sessions_dir = os.path.join(vault, os.path.join(VAULT, "04-Archives"), "Cron", "sessions")
 
     if not os.path.isdir(daily):
-        print(f"No Daily/ folder found at {daily} — nothing to migrate.")
+        print(os.path.join(VAULT, "No Daily", " folder found at {daily} — nothing to migrate."))
         return 0
 
     os.makedirs(cron_sessions_dir, exist_ok=True)
@@ -168,7 +168,7 @@ def main():
             print(f"{verb2} {updated} manifest.jsonl path(s)")
 
     verb = "Would move" if args.dry_run else "Moved"
-    print(f"{verb} {moved} cron session note(s) to 04-Archives/Cron/sessions/ "
+    print(os.path.join(VAULT, "{verb} {moved} cron session note(s) to 04-Archives", "Cron", "sessions", " ")
           f"({skipped} already in place).")
     return 0
 

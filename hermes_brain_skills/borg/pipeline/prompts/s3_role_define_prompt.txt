@@ -1,0 +1,39 @@
+# S3 Directory — Role Define Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S3): Roles × Skills ontology
+#
+# This sub-prompt governs defining a new role in the directory ontology.
+
+TASK: Define a new role in the directory ontology
+
+INPUT:
+- role_name: unique identifier for the role (e.g., "data-engineer", "security-analyst")
+- description: human-readable description of the role
+- domain: functional domain (e.g., "data", "security", "operations", "research")
+- level: seniority level (e.g., "junior", "mid", "senior", "staff", "principal")
+
+STEPS:
+1. Validate role_name is unique (not already in directory)
+2. Normalize role_name (lowercase, hyphens instead of spaces)
+3. Create role record with name, description, domain, level
+4. Initialize empty skill set for the role
+5. Record creation timestamp
+
+OUTPUT SCHEMA:
+{
+  "role": {
+    "name": "<normalized role name>",
+    "description": "<human-readable description>",
+    "domain": "<functional domain>",
+    "level": "<seniority level>",
+    "skills": [],
+    "created_at": "<ISO 8601 timestamp>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Role names must be unique within the directory
+- Normalize names to lowercase with hyphens
+- A role with no skills is valid (skills can be added later)
+- Domain and level are optional but recommended

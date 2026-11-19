@@ -1,0 +1,43 @@
+# S1 Ingestor — Classify Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S1): Unpack, checksum, classify
+#
+# This sub-prompt governs the classify step: determine the record kind
+# (Role, Skill, Orchestration, Trigger, Policy, Resource, Tool-binding),
+# source type, and suggested routing for the pipeline.
+
+TASK: Classify an unpacked artifact into a record kind and route
+
+INPUT:
+- content: extracted readable text from unpack step
+- metadata: artifact metadata (filename, encoding, mime_type, etc.)
+- checksums: hash results from checksum step
+
+STEPS:
+1. Detect source type from filename/extension (.py, .md, .txt, .json, .yaml, etc.)
+2. Detect record kind from content patterns and filename:
+   - Role: files defining roles, personas, or agent identities
+   - Skill: files defining capabilities, tools, or procedures
+   - Orchestration: files defining workflows, DAGs, or pipelines
+   - Trigger: files defining events, hooks, or activation conditions
+   - Policy: files defining rules, constraints, or governance
+   - Resource: files defining data, templates, or reference material
+   - Tool-binding: files defining tool integrations or adapters
+3. Assign a confidence score (0.0–1.0) for the kind classification
+4. Suggest pipeline routing (S2 Profiler, S3 Directory, etc.)
+
+OUTPUT SCHEMA:
+{
+  "record_kind": "<Role|Skill|Orchestration|Trigger|Policy|Resource|Tool-binding>",
+  "confidence": <float 0.0-1.0>,
+  "source_type": "<code|markdown|data|config|binary|unknown>",
+  "suggested_routing": [<list of next pipeline stages>],
+  "classify_ok": <bool>,
+  "classify_errors": [<list of error strings, empty if ok>],
+  "classification_notes": "<human-readable rationale>"
+}
+
+RULES:
+- Kind detection is heuristic; confidence reflects uncertainty
+- Unknown/ambiguous content defaults to Resource with low confidence
+- Filename extensions strongly hint at source_type
+- Content keywords (role, skill, policy, trigger, etc.) weight the kind decision

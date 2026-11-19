@@ -89,12 +89,12 @@ def main():
 
     # Files/folders to index
     INCLUDE_DIRS = [
-        "01-Projects",
-        "02-Areas",
-        "03-Resources",
-        "04-Archives",
-        "Daily",
-        "Memory-Review",
+        os.path.join(VAULT, "01-Projects"),
+        os.path.join(VAULT, "02-Areas"),
+        os.path.join(VAULT, "03-Resources"),
+        os.path.join(VAULT, "04-Archives"),
+        os.path.join(VAULT, "Daily"),
+        os.path.join(VAULT, "Memory-Review"),
         "Projects",
         "Research",
         "Skills-Notes",

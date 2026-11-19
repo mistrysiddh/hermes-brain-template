@@ -20,19 +20,19 @@ class DreamCycleV2Tests(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp(prefix="hb-ci-dream-")
         self.vault = Path(self.test_dir)
-        (self.vault / "01-Projects" / "ADR").mkdir(parents=True)
-        (self.vault / "02-Areas").mkdir(parents=True)
-        (self.vault / "03-Resources" / "Research").mkdir(parents=True)
-        (self.vault / "04-Archives" / "Daily" / "2026" / "09" / "26").mkdir(parents=True)
-        (self.vault / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (self.vault / os.path.join(VAULT, "01-Projects") / "ADR").mkdir(parents=True)
+        (self.vault / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
+        (self.vault / os.path.join(VAULT, "03-Resources") / "Research").mkdir(parents=True)
+        (self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26").mkdir(parents=True)
+        (self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
 
         # Create active ADR
-        (self.vault / "01-Projects" / "ADR" / "ADR-001.md").write_text(
+        (self.vault / os.path.join(VAULT, "01-Projects") / "ADR" / "ADR-001.md").write_text(
             "---\nstatus: accepted\n---\n# ADR 001\nStandardized on sqlite database.", encoding="utf-8"
         )
 
         # Create session 1
-        self.s1_file = self.vault / "04-Archives" / "Daily" / "2026" / "09" / "26" / "sess-1.md"
+        self.s1_file = self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26" / "sess-1.md"
         self.s1_file.write_text(
             "# Sess 1\nRule: Always sanitize inputs before DB queries.\nConnecting to postgres backend.\nTags: #db #postgres",
             encoding="utf-8"
@@ -55,7 +55,7 @@ class DreamCycleV2Tests(unittest.TestCase):
         self.assertTrue(len(staged) >= 1)
         self.assertIn("sanitize inputs", staged[0]["fact"])
         # Verify file exists on disk in Memory-Review
-        candidate_file = self.vault / "04-Archives" / "Memory-Review" / staged[0]["file"]
+        candidate_file = self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / staged[0]["file"]
         self.assertTrue(candidate_file.exists())
 
 

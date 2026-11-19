@@ -259,10 +259,10 @@ def scan_misplaced_notes():
     findings = []
     # directory -> expected prefix patterns
     dir_conventions = {
-        "01-Projects": ["01-Projects"],
-        "02-Areas": ["02-Areas"],
-        "03-Resources": ["03-Resources"],
-        "04-Archives": ["04-Archives"],
+        os.path.join(VAULT, os.path.join(VAULT, "01-Projects")): [os.path.join(VAULT, os.path.join(VAULT, "01-Projects"))],
+        os.path.join(VAULT, os.path.join(VAULT, "02-Areas")): [os.path.join(VAULT, os.path.join(VAULT, "02-Areas"))],
+        os.path.join(VAULT, os.path.join(VAULT, "03-Resources")): [os.path.join(VAULT, os.path.join(VAULT, "03-Resources"))],
+        os.path.join(VAULT, os.path.join(VAULT, "04-Archives")): [os.path.join(VAULT, os.path.join(VAULT, "04-Archives"))],
         "_System": ["_System"],
     }
     for root, dirs, files in os.walk(VAULT):
@@ -277,7 +277,7 @@ def scan_misplaced_notes():
             if top_dir in dir_conventions:
                 # Basic check: note should be in a directory matching its topic
                 # This is a heuristic — flag notes in root of a section dir without subfolder
-                if len(parts) == 2 and top_dir in ("01-Projects", "02-Areas", "03-Resources"):
+                if len(parts) == 2 and top_dir in (os.path.join(VAULT, "01-Projects"), os.path.join(VAULT, "02-Areas"), os.path.join(VAULT, "03-Resources")):
                     findings.append({
                         "category": "misplaced_note",
                         "file": rel,

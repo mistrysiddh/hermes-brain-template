@@ -1,0 +1,42 @@
+# S6 Tacit — Nuance Analyze Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S6): Tacit — Judgment and nuance
+#
+# This sub-prompt governs analyzing nuance in a situation — what makes it
+# different from similar situations, what factors matter most.
+
+TASK: Analyze nuance in a situation
+
+INPUT:
+- situation: description of the situation
+- similar_decisions: list of past decisions in similar situations
+- context: additional context about the current situation
+
+STEPS:
+1. Identify what makes this situation unique compared to similar ones
+2. Extract nuance factors (subtle distinctions that matter)
+3. Identify which context factors are decisive vs peripheral
+4. Assess whether past decisions apply directly or need adaptation
+5. Rate the complexity of the nuance (simple, moderate, complex)
+6. Identify any blind spots or missing information
+
+OUTPUT SCHEMA:
+{
+  "nuance_analysis": {
+    "unique_aspects": [<list of aspects that make this situation unique>],
+    "nuance_factors": [<list of subtle factors that matter>],
+    "decisive_factors": [<list of factors that are decisive>],
+    "peripheral_factors": [<list of factors that are peripheral>],
+    "past_decision_applicability": "<direct|adapted|not_applicable>",
+    "nuance_complexity": "<simple|moderate|complex>",
+    "blind_spots": [<list of potential blind spots>],
+    "missing_information": [<list of information that would help>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Focus on what's subtle, not obvious
+- Distinguish between decisive and peripheral factors
+- Be honest about when past decisions don't apply
+- Identify blind spots — things you might be missing

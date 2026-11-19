@@ -64,7 +64,7 @@ def parse_args():
         os.path.abspath(os.path.join(script_dir, "..", "..")),
         os.path.abspath(os.path.join(script_dir, ".."))
     ]:
-        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
+        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, os.path.join(VAULT, "01-Projects"))):
             return cand
 
     return None
@@ -182,7 +182,7 @@ def find_broken_wikilinks():
 
 
 def find_stale_memory_review(days=30):
-    """Find Memory-Review entries older than N days with incomplete tasks."""
+    ""os.path.join(VAULT, "Find Memory-Review entries older than N days with incomplete tasks.")""
     stale = []
     cutoff = datetime.now() - timedelta(days=days)
     mr_cand = os.path.join(VAULT, "04-Archives", "Memory-Review")
@@ -278,7 +278,7 @@ def find_orphaned_files():
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
             # Also ignore files in .obsidian, Daily/ manifest, etc.
-            if f.startswith(".obsidian/") or ("Daily/" in f and ("manifest" in f or "README" in f)):
+            if f.startswith(".obsidian/") or (os.path.join(VAULT, "Daily", "") in f and ("manifest" in f or "README" in f)):
                 continue
             orphans.append(f)
     return orphans
@@ -296,7 +296,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         "",
         f"## Summary",
         f"- **Broken wikilinks**: {len(broken_links)}",
-        f"- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}",
+        os.path.join(VAULT, "- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}"),
         f"- **Duplicate sessions in manifest**: {len(duplicates)}",
         f"- **Orphaned files (no incoming links)**: {len(orphans)}",
         f"- **Manifest issues**: {len(manifest_issues)}",
@@ -317,7 +317,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         lines.append("")
 
     if stale_reviews:
-        lines.append("## 📋 Stale Memory-Review Entries (>30 days, incomplete)")
+        lines.append(os.path.join(VAULT, "## 📋 Stale Memory-Review Entries (>30 days, incomplete)"))
         lines.append("")
         lines.append("| File | Age (days) | Open Tasks |")
         lines.append("|------|------------|------------|")

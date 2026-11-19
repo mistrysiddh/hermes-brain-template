@@ -1,0 +1,46 @@
+# S6 Tacit — Judgment Route Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S6): Tacit — Judgment and nuance
+#
+# This sub-prompt governs routing a decision based on context — who should
+# make it, how much deliberation is needed, what process to follow.
+
+TASK: Route a decision based on context
+
+INPUT:
+- situation: description of the situation
+- decision_type: type of decision (strategic, tactical, operational, personnel, technical)
+- impact_level: potential impact (low, medium, high, critical)
+- reversibility: how reversible is the decision (fully, partially, not)
+- time_pressure: how much time is available (plenty, moderate, urgent, immediate)
+- available_expertise: who has relevant expertise
+
+STEPS:
+1. Assess decision complexity based on type, impact, reversibility, time pressure
+2. Determine who should make the decision (individual, team, escalate)
+3. Determine deliberation process (quick, structured, formal, consensus)
+4. Identify who needs to be consulted vs informed
+5. Recommend decision-making approach (intuition, analysis, hybrid)
+6. Identify escalation triggers
+
+OUTPUT SCHEMA:
+{
+  "routing": {
+    "decision_owner": "<individual|team|escalate>",
+    "deliberation_process": "<quick|structured|formal|consensus>",
+    "consulted": [<list of roles to consult>],
+    "informed": [<list of roles to inform>],
+    "approach": "<intuition|analysis|hybrid>",
+    "complexity_assessment": "<low|medium|high|critical>",
+    "escalation_triggers": [<list of conditions that warrant escalation>],
+    "reversibility_check": "<decision is fully/partially/not reversible>",
+    "time_sensitivity": "<plenty|moderate|urgent|immediate>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- High impact + low reversibility = formal process, escalate
+- High impact + high reversibility = structured process, team decision
+- Low impact = quick process, individual decision
+- Time pressure compresses the process

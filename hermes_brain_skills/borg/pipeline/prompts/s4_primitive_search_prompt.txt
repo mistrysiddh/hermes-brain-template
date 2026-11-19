@@ -1,0 +1,47 @@
+# S4 Skids — Primitive Search Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S4): Skids — Find L0 primitives
+#
+# This sub-prompt governs searching the primitive catalog.
+
+TASK: Search the primitive catalog
+
+INPUT:
+- catalog_name: name of the catalog to search
+- query: search query string (keywords, optional type filter)
+- type_filter: optional primitive type to filter results (action, fact, decision, question, reference, warning)
+- min_confidence: optional minimum confidence score (0.0-1.0)
+- limit: maximum number of results to return (default: 20)
+
+STEPS:
+1. Parse query into keywords
+2. Search inverted index for primitives containing any keyword
+3. Apply type_filter if specified
+4. Apply min_confidence threshold if specified
+5. Score results by keyword match count and confidence
+6. Return top results up to limit
+
+OUTPUT SCHEMA:
+{
+  "query": "<original query>",
+  "catalog": "<catalog_name>",
+  "results": [
+    {
+      "primitive_id": "<id>",
+      "text": "<primitive text>",
+      "type": "<type>",
+      "confidence": <float>,
+      "score": <float match score 0.0-1.0>,
+      "matched_keywords": [<list of keywords that matched>]
+    }
+  ],
+  "total": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Keyword matching is case-insensitive
+- A primitive matches if it contains ANY keyword (OR logic)
+- Score = (matched_keywords / total_keywords) * 0.5 + confidence * 0.5
+- Results sorted by score descending, then confidence descending
+- Empty results list is valid (no matches found)

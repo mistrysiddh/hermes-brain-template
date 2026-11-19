@@ -1,0 +1,37 @@
+# S4 Skids — Primitive Deduplicate Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S4): Skids — Find L0 primitives
+#
+# This sub-prompt governs deduplicating primitives across catalogs.
+
+TASK: Deduplicate primitives across catalogs
+
+INPUT:
+- catalogs: list of catalog names to scan (or "all" for all catalogs)
+- similarity_threshold: similarity threshold for deduplication (default: 0.9)
+- keep_strategy: "highest_confidence" or "first_seen" (default: highest_confidence)
+
+STEPS:
+1. Collect all primitives from specified catalogs
+2. Compare each pair of primitives for text similarity
+3. For pairs above similarity_threshold, mark the lower-confidence one as duplicate
+4. Remove duplicates (or keep references based on keep_strategy)
+5. Update catalog indices to reflect removed primitives
+6. Return deduplication summary
+
+OUTPUT SCHEMA:
+{
+  "scanned_catalogs": [<list of catalog names>],
+  "total_primitives_before": <int>,
+  "duplicates_removed": <int>,
+  "total_primitives_after": <int>,
+  "similarity_threshold": <float>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Similarity is measured by character-level overlap (Jaccard on character 3-grams)
+- Threshold of 0.9 means primitives are 90%+ similar
+- keep_strategy "highest_confidence" keeps the primitive with higher confidence
+- keep_strategy "first_seen" keeps the primitive that was created first
+- Deduplication is within the scanned catalogs only

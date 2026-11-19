@@ -1,0 +1,48 @@
+# S8 Measure — Test Execute Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S8): Measure — Empirical tests
+#
+# This sub-prompt governs executing an empirical test and recording results.
+
+TASK: Execute an empirical test
+
+INPUT:
+- test_design: the test design (from test design step)
+- record: the record being tested
+- environment: test environment description
+- execution_params: parameters for execution (iterations, timeout, etc.)
+
+STEPS:
+1. Set up the test environment
+2. Execute the test procedure step by step
+3. Record raw measurements and observations
+4. Note any anomalies or unexpected behavior
+5. Determine pass/fail based on success criteria
+6. Calculate metrics from raw measurements
+7. Store results for analysis
+
+OUTPUT SCHEMA:
+{
+  "test_execution": {
+    "test_id": "<test id>",
+    "status": "<passed|failed|errored>",
+    "raw_measurements": [<list of measurements>],
+    "observations": [<list of observations>],
+    "anomalies": [<list of anomalies>],
+    "metrics": {
+      "<metric_name>": <value>
+    },
+    "passed_criteria": [<list of passed criteria>],
+    "failed_criteria": [<list of failed criteria>],
+    "execution_time": <seconds>,
+    "environment": "<environment description>",
+    "executed_at": "<ISO 8601 timestamp>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- All measurements must be recorded, even unexpected ones
+- Anomalies must be documented, not silently ignored
+- Pass/fail must be based on defined criteria only
+- Execution time must be measured

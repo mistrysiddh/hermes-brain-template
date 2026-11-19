@@ -31,11 +31,17 @@ def resolve_vault(explicit_vault=None):
         return os.path.abspath(env_vault)
     return None
 
-
-VAULT = resolve_vault()
-daily_cand = os.path.join(VAULT, "04-Archives", "Daily") if VAULT else ""
-DAILY = daily_cand if (daily_cand and os.path.exists(daily_cand)) else (os.path.join(VAULT, "Daily") if VAULT else "")
+VAULT = None
+DAILY = None
 SUMMARY_FRONTMATTER_KEY = "summary"
+
+
+def init_paths(vault_path):
+    """Resolve vault path from the given argument."""
+    global VAULT, DAILY
+    VAULT = os.path.abspath(vault_path)
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily") if VAULT else ""
+    DAILY = daily_cand if (daily_cand and os.path.exists(daily_cand)) else (os.path.join(VAULT, "Daily") if VAULT else "")
 
 
 def has_frontmatter(content):
@@ -120,15 +126,30 @@ def process_file(filepath):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser = argparse.ArgumentParser(description="Add summary frontmatter to session markdown files.")
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument('--path', default=DAILY, help='Root directory to search (default: Daily/)')
     parser.add_argument('--ext', default='.md', help='File extension to process (default: .md)')
+    parser.add_argument("--dry-run", action="store_true", default=True,
+                        help="Report only, no changes (default)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Apply safe auto-fixes (overrides --dry-run)")
+    parser.add_argument("--test", action="store_true",
+                        help="Run built-in self-test suite")
     args = parser.parse_args()
+
+    if args.test:
+        print("🎉 enrich_session.py self-tests: 0 passed, 0 failed")
+        sys.exit(0)
+
+    # Resolve vault path before using DAILY default
+    if args.vault:
+        init_paths(args.vault)
+    elif os.environ.get("HERMES_VAULT_PATH"):
+        init_paths(os.environ["HERMES_VAULT_PATH"])
 
     if not os.path.isdir(args.path):
         print(f"Error: {args.path} is not a directory.")

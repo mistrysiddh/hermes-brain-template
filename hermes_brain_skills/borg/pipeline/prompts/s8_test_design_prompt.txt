@@ -1,0 +1,47 @@
+# S8 Measure — Test Design Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S8): Measure — Empirical tests
+#
+# This sub-prompt governs designing empirical tests for records/claims.
+
+TASK: Design an empirical test
+
+INPUT:
+- claim: the claim or hypothesis to test
+- record: the record being tested (optional)
+- test_type: type of test (accuracy, performance, robustness, validity, reliability)
+- success_criteria: criteria for test success (optional)
+- constraints: constraints on the test (time, resources, etc.)
+
+STEPS:
+1. Restate the claim as a testable hypothesis
+2. Identify the independent and dependent variables
+3. Design the test procedure (steps, setup, execution)
+4. Define success/failure criteria
+5. Identify controls and baseline
+6. Estimate resources needed (time, compute, people)
+7. Identify potential confounding factors
+
+OUTPUT SCHEMA:
+{
+  "test_design": {
+    "hypothesis": "<testable hypothesis>",
+    "independent_variables": [<list>],
+    "dependent_variables": [<list>],
+    "procedure": [<list of steps>],
+    "success_criteria": [<list of criteria>],
+    "failure_criteria": [<list of criteria>],
+    "controls": [<list of controls>],
+    "baseline": "<baseline description>",
+    "estimated_resources": "<resource estimate>",
+    "confounding_factors": [<list>],
+    "test_type": "<accuracy|performance|robustness|validity|reliability>"
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Hypothesis must be falsifiable
+- Success criteria must be measurable
+- Controls must isolate the variable being tested
+- Confounding factors must be identified

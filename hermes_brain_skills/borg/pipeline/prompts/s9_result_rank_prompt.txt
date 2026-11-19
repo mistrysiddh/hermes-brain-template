@@ -1,0 +1,49 @@
+# S9 Search — Result Rank Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S9): Search — Retrieval + routing
+#
+# This sub-prompt governs ranking and re-ranking search results.
+
+TASK: Rank and re-rank search results
+
+INPUT:
+- results: list of search results with initial scores
+- query: original search query
+- user_context: optional user context (preferences, history, etc.)
+- ranking_criteria: optional criteria for ranking (relevance, recency, authority, etc.)
+
+STEPS:
+1. Compute initial relevance scores for each result
+2. Apply ranking criteria (relevance, recency, authority, user preference)
+3. Adjust scores based on user context if available
+4. Re-rank results by adjusted scores
+5. Apply diversity filtering (avoid too many results from same source)
+6. Return re-ranked results with updated scores
+
+OUTPUT SCHEMA:
+{
+  "ranking": {
+    "query": "<original query>",
+    "results": [
+      {
+        "record_id": "<record id>",
+        "title": "<title>",
+        "original_score": <float 0.0-1.0>,
+        "adjusted_score": <float 0.0-1.0>,
+        "rank": <int>,
+        "ranking_factors": [<list of factors that influenced ranking>]
+      }
+    ],
+    "total": <int>,
+    "diversity_applied": <bool>,
+    "ok": <bool>,
+    "errors": [<list of error strings, empty if ok>]
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Results must be sorted by adjusted score descending
+- Rank numbers must be sequential starting from 1
+- Ranking factors must be transparent and explainable
+- Diversity filtering reduces redundancy in results

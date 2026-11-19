@@ -27,17 +27,17 @@ class HermesBrainMCPTests(unittest.TestCase):
         self.vault_path = Path(self.test_dir)
 
         # Create vault structure
-        (self.vault_path / "01-Projects" / "ADR").mkdir(parents=True)
-        (self.vault_path / "02-Areas").mkdir(parents=True)
-        (self.vault_path / "03-Resources").mkdir(parents=True)
-        (self.vault_path / "04-Archives" / "Daily").mkdir(parents=True)
-        (self.vault_path / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (self.vault_path / os.path.join(VAULT, "01-Projects") / "ADR").mkdir(parents=True)
+        (self.vault_path / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
+        (self.vault_path / os.path.join(VAULT, "03-Resources")).mkdir(parents=True)
+        (self.vault_path / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily")).mkdir(parents=True)
+        (self.vault_path / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
 
         # Create dummy notes
         (self.vault_path / "MOC.md").write_text("# MOC\nCentral Map of Content", encoding="utf-8")
-        (self.vault_path / "02-Areas" / "User-Profile.md").write_text("# User Profile\nPrefer TypeScript and Python.", encoding="utf-8")
-        (self.vault_path / "01-Projects" / "Project-Alpha.md").write_text("# Project Alpha\nWorking on autonomous agents.", encoding="utf-8")
-        (self.vault_path / "01-Projects" / "ADR" / "ADR-001.md").write_text("---\nstatus: accepted\n---\n# ADR 001: Use SQLite", encoding="utf-8")
+        (self.vault_path / os.path.join(VAULT, "02-Areas") / "User-Profile.md").write_text("# User Profile\nPrefer TypeScript and Python.", encoding="utf-8")
+        (self.vault_path / os.path.join(VAULT, "01-Projects") / "Project-Alpha.md").write_text("# Project Alpha\nWorking on autonomous agents.", encoding="utf-8")
+        (self.vault_path / os.path.join(VAULT, "01-Projects") / "ADR" / "ADR-001.md").write_text("---\nstatus: accepted\n---\n# ADR 001: Use SQLite", encoding="utf-8")
 
         self.vault = VaultCore(self.vault_path)
         self.server = MCPServer(self.vault)
@@ -78,7 +78,7 @@ class HermesBrainMCPTests(unittest.TestCase):
         resp = self.server.handle_request(req)
         data = json.loads(resp["result"]["content"][0]["text"])
         self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["path"], "01-Projects/Project-Alpha.md")
+        self.assertEqual(data[0]["path"], os.path.join(VAULT, "01-Projects", "Project-Alpha.md"))
 
     def test_get_user_profile(self):
         req = {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "get_user_profile"}}

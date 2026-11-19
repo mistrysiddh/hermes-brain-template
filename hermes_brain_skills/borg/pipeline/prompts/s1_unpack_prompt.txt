@@ -1,0 +1,41 @@
+# S1 Ingestor — Unpack Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S1): Unpack, checksum, classify
+#
+# This sub-prompt governs the unpack step: given a raw artifact (file, blob,
+# or stream), extract its readable content and metadata, identifying
+# boundaries, encoding, and any embedded structures.
+
+TASK: Unpack a raw artifact into readable content + metadata
+
+INPUT:
+- artifact_path: path to the raw artifact file
+- artifact_bytes: optional raw bytes (if already loaded)
+
+STEPS:
+1. Detect file encoding (prefer UTF-8, fall back to latin-1)
+2. Extract readable text content (strip binary headers if present)
+3. Identify artifact boundaries (start/end markers, sections)
+4. Extract embedded structures (frontmatter, code blocks, tables, links)
+5. Record original filename, size, mtime, and detected encoding
+
+OUTPUT SCHEMA:
+{
+  "content": "<extracted readable text>",
+  "metadata": {
+    "filename": "<basename>",
+    "size_bytes": <int>,
+    "encoding": "<detected encoding>",
+    "mime_type": "<detected or unknown>",
+    "boundaries": [<list of section boundaries>],
+    "embedded_structures": [<list: frontmatter, code_block, table, link>]
+  },
+  "unpack_ok": <bool>,
+  "unpack_errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Never modify the original artifact; only read
+- If encoding detection fails, use latin-1 and flag in unpack_errors
+- Empty files are valid; return empty content with unpack_ok=true
+- Binary files: extract any embedded text, mark unpack_ok=true with note
+- Boundaries are approximate; use line numbers or byte offsets

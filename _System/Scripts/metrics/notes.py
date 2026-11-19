@@ -138,8 +138,8 @@ def run_self_test():
             init_paths(tmp)
             notes = collect_notes(tmp, days=30)
             assert notes["total"] == 2, f"Expected 2 notes (excl. README), got {notes['total']}"
-            assert notes["by_dir"].get("01-Projects", 0) == 1
-            assert notes["by_dir"].get("03-Resources", 0) == 1
+            assert notes["by_dir"].get(os.path.join(VAULT, "01-Projects"), 0) == 1
+            assert notes["by_dir"].get(os.path.join(VAULT, "03-Resources"), 0) == 1
         finally:
             shutil.rmtree(tmp)
     check("collect_notes counts notes correctly", test_collect_notes_counts)

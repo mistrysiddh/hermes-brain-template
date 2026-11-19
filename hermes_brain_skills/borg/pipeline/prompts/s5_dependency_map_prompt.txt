@@ -1,0 +1,40 @@
+# S5 Decompose — Dependency Map Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S5): Decompose — Composites → DAGs
+#
+# This sub-prompt governs mapping dependencies between decomposed units.
+
+TASK: Map dependencies between decomposed units
+
+INPUT:
+- units: list of decomposed units (each with id, text)
+- dependency_hints: optional list of hint strings describing relationships
+
+STEPS:
+1. For each pair of units, determine if one depends on the other
+2. Use dependency hints if provided
+3. Use textual analysis: shared entities, sequential language, output-input relationships
+4. Classify dependency type (sequential, data, control, resource)
+5. Assign dependency strength (weak, medium, strong)
+6. Return dependency map with all relationships
+
+OUTPUT SCHEMA:
+{
+  "dependencies": [
+    {
+      "from": "<from_unit_id>",
+      "to": "<to_unit_id>",
+      "type": "<sequential|data|control|resource>",
+      "strength": "<weak|medium|strong>",
+      "rationale": "<human-readable explanation>"
+    }
+  ],
+  "total": <int>,
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Dependencies are directional (from_unit depends on to_unit, or vice versa based on context)
+- A unit can depend on multiple other units
+- Circular dependencies should be flagged (strength: strong, type: control)
+- No self-dependencies allowed

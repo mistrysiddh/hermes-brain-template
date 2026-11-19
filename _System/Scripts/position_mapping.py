@@ -396,24 +396,24 @@ def run_self_test():
             os.makedirs(os.path.join(tmp, "01-Projects"))
             os.makedirs(os.path.join(tmp, "02-Areas"))
             write_file(os.path.join(tmp, "01-Projects", "Alpha.md"),
-                       "---\nparent: 01-Projects\n---\n# Alpha\nSee [[../02-Areas/Beta]].")
+                       os.path.join(VAULT, "---", "nparent: 01-Projects", "n---", "n# Alpha", "nSee [[..", "02-Areas", "Beta]]."))
             write_file(os.path.join(tmp, "02-Areas", "Beta.md"),
-                       "---\nparent: 02-Areas\n---\n# Beta\nSee [[../01-Projects/Alpha]].")
+                       os.path.join(VAULT, "---", "nparent: 02-Areas", "n---", "n# Beta", "nSee [[..", "01-Projects", "Alpha]]."))
             write_file(os.path.join(tmp, "01-Projects", "Orphan.md"),
                        "# Orphan\nNo links here.")
 
             positions = scan_vault(tmp)
 
-            assert "01-Projects/Alpha.md" in positions
-            assert "02-Areas/Beta.md" in positions
-            assert "01-Projects/Orphan.md" in positions
+            assert os.path.join(VAULT, "01-Projects", "Alpha.md") in positions
+            assert os.path.join(VAULT, "02-Areas", "Beta.md") in positions
+            assert os.path.join(VAULT, "01-Projects", "Orphan.md") in positions
 
-            alpha = positions["01-Projects/Alpha.md"]
+            alpha = positions[os.path.join(VAULT, "01-Projects", "Alpha.md")]
             assert alpha["depth"] == 1
             assert alpha["links_out"] == 1
             assert alpha["links_in"] == 1
 
-            orphan = positions["01-Projects/Orphan.md"]
+            orphan = positions[os.path.join(VAULT, "01-Projects", "Orphan.md")]
             assert orphan["is_orphan"] is True
             assert orphan["tier"] == "orphan"
         finally:
@@ -429,7 +429,7 @@ def run_self_test():
             write_file(os.path.join(tmp, "03-Resources", "_MOC.md"), "# MOC")
             write_file(os.path.join(tmp, "03-Resources", "Note.md"), "# Note")
             positions = scan_vault(tmp)
-            assert positions["03-Resources/Note.md"]["nearest_moc"] == "03-Resources/_MOC.md"
+            assert positions[os.path.join(VAULT, "03-Resources", "Note.md")]["nearest_moc"] == os.path.join(VAULT, "03-Resources", "_MOC.md")
         finally:
             shutil.rmtree(tmp)
     check("nearest_moc finds folder MOC", test_nearest_moc)

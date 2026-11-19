@@ -1,0 +1,42 @@
+# S4 Skids — Primitive Catalog Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S4): Skids — Find L0 primitives
+#
+# This sub-prompt governs cataloging detected primitives into a searchable index.
+
+TASK: Catalog primitives into a searchable index
+
+INPUT:
+- primitives: list of primitive objects (from primitive detect step)
+- catalog_name: name for this catalog (e.g., "session-2026-11-18", "vault-scan-001")
+- tags: optional tags to apply to all primitives in this catalog
+
+STEPS:
+1. Assign each primitive a catalog-relative index
+2. Apply tags to all primitives
+3. Build an inverted index: keyword -> list of primitive IDs
+4. Build a type index: primitive type -> list of primitive IDs
+5. Store catalog metadata (name, created_at, total primitives, tags)
+6. Return catalog summary with index statistics
+
+OUTPUT SCHEMA:
+{
+  "catalog": {
+    "name": "<catalog_name>",
+    "created_at": "<ISO 8601 timestamp>",
+    "total_primitives": <int>,
+    "tags": [<list of tags>]
+  },
+  "index": {
+    "keywords": <int unique keywords indexed>,
+    "types": <dict type -> count>,
+    "by_type": { "<type>": [<list of primitive ids>] }
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Catalog name must be unique within the skids system
+- Tags are applied uniformly to all primitives in the catalog
+- Index is rebuilt from scratch each time (not incremental)
+- Empty primitives list is valid (catalog with 0 primitives)

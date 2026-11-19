@@ -78,3 +78,4 @@ Map of Content: a hand-curated index for finding things by topic, organized acro
 
 ---
 _See [[SETUP.md]] in repo root for environment setup and script automation._
+- [[_System/Canvases/Memory-Pipeline.canvas|Memory Pipeline Canvas]] — Visual memory pipeline dashboard

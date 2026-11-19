@@ -1,0 +1,42 @@
+# S9 Search — Routing Sub-Prompt
+# Per mem-draft-spec.txt §4 (Pipeline S9): Search — Retrieval + routing
+#
+# This sub-prompt governs routing a query to the appropriate search target.
+
+TASK: Route a search query to the appropriate target
+
+INPUT:
+- query: search query string
+- query_type: type of query (fact_lookup, deep_research, comparison, exploration, navigation)
+- context: additional context about the user's intent
+- available_targets: list of available search targets (catalogs, skills, external sources)
+
+STEPS:
+1. Analyze the query to determine its intent and complexity
+2. Match query type to appropriate search targets
+3. Determine if single-target or multi-target search is needed
+4. Prioritize targets by relevance to the query
+5. Estimate confidence in the routing decision
+6. Return routing decision with rationale
+
+OUTPUT SCHEMA:
+{
+  "routing": {
+    "query": "<original query>",
+    "query_type": "<fact_lookup|deep_research|comparison|exploration|navigation>",
+    "primary_target": "<primary target name>",
+    "secondary_targets": [<list of secondary target names>],
+    "routing_confidence": <float 0.0-1.0>,
+    "rationale": "<human-readable routing rationale>",
+    "estimated_latency": "<estimated response time>",
+    "multi_target": <bool>
+  },
+  "ok": <bool>,
+  "errors": [<list of error strings, empty if ok>]
+}
+
+RULES:
+- Primary target must be the most relevant for the query type
+- Secondary targets complement the primary target
+- Routing confidence reflects certainty in the decision
+- Rationale must explain why this routing was chosen

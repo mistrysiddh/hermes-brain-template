@@ -45,7 +45,7 @@ def find_vault_root(start_dir=None):
 
     script_dir = Path(__file__).resolve().parent
     for p in [Path.cwd().resolve(), script_dir, script_dir.parent, script_dir.parent.parent]:
-        if (p / "01-Projects").exists() or (p / "Dashboard.md").exists() or (p / ".obsidian").exists():
+        if (p / os.path.join(VAULT, "01-Projects")).exists() or (p / "Dashboard.md").exists() or (p / ".obsidian").exists():
             return p.resolve()
     return Path.cwd().resolve()
 
@@ -136,7 +136,7 @@ def detect_contradictions(sessions: list, vault_root: Path) -> list:
 
     # 1. Load active ADRs
     active_adrs = {}
-    adr_dir = vault_root / "01-Projects" / "ADR"
+    adr_dir = vault_root / os.path.join(VAULT, "01-Projects") / "ADR"
     if adr_dir.exists():
         for f in adr_dir.glob("*.md"):
             if f.name.lower() == "readme.md":
@@ -201,7 +201,7 @@ def check_and_draft_adrs(sessions: list, vault_root: Path) -> list:
     and draft a proposed ADR if not already documented.
     """
     drafted = []
-    adr_dir = vault_root / "01-Projects" / "ADR"
+    adr_dir = vault_root / os.path.join(VAULT, "01-Projects") / "ADR"
     adr_dir.mkdir(parents=True, exist_ok=True)
 
     existing_adrs = {f.stem.lower() for f in adr_dir.glob("*.md")}
@@ -278,9 +278,9 @@ def auto_stage_memory_candidates(sessions: list, vault_root: Path) -> list:
     Extract durable takeaways and stage them into Memory-Review for 1-click human triage.
     """
     staged = []
-    review_dir = vault_root / "04-Archives" / "Memory-Review"
+    review_dir = vault_root / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")
     if not review_dir.exists():
-        review_dir = vault_root / "Memory-Review"
+        review_dir = vault_root / os.path.join(VAULT, "Memory-Review")
     review_dir.mkdir(parents=True, exist_ok=True)
 
     # Heuristic: find lines explicitly declaring architecture rules or takeaways
@@ -360,26 +360,26 @@ def run_self_test():
     try:
         vault = test_dir / "Vault"
         vault.mkdir()
-        (vault / "01-Projects" / "ADR").mkdir(parents=True)
-        (vault / "02-Areas").mkdir(parents=True)
-        (vault / "03-Resources" / "Research").mkdir(parents=True)
-        (vault / "04-Archives" / "Daily" / "2026" / "09" / "25").mkdir(parents=True)
-        (vault / "04-Archives" / "Daily" / "2026" / "09" / "26").mkdir(parents=True)
-        (vault / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "01-Projects") / "ADR").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
+        (vault / os.path.join(VAULT, "03-Resources") / "Research").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "25").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26").mkdir(parents=True)
+        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
 
         # 1. Create dummy accepted ADR
-        (vault / "01-Projects" / "ADR" / "ADR-001.md").write_text(
+        (vault / os.path.join(VAULT, "01-Projects") / "ADR" / "ADR-001.md").write_text(
             "---\nstatus: accepted\n---\n# ADR 001: SQLite standard\nStandardized on sqlite for local data.", encoding="utf-8"
         )
 
         # 2. Create dummy session A (using sqlite)
-        sess_a = vault / "04-Archives" / "Daily" / "2026" / "09" / "25" / "20260925-session-a.md"
+        sess_a = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "25" / "20260925-session-a.md"
         sess_a.write_text(
             "# Session A\nRule: Always enable WAL mode on SQLite databases.\nTags: #sqlite #database #architecture\n- [ ] Task 1", encoding="utf-8"
         )
 
         # 3. Create dummy session B (introducing postgres conflict and MCP keywords)
-        sess_b = vault / "04-Archives" / "Daily" / "2026" / "09" / "26" / "20260926-session-b.md"
+        sess_b = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily") / "2026" / "09" / "26" / "20260926-session-b.md"
         sess_b.write_text(
             "# Session B\nDeploying postgres server for cloud queries.\nAlso connecting via mcp stdio json-rpc server.\nTags: #database #postgres #mcp", encoding="utf-8"
         )
@@ -442,10 +442,10 @@ def main():
         sys.exit(0)
 
     vault_root = find_vault_root(args.vault)
-    daily_cand = vault_root / "04-Archives" / "Daily"
-    daily_dir = daily_cand if daily_cand.exists() else vault_root / "Daily"
+    daily_cand = vault_root / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Daily")
+    daily_dir = daily_cand if daily_cand.exists() else vault_root / os.path.join(VAULT, "Daily")
     if not daily_dir.exists():
-        print(f"❌ Daily directory not found at: {daily_dir}")
+        print(os.path.join(VAULT, "❌ Daily directory not found at: {daily_dir}"))
         return
 
     print(f"🌙 Running Hermes Brain Dream Cycle v2 — Scope: Last {args.days} days")
@@ -456,7 +456,7 @@ def main():
     recent_sessions = []
 
     for f in daily_dir.rglob("*.md"):
-        m = re.search(r"Daily[/\\](\d{4})[/\\](\d{2})[/\\](\d{2})", str(f))
+        m = re.search(os.path.join(VAULT, "Daily[", "", "", "](", "d{4})[", "", "", "](", "d{2})[", "", "", "](", "d{2})"), str(f))
         if m:
             try:
                 s_date = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
@@ -502,7 +502,7 @@ def main():
     if args.draft_adr:
         drafted_adrs = check_and_draft_adrs(recent_sessions, vault_root)
         if drafted_adrs:
-            print(f"  📑 Auto-drafted {len(drafted_adrs)} proposed ADR(s) in 01-Projects/ADR/:")
+            print(os.path.join(VAULT, "  📑 Auto-drafted {len(drafted_adrs)} proposed ADR(s) in 01-Projects", "ADR", ":"))
             for d in drafted_adrs:
                 print(f"     - {d['topic']} (Supported by {len(d['sessions'])} sessions)")
 
@@ -511,7 +511,7 @@ def main():
     if args.stage_memory:
         staged_facts = auto_stage_memory_candidates(recent_sessions, vault_root)
         if staged_facts:
-            print(f"  📬 Staged {len(staged_facts)} durable takeaway(s) into Memory-Review queue:")
+            print(os.path.join(VAULT, "  📬 Staged {len(staged_facts)} durable takeaway(s) into Memory-Review queue:"))
             for sf in staged_facts:
                 print(f"     - \"{sf['fact'][:60]}...\" ({sf['file']})")
 
@@ -519,7 +519,7 @@ def main():
     now = datetime.now()
     year, week, _ = now.isocalendar()
     report_name = f"Weekly-Synthesis-{year}-W{week:02d}.md"
-    res_cand = vault_root / "03-Resources" / "Research"
+    res_cand = vault_root / os.path.join(VAULT, "03-Resources") / "Research"
     res_dir = res_cand if res_cand.exists() else vault_root / "Research"
     report_path = res_dir / report_name
     report_path.parent.mkdir(parents=True, exist_ok=True)

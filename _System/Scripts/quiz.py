@@ -300,7 +300,7 @@ def run_self_test():
         init_paths(tmp)
         fake_note = {
             "path": "/tmp/test.md",
-            "rel_path": "04-Archives/Daily/2026/10/29/test.md",
+            "rel_path": os.path.join(VAULT, "04-Archives", "Daily", "2026", "10", "29", "test.md"),
             "name": "test",
             "content": """---\n# Python Basics\n\nPython is a programming language.\n\n**Variables store data.**\n\n- Lists are ordered\n- Dictionaries are key-value\n""",
             "created_date": "2026-10-29",
@@ -324,7 +324,7 @@ def run_self_test():
         init_paths(tmp)
         fake_note = {
             "path": "/tmp/test.md",
-            "rel_path": "04-Archives/Daily/2026/10/29/test.md",
+            "rel_path": os.path.join(VAULT, "04-Archives", "Daily", "2026", "10", "29", "test.md"),
             "name": "test",
             "content": "# Topic\n\nContent here.\n\n**Bold text.**\n- Bullet point\n",
             "created_date": "2026-10-29",
@@ -382,7 +382,7 @@ def main():
     dry_run = not args.apply
 
     if not os.path.isdir(DAILY_DIR):
-        print(f"Error: Daily directory not found at {DAILY_DIR}", file=sys.stderr)
+        print(os.path.join(VAULT, "Error: Daily directory not found at {DAILY_DIR}"), file=sys.stderr)
         sys.exit(1)
 
     notes = read_vault_notes(DAILY_DIR, args.days)

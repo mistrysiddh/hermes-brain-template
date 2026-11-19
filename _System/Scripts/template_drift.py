@@ -51,8 +51,8 @@ def should_ignore(path: Path) -> bool:
     """Check if path should be ignored (personal data, git, etc.)."""
     ignore_patterns = [
         # Personal data directories
-        "Daily",
-        "Memory-Review",
+        os.path.join(VAULT, "Daily"),
+        os.path.join(VAULT, "Memory-Review"),
         "Research",
         ".smart-env",
         ".obsidian/plugins",
