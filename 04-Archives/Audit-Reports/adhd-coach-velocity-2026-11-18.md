@@ -1,3 +1,10 @@
+---
+title: Adhd Coach Velocity 2026 11 18
+created: 2026-11-20
+type: stub
+status: auto-remediated
+---
+
 # ADHD Coach — Velocity Check
 Date: 2026-11-18
 
