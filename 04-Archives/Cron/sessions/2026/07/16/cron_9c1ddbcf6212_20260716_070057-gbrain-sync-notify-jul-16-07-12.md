@@ -393,7 +393,7 @@ Run gbrain sync --no-embed and send the output via the configured Discord webhoo
 
 ### Tool — terminal — 2026-07-16T01:32:41.228133Z
 
-{"output": "# Hermes Agent Environment Variables\n# This file is loaded by Hermes on startup\n\n# Obsidian Vault Path for built-in obsidian skill\nOBSIDIAN_VAULT_PATH=\"/c/Users/mistr/Documents/Obsidian Vault\"\n\n# Model configuration (already set via hermes model command, but can override here)\n# MODEL_PROVIDER=nvidia\n# MODEL_NAME=nvidia/nemotron-3-ultra-550b-a55b\n\n# API Keys (add as needed - prefer `hermes auth add` for OAuth providers)\n# OPENROUTER_API_KEY=*** ANTHROPIC_API_KEY=*** OPENAI_API_KEY=*** GOOGLE_API_KEY=*** Optional: External memory provider (uncomment after installing open-second-brain)\n# MEMORY_PROVIDER=open-second-brain\n\n# Optional: STT/TTS\n# STT_PROVIDER=local\n# TTS_PROVIDER=edge\nSUPERMEMORY_API_KEY=*** "exit_code": 0, "error": null}
+{"output": "# Hermes Agent Environment Variables\n# This file is loaded by Hermes on startup\n\n# Obsidian Vault Path for built-in obsidian skill\nOBSIDIAN_VAULT_PATH=\"/c/Users/mistr/Documents/Obsidian Vault\"\n\n# Model configuration (already set via hermes model command, but can override here)\n# MODEL_PROVIDER=nvidia\n# MODEL_NAME=nvidia/nemotron-3-ultra-550b-a55b\n\n# API Keys (add as needed - prefer `hermes auth add` for OAuth providers)\n# OPENROUTER_API_KEY=[REDACTED] ANTHROPIC_API_KEY=[REDACTED] OPENAI_API_KEY=[REDACTED] GOOGLE_API_KEY=[REDACTED] Optional: External memory provider (uncomment after installing open-second-brain)\n# MEMORY_PROVIDER=open-second-brain\n\n# Optional: STT/TTS\n# STT_PROVIDER=local\n# TTS_PROVIDER=edge\nSUPERMEMORY_API_KEY=[REDACTED] "exit_code": 0, "error": null}
 
 
 ### Assistant — 2026-07-16T01:32:44.784388Z
@@ -582,7 +582,7 @@ Run gbrain sync --no-embed and send the output via the configured Discord webhoo
 
 ### Tool — terminal — 2026-07-16T01:33:02.380501Z
 
-{"output": "# Hermes Agent Environment Variables\n# This file is loaded by Hermes on startup\n\n# Obsidian Vault Path for built-in obsidian skill\nOBSIDIAN_VAULT_PATH=\"/c/Users/mistr/Documents/Obsidian Vault\"\n\n# Model configuration (already set via hermes model command, but can override here)\n# MODEL_PROVIDER=nvidia\n# MODEL_NAME=nvidia/nemotron-3-ultra-550b-a55b\n\n# API Keys (add as needed - prefer `hermes auth add` for OAuth providers)\n# OPENROUTER_API_KEY=*** ANTHROPIC_API_KEY=*** OPENAI_API_KEY=*** GOOGLE_API_KEY=*** Optional: External memory provider (uncomment after installing open-second-brain)\n# MEMORY_PROVIDER=open-second-brain\n\n# Optional: STT/TTS\n# STT_PROVIDER=local\n# TTS_PROVIDER=edge\nSUPERMEMORY_API_KEY=*** "exit_code": 0, "error": null}
+{"output": "# Hermes Agent Environment Variables\n# This file is loaded by Hermes on startup\n\n# Obsidian Vault Path for built-in obsidian skill\nOBSIDIAN_VAULT_PATH=\"/c/Users/mistr/Documents/Obsidian Vault\"\n\n# Model configuration (already set via hermes model command, but can override here)\n# MODEL_PROVIDER=nvidia\n# MODEL_NAME=nvidia/nemotron-3-ultra-550b-a55b\n\n# API Keys (add as needed - prefer `hermes auth add` for OAuth providers)\n# OPENROUTER_API_KEY=[REDACTED] ANTHROPIC_API_KEY=[REDACTED] OPENAI_API_KEY=[REDACTED] GOOGLE_API_KEY=[REDACTED] Optional: External memory provider (uncomment after installing open-second-brain)\n# MEMORY_PROVIDER=open-second-brain\n\n# Optional: STT/TTS\n# STT_PROVIDER=local\n# TTS_PROVIDER=edge\nSUPERMEMORY_API_KEY=[REDACTED] "exit_code": 0, "error": null}
 
 
 ### Assistant — 2026-07-16T01:33:18.860198Z

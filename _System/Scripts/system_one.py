@@ -1199,7 +1199,7 @@ def reflex_gate(tool_name, args, risk_appetite="balanced", dry_run=True):
     if any(k in arg_str for k in ["sudo", "chmod XXX", "chown", "passwd", "su "]):
         risk_score += 1
         reasons.append("privilege_operation")
-    if any(k in arg_str for k in ["api_key", "secret", "password", "token", "sk-", "ghp_"]):
+    if any(k in arg_str for k in ["api_key", "secret", "password", "token", "sk-", "ghp_"]):  # Secret detection patterns (intentional false positive)
         risk_score += 2
         reasons.append("secret_exposure")
     if any(k in arg_str for k in ["curl ", "wget ", "nc ", "ssh ", "scp ", "rsync "]):

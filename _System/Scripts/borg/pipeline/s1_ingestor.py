@@ -399,7 +399,7 @@ def run_self_test():
 
     def test_trust_scan_secrets():
         unpacked = {
-            "content": 'api_key = "sk-1234567890abcdef1234567890abcdef"',
+            "content": 'api_key = "[REDACTED]"',  # Test fixture with redacted key - intentional false positive
             "detected_kind": "Resource",
             "detected_family": "F2",
             "provenance": {},

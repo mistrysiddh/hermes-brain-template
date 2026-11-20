@@ -145,7 +145,7 @@ def _init_paths(vault_path: str | None) -> Path | None:
 
 def _ensure_dirs(vault: Path) -> Path:
     """Ensure the PM practices directory exists."""
-    dir_path = vault / "02-Areas" / "Skills" / "pm_best_practices_farley"
+    dir_path = vault / os.path.join(VAULT, "02-Areas") / "Skills" / "pm_best_practices_farley"
     dir_path.mkdir(parents=True, exist_ok=True)
     return dir_path
 
@@ -201,7 +201,7 @@ TRUNK_BASED_PRACTICES = {
         "branch_max_age": "1 day",
     },
     "commit_to_trunk_daily": {
-        "practice": "Commit to Trunk Daily",
+        "practice": "Commit to Trunk Each Day",
         "description": "Every developer commits to trunk at least once per day. No long-lived divergence.",
         "branch_max_age": "1 day",
     },

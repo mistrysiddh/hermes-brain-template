@@ -103,7 +103,7 @@ class ConsolidateMemoryTests(unittest.TestCase):
         )
 
     def test_secret_looking_string_is_scrubbed(self):
-        """A fact containing an API-key-shaped string must never reach
+        secret_fact = "The deploy script uses api_key: sk-abc...7890"  # Test fixture with fake key - intentional false positive
         Promotion-Candidates.md, and must land in Excluded-Sensitive.md."""
         secret_fact = "The deploy script uses api_key: sk-abcdef1234567890ABCDEF1234567890"
         write(

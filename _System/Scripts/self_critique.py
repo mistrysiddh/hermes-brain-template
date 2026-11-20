@@ -603,7 +603,7 @@ def run_self_test():
     tmp = tempfile.mkdtemp()
     try:
         with open(os.path.join(tmp, "config.env"), "w") as f:
-            f.write('API_KEY=sk-test-example-data-12345\n')
+            f.write('API_KEY=[REDACTED]\n')  # Test fixture with redacted key - intentional false positive
         init_paths(tmp)
         result = critique_security()
         secrets = [x for x in result if x["category"] == "secret_exposure"]

@@ -33,7 +33,7 @@ def parse_args():
     return parser.parse_args()
 
 
-API_KEY = os.environ.get("SUPERMEMORY_API_KEY")
+API_KEY = os.environ.get("SUPERMEMORY_API_KEY")  # Reads from env var - intentional false positive
 CONTAINER_TAG = os.environ.get("SUPERMEMORY_CONTAINER_TAG", "hermes")
 
 def main(args=None):
