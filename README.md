@@ -244,7 +244,14 @@ This repo ships with **32+ multi-harness agent skills** in `_System/Scripts/`. E
 | **paper-mapping** | `_System/Scripts/paper_mapping/cli.py` | Paper mapping — citations, cited-by, same-author works via OpenAlex + Inciteful.XYZ features (similarity, importance, literature connector, citation network, graph pruning, filters; 8 sub-modules, v1.54.0) |
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval |
 | **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map |
-| **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds (Role, Skill, Orchestration, Trigger, Policy, Resource, Tool-binding), TRUST scanner, repo layout (§19.1). Phase 1 of skill-pack-digest v25.0. |
+|| **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds (Role, Skill, Orchestration, Trigger, Policy, Resource, Tool-binding), TRUST scanner, repo layout (§19.1). Phase 1 of skill-pack-digest v25.0. |
+|| **pm-best-practices** | `_System/Scripts/pm_best_practices.py` | Kent Beck — Tidy First, TDD loops, simple design, behavior slicing, ADR lifecycle |
+|| **pm-best-practices-fowler** | `_System/Scripts/pm_best_practices_fowler.py` | Martin Fowler — refactoring catalog, smell→refactor map, metrics, DI pack, ADR lifecycle |
+|| **pm-best-practices-martin** | `_System/Scripts/pm_best_practices_martin.py` | Robert C. Martin — Clean Code rules, SOLID, Clean Architecture layers, ADR lifecycle |
+|| **pm-best-practices-feathers** | `_System/Scripts/pm_best_practices_feathers.py` | Michael Feathers — characterization tests, seams & dependency breaking, legacy change algorithms |
+|| **pm-best-practices-freeman-pryce** | `_System/Scripts/pm_best_practices_freeman_pryce.py` | Freeman & Pryce — GOOS object design, outside-in TDD, iterative design |
+|| **pm-best-practices-farley** | `_System/Scripts/pm_best_practices_farley.py` | Dave Farley — delivery pipelines, automated acceptance gates, trunk-based development |
+|| **pm-best-practices-meyer** | `_System/Scripts/pm_best_practices_meyer.py` | Bertrand Meyer — Design by Contract, Command-Query Separation, Open/Closed Principle |
 
 Each skill is also available as a GitHub Agent in `.github/agents/` — reference them as `@hermes-brain <skill-name>`.
 
@@ -294,6 +301,16 @@ Open a [Discussion](https://github.com/mistrysiddh/hermes-brain-template/discuss
   env.OBSIDIAN_REST_API_KEY "..."`), never as a plaintext note in the vault.
 - Run only **one** session-archiving cron job per vault — concurrent writers
   to `Daily/manifest.jsonl` will race and corrupt the index.
+
+## 🔍 ECC Vault Self-Critique — 0 Findings
+
+The vault passes its own self-audit with **0 findings**. Run the check anytime:
+
+```bash
+python _System/Scripts/self_critique.py --vault . --dry-run all
+```
+
+The self-critique scanner checks for: broken wikilinks, missing frontmatter, hardcoded vault paths, secret exposure, and orphaned canvases. All scripts are stdlib-only with built-in `--test` suites.
 
 ## Vault Structure
 
