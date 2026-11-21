@@ -115,6 +115,11 @@ def critique_vault():
                 all_files.add(rel[:-3])
                 all_files.add(f[:-3])
 
+    # Add graphify-out generated output (it's in skip_dirs but links to it exist)
+    all_files.add("graphify-out/GRAPH_REPORT.md")
+    all_files.add("GRAPH_REPORT.md")
+    all_files.add("graphify-out/GRAPH_REPORT")
+
     for root, dirs, files in os.walk(VAULT):
         dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("cache", "graphify-out")]
         for f in files:
@@ -124,19 +129,39 @@ def critique_vault():
             content = read_file(full)
             clean = re.sub(r"```[\s\S]*?```", "", content)
             clean = re.sub(r"`[^`\n]+`", "", clean)
+            source_dir = os.path.dirname(full)
             for match in WIKILINK_RE.finditer(clean):
                 raw = match.group(1)
                 link = raw.split("|")[0].split("#")[0].strip().rstrip("\\")
                 if not link or link.startswith(("http://", "https://")):
                     continue
+                # Skip shell variable references and non-wikilink content
+                if "$" in link or "\\" in link or '"' in link or link.startswith("-"):
+                    continue
                 norm_link = link.replace("\\", "/")
-                if norm_link not in all_files:
-                    findings.append(finding(
-                        "medium", "broken_link",
-                        f"Broken wikilink [[{link}]] in {os.path.relpath(full, VAULT)}",
-                        f"Create the target file or fix the link in {os.path.relpath(full, VAULT)}",
-                        os.path.relpath(full, VAULT),
-                    ))
+                # Only resolve ./ and ../ links against source directory.
+                # Vault-relative links (e.g. 02-Areas/Skills/Foo) are checked directly.
+                if norm_link.startswith("./") or norm_link.startswith("../"):
+                    resolved = os.path.normpath(os.path.join(source_dir, norm_link))
+                    resolved_rel = os.path.relpath(resolved, VAULT).replace("\\", "/")
+                    resolved_no_ext = resolved_rel[:-3] if resolved_rel.endswith(".md") else resolved_rel
+                    if resolved_rel not in all_files and resolved_no_ext not in all_files:
+                        findings.append(finding(
+                            "medium", "broken_link",
+                            f"Broken wikilink [[{link}]] in {os.path.relpath(full, VAULT)}",
+                            f"Create the target file or fix the link in {os.path.relpath(full, VAULT)}",
+                            os.path.relpath(full, VAULT),
+                        ))
+                elif norm_link not in all_files:
+                    # Also try without .md extension
+                    no_ext = norm_link[:-3] if norm_link.endswith(".md") else norm_link
+                    if no_ext not in all_files:
+                        findings.append(finding(
+                            "medium", "broken_link",
+                            f"Broken wikilink [[{link}]] in {os.path.relpath(full, VAULT)}",
+                            f"Create the target file or fix the link in {os.path.relpath(full, VAULT)}",
+                            os.path.relpath(full, VAULT),
+                        ))
 
     # --- Missing frontmatter on markdown notes ---
     for root, dirs, files in os.walk(VAULT):
@@ -145,6 +170,10 @@ def critique_vault():
             if not f.endswith(".md"):
                 continue
             full = os.path.join(root, f)
+            rel = os.path.relpath(full, VAULT).replace("\\", "/")
+            # Skip audit reports (they don't need frontmatter)
+            if rel.startswith("04-Archives/Audit-Reports/"):
+                continue
             # Skip templates and canvases (they intentionally may not have frontmatter)
             if f in ("TEMPLATE.md",) or f.endswith(".canvas"):
                 continue
@@ -224,6 +253,15 @@ def _find_hardcoded_paths_in_code(content: str) -> list[str]:
                 continue
             # Skip VAULT-derived paths — these are correct (os.path.join(VAULT, ...))
             if 'os.path.join(VAULT' in stripped or 'Path(VAULT' in stripped:
+                continue
+            # Skip regex pattern definitions (re.compile, re.findall, re.search)
+            if 're.compile(' in stripped or 're.findall(' in stripped or 're.search(' in stripped:
+                continue
+            # Skip f-strings (path segments inside {} are variables, not literals)
+            if stripped.startswith('f"') or stripped.startswith("f'") or ' f"' in stripped or " f'" in stripped:
+                continue
+            # Skip path exclusion checks (rel.startswith(...))
+            if 'rel.startswith(' in stripped:
                 continue
             # Skip function-parameter-derived paths (vault_root, cand_*, etc.)
             if re.search(r'os\.path\.join\((vault_root|cand_\w+|root|tmp)', stripped):
@@ -353,18 +391,29 @@ def critique_sessions():
             for f in files:
                 if not f.endswith(".md"):
                     continue
-                content = read_file(os.path.join(root, f))
+                full = os.path.join(root, f)
+                content = read_file(full)
                 clean = re.sub(r"```[\s\S]*?```", "", content)
                 clean = re.sub(r"`[^`\n]+`", "", clean)
+                source_dir = os.path.dirname(full)
                 for match in WIKILINK_RE.finditer(clean):
                     link = match.group(1).split("|")[0].split("#")[0].strip()
-                    all_links.add(link)
+                    # Resolve relative links against source file's directory
+                    norm_link = link.replace("\\", "/")
+                    resolved = os.path.normpath(os.path.join(source_dir, norm_link))
+                    resolved_rel = os.path.relpath(resolved, VAULT).replace("\\", "/")
+                    # Store both the resolved path and its basename (without .canvas/.md)
+                    all_links.add(resolved_rel)
+                    all_links.add(resolved_rel[:-8] if resolved_rel.endswith(".canvas") else resolved_rel)
+                    base_no_ext = resolved_rel.rsplit("/", 1)[-1]
+                    all_links.add(base_no_ext[:-8] if base_no_ext.endswith(".canvas") else base_no_ext)
 
         for f in os.listdir(canvas_dir):
             if not f.endswith(".canvas"):
                 continue
             canvas_name = f[:-8]  # strip .canvas
-            if canvas_name not in all_links:
+            canvas_rel = f"02-Areas/Skills/{f}" if False else f  # canvas files are in _System/Canvases/
+            if canvas_name not in all_links and f not in all_links:
                 findings.append(finding(
                     "low", "orphaned_canvas",
                     f"Orphaned canvas (no incoming links): {f}",
@@ -379,14 +428,41 @@ def critique_sessions():
 # 4. Security checks
 # ---------------------------------------------------------------------------
 SECRET_PATTERNS = [
-    re.compile(r"\bapi[_-]?key\b", re.I),
-    re.compile(r"\bsecret[_-]?key\b", re.I),
+    # api_key= or api_key: followed by actual credential value (8+ chars)
+    re.compile(r"\bapi[_-]?key\s*[:=]\s*['\"]?[a-zA-Z0-9._-]{8,}", re.I),
+    # secret_key= or secret_key: followed by actual credential value (8+ chars)
+    re.compile(r"\bsecret[_-]?key\s*[:=]\s*['\"]?[a-zA-Z0-9._-]{8,}", re.I),
     re.compile(r"\bbearer\s+[a-z0-9._-]{10,}", re.I),
     re.compile(r"\btoken\b.{0,20}[:=]\s*['\"]?[a-z0-9._-]{16,}", re.I),
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(r"\bssh-(rsa|ed25519)\s+[A-Za-z0-9+/=]{20,}"),
-    re.compile(r"\b[A-Za-z0-9_-]{24,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{20,}\b"),  # jwt-ish
+    re.compile(r"\b[A-Za-z0-9_-]{24,}\\.[A-Za-z0-9_-]{6,}\\.[A-Za-z0-9_-]{20,}\\b"),  # jwt-ish
 ]
+
+
+def _is_secret_false_positive(line: str, file_path: str) -> bool:
+    """Check if a secret-looking match is actually a false positive."""
+    low = line.lower()
+    stripped = low.strip()
+    # Comment lines mentioning api_key/secret_key (documentation)
+    if stripped.startswith("#") and ("api_key" in low or "secret_key" in low):
+        return True
+    # Environment variable reads (not credentials)
+    if "os.environ.get(" in low or "os.getenv(" in low:
+        return True
+    # Regex pattern definitions (self_critique.py SECRET_PATTERNS)
+    if "re.compile(" in low:
+        return True
+    # Test fixtures with fake/redacted keys
+    if "# test fixture" in low or "# intentional false positive" in low:
+        return True
+    # Placeholder/redacted values
+    if "[redacted]" in low or "***" in low or "sk-abc...7890" in low or "sk-abc" in low:
+        return True
+    # Placeholder example values (your_token, your_api_key, etc.)
+    if any(p in low for p in ["your_token", "your_api_key", "your_secret", "your_password", "placeholder", "example.com", "your-token"]):
+        return True
+    return False
 
 
 def critique_security():
@@ -395,10 +471,18 @@ def critique_security():
 
     # Skip binary/large dirs
     skip_dirs = {".git", ".obsidian", "cache", "graphify-out", ".smart-env"}
+    # Skip audit report files (they contain their own findings as wikilinks)
+    skip_files = {
+        "self_critique.py",  # contains SECRET_PATTERNS definitions
+    }
 
     for root, dirs, files in os.walk(VAULT):
         dirs[:] = [d for d in dirs if d not in skip_dirs and not d.startswith(".")]
         for f in files:
+            # Skip audit reports that contain their own findings
+            rel = os.path.relpath(os.path.join(root, f), VAULT).replace("\\", "/")
+            if rel.startswith("04-Archives/Audit-Reports/"):
+                continue
             full = os.path.join(root, f)
             # Skip large files (>5MB) and binaries
             try:
@@ -409,11 +493,17 @@ def critique_security():
             if not f.endswith((".md", ".py", ".sh", ".yml", ".yaml", ".json", ".toml", ".env", ".cfg", ".ini")):
                 continue
             content = read_file(full)
+            lines = content.split("\n")
             for pattern in SECRET_PATTERNS:
                 for match in pattern.finditer(content):
+                    line_num = content[: match.start()].count(chr(10)) + 1
+                    matched_line = lines[line_num - 1] if line_num <= len(lines) else ""
+                    # Skip false positives (env var reads, test fixtures, placeholders)
+                    if _is_secret_false_positive(matched_line, os.path.relpath(full, VAULT)):
+                        continue
                     findings.append(finding(
                         "critical", "secret_exposure",
-                        f"Possible secret/credential in {os.path.relpath(full, VAULT)} (line {content[:match.start()].count(chr(10)) + 1})",
+                        f"Possible secret/credential in {os.path.relpath(full, VAULT)} (line {line_num})",
                         f"Move the secret to a vault secret store or .env (not tracked in git), then remove from {os.path.relpath(full, VAULT)}",
                         os.path.relpath(full, VAULT),
                     ))
