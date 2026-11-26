@@ -301,7 +301,7 @@ def main(args=None):
 
     skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
     skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(VAULT, "Skills-Notes")
-    daily_cand = os.path.join(vault, "04-Archives", "Daily")
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
     daily_dir = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
     out_path = os.path.join(skills_dir, "Skill-to-Chat-Links.md")
 

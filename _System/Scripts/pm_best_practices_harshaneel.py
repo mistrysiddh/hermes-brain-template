@@ -200,7 +200,6 @@ def cmd_test() -> int:
     print("\n[1/3] Pattern catalog...")
     assert len(HUMANIZE_PATTERNS) == 9
     assert HUMANIZE_PATTERNS["hard_rule_1"]["name"] == "No unsourced stats"
-    assert HUMANIZER_PATTERNS if "HUMANIZER_PATTERNS" in dir() else True
     assert HUMANIZE_PATTERNS["lever_9"]["name"] == "RLHF voice strip"
     print("  ✅ Humanizer patterns: 9 patterns (7 hard rules + 2 levers)")
     passed += 1

@@ -24,7 +24,7 @@ except ImportError:
 
 def run_self_test():
     """Built-in self-test suite."""
-    print(f"🎉 {script_name} self-tests: 0 passed, 0 failed")
+    print(f"🎉 {os.path.basename(__file__)} self-tests: 0 passed, 0 failed")
     return True
 
 
@@ -44,7 +44,7 @@ def main():
 
     args = parser.parse_args()
     if args.test:
-        print(f"🎉 {script_name} self-tests: 0 passed, 0 failed")
+        print(f"🎉 {os.path.basename(__file__)} self-tests: 0 passed, 0 failed")
         sys.exit(0)
 
 

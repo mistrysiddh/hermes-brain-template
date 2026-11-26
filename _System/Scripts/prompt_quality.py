@@ -68,6 +68,14 @@ def write_file(path, content):
         f.write(content)
 
 
+def save_report(name, report):
+    """Write a report under the prompt-quality metrics folder and return its path."""
+    stamp = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    path = os.path.join(QUALITY_DIR, f"{name}-{stamp}.md")
+    write_file(path, report)
+    return path
+
+
 def slugify(text):
     slug = "".join(c if c.isalnum() or c in "-_" else "-" for c in text.strip().lower()).strip("-_")
     return slug or "untitled"

@@ -673,7 +673,7 @@ def run_self_test():
         else:
             failed += 1
 
-    print(f"====== {script_name} Self-Tests ======")
+    print(f"====== {os.path.basename(__file__)} Self-Tests ======")
     print(f"🎉 Self-tests: {passed} passed, {failed} failed")
     print("=" * 40)
     return failed == 0

@@ -31,7 +31,7 @@ VAULT = None
 
 
 def init_paths(vault_path):
-    global VAULT
+    global VAULT, REPORT_PATH, DAILY, MANIFEST, SKILL_LINKS
     VAULT = os.path.abspath(vault_path)
     report_dir = os.path.join(VAULT, "04-Archives", "Audit-Reports")
     os.makedirs(report_dir, exist_ok=True)

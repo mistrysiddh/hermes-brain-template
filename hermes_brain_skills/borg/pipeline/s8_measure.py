@@ -824,7 +824,7 @@ def main() -> int:
             metrics = _json.loads(args.metrics_json)
         except _json.JSONDecodeError:
             metrics = {"value": float(args.metrics_json)}
-        tags = [t.strip() for c in args.tags.split(",") if c.strip()]
+        tags = [t.strip() for t in args.tags.split(",") if t.strip()]
         result = measure.store_metrics(
             test_id=args.test_id,
             metrics=metrics,
@@ -844,7 +844,7 @@ def main() -> int:
         print(_json.dumps(stats, indent=2))
         return 0
 
-    parser.print_help()
+    print("No action given. Run with --help to see the options.")
     return 1
 
 

@@ -735,7 +735,7 @@ def _cmd_measure(args: argparse.Namespace) -> int:
             metrics = _json.loads(args.metrics_json)
         except _json.JSONDecodeError:
             metrics = {"value": float(args.metrics_json)}
-        tags = [t.strip() for c in args.tags.split(",") if c.strip()]
+        tags = [t.strip() for t in args.tags.split(",") if t.strip()]
         result = measure.store_metrics(
             test_id=args.test_id,
             metrics=metrics,

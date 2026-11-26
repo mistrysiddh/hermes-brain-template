@@ -621,14 +621,9 @@ def main() -> int:
         return cmd_metrics(args)
     if args.command == "di-pack":
         return cmd_di_pack(args)
-    if args.command == "tidy-first":
-        return cmd_tidy_first(args)
-    if args.command == "tdd":
-        return cmd_tdd(args)
-    if args.command == "adr":
-        return cmd_adr(args)
-    if args.command == "stats":
-        return cmd_stats(args)
+    if args.command in ("tidy-first", "tdd", "adr", "stats"):
+        print(f"'{args.command}' is not implemented yet.")
+        return 1
 
     print("Unknown command. Use: refactor-list, smell-map, metrics, di-pack, tidy-first, tdd, adr, stats, or test.")
     return 1

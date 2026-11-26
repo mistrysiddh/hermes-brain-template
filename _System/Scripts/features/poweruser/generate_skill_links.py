@@ -302,10 +302,7 @@ def main(args=None):
         sys.exit(1)
 
     init_paths(args.vault)
-    vault = get_vault()
-    if not vault:
-        print("usage: generate_skill_links.py [vault_root]")
-        sys.exit(1)
+    vault = VAULT
 
     skills_cand = os.path.join(vault, "02-Areas", "Skills")
     skills_dir = skills_cand if os.path.exists(skills_cand) else os.path.join(vault, "Skills-Notes")

@@ -10,6 +10,7 @@ Ignores background automated cron logs to keep the graph high-signal.
 
 import argparse
 import os
+import sys
 import re
 
 # ---------------------------------------------------------------------------

@@ -376,7 +376,7 @@ def generate_scan_report(us_profile, comparators, clusters, us_label, matrix, ga
     return "\n".join(lines)
 
 
-def save_sota_artifacts(matrix, gaps, us_profile, comparators, dry_run=True):
+def save_sota_artifacts(matrix, gaps, us_profile, comparators, dry_run=True, us_label="agent-brain-vault"):
     """Persist SOTA scan artifacts to vault."""
     now = datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -591,7 +591,7 @@ def main():
 
     # Save artifacts
     if not dry_run and args.save:
-        last_scan, rubric = save_sota_artifacts(matrix, gaps, us_profile, comparators, dry_run=False)
+        last_scan, rubric = save_sota_artifacts(matrix, gaps, us_profile, comparators, dry_run=False, us_label=us_label)
         print(f"\n📄 Saved scan to: {os.path.join(SOTA_DIR, 'last-scan.json')}")
         print(f"📄 Saved rubric to: {os.path.join(SOTA_DIR, f'rubric.{us_label}.json')}")
     elif dry_run:

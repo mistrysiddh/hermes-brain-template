@@ -690,7 +690,7 @@ def main() -> int:
             )
         return 0
 
-    parser.print_help()
+    print("No action given. Run with --help to see the options.")
     return 1
 
 

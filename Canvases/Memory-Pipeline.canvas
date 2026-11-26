@@ -1,6 +1,6 @@
 {
-  "id": "canvas-memory-pipeline",
-  "type": "canvas",
-  "nodes": [],
-  "edges": []
+	"id":"canvas-memory-pipeline",
+	"type":"canvas",
+	"nodes":[],
+	"edges":[]
 }

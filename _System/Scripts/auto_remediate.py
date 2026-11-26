@@ -28,6 +28,7 @@ Exit code: 0 always (reporting tool, not a gate)
 """
 
 import argparse
+import ast
 import hashlib
 import os
 import re
@@ -142,19 +143,40 @@ def fix_missing_vault_arg(finding, dry_run=True):
     if "--vault" in content:
         return False, "Already has --vault argument", content
 
-    # Find argparse.ArgumentParser(...) line and add --vault after it
-    parser_pattern = re.compile(r"(parser\s*=\s*argparse\.ArgumentParser\([^)]*\))")
-    match = parser_pattern.search(content)
-    if not match:
+    # Locate `name = argparse.ArgumentParser(...)` in the syntax tree, so that
+    # multi-line calls, indentation and parentheses in strings are handled.
+    try:
+        tree = ast.parse(content)
+    except SyntaxError as e:
+        return False, f"File has a syntax error (line {e.lineno}); not modified", content
+
+    targets = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and isinstance(node.targets[0], ast.Name)
+        and isinstance(node.value, ast.Call)
+        and ast.unparse(node.value.func) == "argparse.ArgumentParser"
+    ]
+    if not targets:
         return False, "No ArgumentParser found to attach --vault to", content
 
-    insertion = match.group(1) + '''
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)'''
-    new_content = content[:match.end()] + insertion + content[match.end():]
+    node = min(targets, key=lambda n: n.lineno)
+    lines = content.splitlines(keepends=True)
+    first = lines[node.lineno - 1]
+    indent = first[:len(first) - len(first.lstrip())]
+    if not lines[node.end_lineno - 1].endswith("\n"):
+        lines[node.end_lineno - 1] += "\n"
+    lines.insert(node.end_lineno, (
+        f'{indent}{node.targets[0].id}.add_argument(\n'
+        f'{indent}    "--vault",\n'
+        f'{indent}    help="Path to the Hermes Brain vault root",\n'
+        f'{indent})\n'
+    ))
+    new_content = "".join(lines)
+    try:
+        ast.parse(new_content)
+    except SyntaxError:
+        return False, "Edit would break the file; not modified", content
 
     if dry_run:
         return True, "Would add --vault CLI argument", new_content

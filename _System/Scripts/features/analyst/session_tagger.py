@@ -14,6 +14,7 @@ YYYY/MM/DD/ directories. Uses lightweight rule-based keyword extraction
 
 import json
 import os
+import sys
 import re
 from collections import Counter
 from datetime import datetime

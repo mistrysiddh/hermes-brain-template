@@ -49,7 +49,7 @@ TAG_SKILL_MAP_JSON = None
 
 def init_paths(vault_path):
     """Resolve vault path and derived paths from the given argument."""
-    global VAULT, SKILLS_NOTES, AUDIT_DIR, TAG_TRENDS_LOG, INSTALLED_INDEX, FORECAST_LOG, SKILL_TO_CHAT, TAG_SKILL_MAP_JSON
+    global VAULT, SKILLS_NOTES, AUDIT_DIR, TAG_TRENDS_LOG, INSTALLED_INDEX, FORECAST_LOG, SKILL_TO_CHAT, TAG_SKILL_MAP_JSON, MANIFEST
     VAULT = os.path.abspath(vault_path)
 
     skills_cand = os.path.join(VAULT, "02-Areas", "Skills")
@@ -63,6 +63,9 @@ def init_paths(vault_path):
     FORECAST_LOG = os.path.join(AUDIT_DIR, "Skill-Forecast.log")
     SKILL_TO_CHAT = os.path.join(SKILLS_NOTES, "Skill-to-Chat-Links.md")
     TAG_SKILL_MAP_JSON = os.path.join(os.path.dirname(__file__), "tag_skill_map.json")
+    daily_cand = os.path.join(VAULT, "04-Archives", "Daily")
+    daily = daily_cand if os.path.exists(daily_cand) else os.path.join(VAULT, "Daily")
+    MANIFEST = os.path.join(daily, "manifest.jsonl")
 
 
 def resolve_vault():

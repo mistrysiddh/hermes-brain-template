@@ -417,6 +417,16 @@ def status(test_name):
 # ---------------------------------------------------------------------------
 # Report generation
 # ---------------------------------------------------------------------------
+def write_report(lines, dry_run=True):
+    """Print the report, and save it under the TDD folder when applying."""
+    report = "\n".join(lines)
+    print(report)
+    if not dry_run:
+        os.makedirs(TDD_DIR, exist_ok=True)
+        with open(os.path.join(TDD_DIR, "TDD-Report.md"), "w", encoding="utf-8") as f:
+            f.write(report + "\n")
+
+
 def generate_report(results, dry_run=True):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     lines = [
@@ -432,7 +442,7 @@ def generate_report(results, dry_run=True):
     if not results:
         lines.append("## No TDD activity to report.")
         lines.append("")
-        write_report(lines)
+        write_report(lines, dry_run)
         return
 
     for r in results:
@@ -470,7 +480,7 @@ def generate_report(results, dry_run=True):
     lines.append("- Never mix refactoring with behavioral change")
     lines.append("")
 
-    write_report(lines)
+    write_report(lines, dry_run)
 
 
 # ---------------------------------------------------------------------------

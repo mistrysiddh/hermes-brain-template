@@ -14,6 +14,7 @@ Inspired by LearnHarness's Plan phase:
 Multi-harness compliant: stdlib-only, --dry-run default, --apply.
 """
 
+import json
 from typing import Any
 
 # Deferred vault path — resolved at runtime
