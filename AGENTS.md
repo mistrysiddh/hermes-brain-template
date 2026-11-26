@@ -9,6 +9,20 @@ status: auto-remediated
 
 This repository contains **32+ multi-harness agent skills** for the Hermes Brain Obsidian vault template. Each skill is available as a standalone Python script in `_System/Scripts/`. Each accepts `--vault <path>` and runs in `--dry-run` mode by default. Use `--apply` to apply changes.
 
+## Editing Rules (read before touching any script)
+
+**Patch, don't rewrite.** On 2026-11-26 an automated full-file rewrite pass silently broke 55+ scripts in `_System/Scripts/` — string literals got wrongly wrapped in `os.path.join()`, argparse lines were duplicated, a test docstring was overwritten, and some `--vault` flags stopped taking effect because `VAULT` references went undefined. None of this showed up until a manual repair pass caught it (commit `7dc1fe4`). Lesson: **use targeted patches (find-and-replace on exact strings) instead of regenerating a whole file**, especially for scripts following the shared `pm_best_practices_*.py` dataclass + `_ensure_dirs()` + `--vault`/`--dry-run`/`--apply`/`--test` pattern — a full rewrite loses the parts you didn't mean to touch.
+
+**Verify before you call it done.** Every skill script ships a `--test` self-test suite. Before committing any change to a script (not just new ones), run:
+
+```
+python _System/Scripts/<script>.py --vault . --test
+```
+
+If it doesn't exit 0, the change isn't done — fix it before committing, not after.
+
+**Build order for new skills:** write the script → run `--test` → run `--dry-run` on a real subcommand to sanity-check output → clean up any generated JSON artifacts under `02-Areas/Skills/<skill_name>/` left behind by the test run → then commit.
+
 ## Agent Skills
 
 | Agent | File | Purpose |
@@ -28,6 +42,7 @@ This repository contains **32+ multi-harness agent skills** for the Hermes Brain
 | **smart-memory** | `_System/Scripts/smart_memory.py` | Smart memory & RAG — System-One control, multi-relational storage, RAG retrieval, model routing ||
 | **knowledge-management** | `_System/Scripts/knowledge_management.py` | Knowledge management — decision systems, rules, ontology, datasets, knowledge map ||
 | **borg** | `_System/Scripts/borg/cli.py` | Skill-pack digestion — artifact intake/TRUST/ART adapters, record schema ⟨M,R,C,P,T,N,X,E,D⟩, 7 kinds, TRUST scanner, repo layout (§19.1). Phase 1 of v25.0 operating reference. ||
+| **verify-pm-skills** | `_System/Scripts/verify_pm_skills.py` | Pre-commit verification sweep — runs `--test` across every `pm_best_practices_*.py` skill, reports pass/fail, exits non-zero on any failure |
 
 ## Sub-Skill Hierarchies (v1.37–v1.44)
 
@@ -94,6 +109,7 @@ python _System/Scripts/knowledge_management.py --vault <path> rule-add --name ".
 python _System/Scripts/knowledge_management.py --vault <path> ontology-add-object --id "obj_1" --type "Person" --properties '{"name": "Alice"}'
 python _System/Scripts/knowledge_management.py --vault <path> dataset-register --name "customer_data" --columns '["id","name","email"]' --keys '["id"]'
 python _System/Scripts/knowledge_management.py --vault <path> knowledge-map
+python _System/Scripts/verify_pm_skills.py --vault <path>
 ```
 
 ## GitHub Agents
