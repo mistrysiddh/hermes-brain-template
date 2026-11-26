@@ -2,62 +2,48 @@
 type: dashboard
 status: beta
 created: 2026-09-14
-updated: 2026-11-16
+updated: 2026-11-26
 tags: [dashboard, hub, beta, admin]
-cssclasses: [dashboard-wide, hb-app]
+cssclasses: [dashboard-wide, hbd-app]
 ---
 
 %%
 Hermes Brain — Dashboard-Beta
 
-Admin-dashboard styling with design-system tokens:
-- Slate/gray surface, blue accent, semantic status colors
-- 0.25rem spacing scale, 8-12px border radius, subtle shadows
-- Cards with hover states, accessible badges, sparkline charts
-
-Requires Dataview plugin with JavaScript queries enabled.
-Best viewed in Reading view.
+Requires the Dataview plugin with JavaScript queries enabled, and the
+`dashboard-beta` CSS snippet (all styling lives there). Best in Reading view.
 %%
 
 ```dataviewjs
-// ============================================================
-//  HERMES BRAIN — DASHBOARD-BETA (admin-dashboard styling)
-//  Design system tokens + widget-based canvas layout
-// ============================================================
-
 const vault = app.vault;
 
-// ---------- design tokens ----------
-const T = {
-  surface: "var(--background-secondary)",
-  surfaceHover: "var(--background-modifier-hover)",
-  border: "var(--background-modifier-border)",
-  textPrimary: "var(--text-normal)",
-  textSecondary: "var(--text-muted)",
-  textFaint: "var(--text-faint)",
-  accent: "var(--interactive-accent)",
-  accentHover: "color-mix(in srgb, var(--interactive-accent) 90%, transparent)",
-  ok: "var(--text-success)",
-  okBg: "color-mix(in srgb, var(--text-success) 12%, transparent)",
-  warn: "var(--text-warning)",
-  warnBg: "color-mix(in srgb, var(--text-warning) 12%, transparent)",
-  error: "var(--text-error)",
-  errorBg: "color-mix(in srgb, var(--text-error) 12%, transparent)",
-  info: "var(--text-accent)",
-  infoBg: "color-mix(in srgb, var(--text-accent) 12%, transparent)",
-  spacing: { xs: "4px", sm: "8px", md: "12px", lg: "16px", xl: "24px", xxl: "32px" },
-  radius: { sm: "6px", md: "8px", lg: "12px" },
-  shadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+// ---------- config ----------
+const REPORTS = "04-Archives/Audit-Reports";
+const PATHS = {
+  tokens: [`${REPORTS}/Token-Usage.log`, "Skills-Notes/Token-Usage.log"],
+  audit: [`${REPORTS}/Vault-Audit-Report.md`, "Skills-Notes/Vault-Audit-Report.md"],
+  skills: [`${REPORTS}/Skill-Quality-Report.md`, "Skills-Notes/Skill-Quality-Report.md"],
+  critique: [`${REPORTS}/Self-Critique-Report.md`, "Skills-Notes/Self-Critique-Report.md"],
+  board: ["04-Archives/Memory-Review/Memory-Board.md", "Memory-Review/Memory-Board.md"],
+  preamble: ["04-Archives/Memory-Review/HERMES-PREAMBLE.md"],
+  timeline: ["04-Archives/Daily/Timeline.md"],
+  projects: ["01-Projects/Projects.base"],
+  version: ["VERSION"],
 };
+const STALE_DAYS = 7;
 
 // ---------- helpers ----------
 const pad = n => String(n).padStart(2, "0");
-const localISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const isoDay = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const arr = x => !x ? [] : (x.array ? x.array() : Array.from(x));
-const getFile = (...paths) => paths.map(p => vault.getAbstractFileByPath(p)).find(Boolean);
-const open = path => app.workspace.openLinkText(path, "", false);
+const find = key => PATHS[key].map(p => vault.getAbstractFileByPath(p)).find(Boolean);
+const read = async key => { const f = find(key); return f ? { file: f, text: await vault.read(f) } : null; };
 const msOf = t => !t ? 0 : (t.toMillis ? t.toMillis() : new Date(t).getTime());
+const daysSince = ms => Math.floor((Date.now() - ms) / 86400000);
+const shortDate = d => d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 const compact = n => new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(n);
+const plural = (n, word) => `${n.toLocaleString()} ${word}${n === 1 ? "" : "s"}`;
+const notify = m => typeof Notice === "function" ? new Notice(m) : console.warn(m);
 const timeAgo = t => {
   const min = Math.floor((Date.now() - msOf(t)) / 60000);
   if (min < 1) return "just now";
@@ -65,438 +51,364 @@ const timeAgo = t => {
   const hr = Math.floor(min / 60);
   return hr < 24 ? `${hr}h ago` : `${Math.floor(hr / 24)}d ago`;
 };
-
-const store = {
-  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
-  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+const generatedAt = text => {
+  const m = text.match(/Generated:\s*(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/);
+  return m ? new Date(`${m[1]}T${m[2]}`) : null;
+};
+const summaryCount = (text, label) => {
+  const line = text.split(/\r?\n/).find(l => l.includes(`**${label}`));
+  const m = line?.match(/\*\*:\s*(\d+)\s*$/);
+  return m ? Number(m[1]) : null; // null = missing or unreadable
 };
 
-function el(tag, opts = {}) {
-  const e = document.createElement(tag);
-  if (opts.attr) Object.entries(opts.attr).forEach(([k, v]) => e.setAttribute(k, v));
-  if (opts.style) Object.assign(e.style, opts.style);
-  if (opts.classes) opts.classes.split(/\s+/).forEach(c => e.addClass(c));
-  if (opts.text) e.setText(opts.text);
-  return e;
+// ---------- actions ----------
+const openPath = path => app.workspace.openLinkText(path, "", false);
+const openKey = key => { const f = find(key); f ? openPath(f.path) : notify(`Not found: ${PATHS[key][0]}`); };
+const runCommand = id => { if (!app.commands.executeCommandById(id)) notify(`Command unavailable: ${id}`); };
+const search = query => {
+  const plugin = app.internalPlugins.getPluginById("global-search");
+  plugin?.enabled ? plugin.instance.openGlobalSearch(query) : notify("Enable the core Search plugin.");
+};
+
+// Creates a new note from a template, so the template itself is never edited.
+async function newFromTemplate(templatePath, folder, prefix) {
+  const template = vault.getAbstractFileByPath(templatePath);
+  if (!template) return notify(`Template not found: ${templatePath}`);
+  if (!vault.getAbstractFileByPath(folder)) await vault.createFolder(folder);
+  const now = new Date();
+  const title = `${prefix}-${isoDay(now)}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  const text = (await vault.read(template))
+    .replaceAll("{{date}}", isoDay(now))
+    .replaceAll("{{title}}", title);
+  const file = await vault.create(`${folder}/${title}.md`, text);
+  openPath(file.path);
 }
 
-// Obsidian's createEl() has no `style` option, so apply it ourselves.
-function ce(parent, tag, opts = {}) {
-  const { style, ...rest } = opts;
-  const e = parent.createEl(tag, rest);
-  if (style) Object.assign(e.style, style);
-  return e;
-}
-
-function badge(text, variant = "info") {
-  const bg = { ok: T.okBg, warn: T.warnBg, error: T.errorBg, info: T.infoBg, neutral: T.surfaceHover };
-  const fg = { ok: T.ok, warn: T.warn, error: T.error, info: T.info, neutral: T.textSecondary };
-  return el("span", { text,
-    style: {
-      display: "inline-flex", alignItems: "center", padding: "2px 8px",
-      borderRadius: T.radius.sm, fontSize: "0.75rem", fontWeight: 600,
-      background: bg[variant] || bg.info, color: fg[variant] || fg.info,
-    },
+// ---------- components ----------
+function button(parent, label, onClick, cls = "hbd-btn") {
+  const b = parent.createEl("button", { cls, text: label, attr: { type: "button" } });
+  b.addEventListener("click", async () => {
+    try { await onClick(); } catch (e) { console.error("[Dashboard-Beta]", e); notify(`Failed: ${label}`); }
   });
+  return b;
 }
 
-function card(title, { subtitle, action, actionPath, span = 12 } = {}) {
-  const root = el("section", {
-    classes: `hb-card hb-span-${span}`,
-    style: {
-      background: T.surface, border: `1px solid ${T.border}`,
-      borderRadius: T.radius.lg, boxShadow: T.shadow,
-      display: "flex", flexDirection: "column", overflow: "hidden",
-      transition: "all 0.2s ease",
-    },
-  });
-  root.addEventListener("mouseenter", () => { root.style.borderColor = T.accent; });
-  root.addEventListener("mouseleave", () => { root.style.borderColor = T.border; });
+function link(parent, path, cls) {
+  const a = parent.createEl("a", { cls, attr: { href: "#" } });
+  a.addEventListener("click", e => { e.preventDefault(); openPath(path); });
+  return a;
+}
 
-  if (title) {
-    const head = el("div", {
-      style: {
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: `${T.spacing.lg} ${T.spacing.xl}`,
-        borderBottom: `1px solid ${T.border}`,
-      },
-    });
-    const titleBox = el("div", {});
-    head.appendChild(titleBox);
-    ce(titleBox, "span", { text: title, style: { fontSize: "0.875rem", fontWeight: 600, color: T.textPrimary, letterSpacing: "0.02em" } });
-    if (subtitle) ce(titleBox, "span", { text: subtitle, style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.xs, display: "block" } });
-    if (action) {
-      const btn = el("a", { text: action,
-        style: { textDecoration: "none", fontSize: "0.85rem", color: T.accent, padding: `${T.spacing.sm} ${T.spacing.md}`, borderRadius: T.radius.md, background: "color-mix(in srgb, var(--interactive-accent) 14%, transparent)", transition: "background 0.2s ease" }, href: actionPath });
-      btn.addEventListener("click", e => { e.preventDefault(); open(actionPath); });
-      head.appendChild(btn);
-    }
-    root.appendChild(head);
+const empty = (parent, text) => parent.createDiv({ cls: "hbd-empty", text });
+const badge = (parent, text, tone = "neutral") => parent.createSpan({ cls: `hbd-badge hbd-${tone}`, text });
+
+function card(parent, title, span, { action, onAction } = {}) {
+  const root = parent.createEl("section", { cls: `hbd-card hbd-span-${span}` });
+  const head = root.createDiv({ cls: "hbd-card-head" });
+  head.createEl("h3", { text: title });
+  const meta = head.createDiv({ cls: "hbd-card-meta" });
+  if (action) button(meta, action, onAction, "hbd-text-btn");
+  return { body: root.createDiv({ cls: "hbd-card-body" }), meta };
+}
+
+// Shows when a report was generated; amber once it is older than STALE_DAYS.
+function freshness(meta, date) {
+  if (!date) return;
+  const old = daysSince(date.getTime()) > STALE_DAYS;
+  badge(meta, `${old ? "Stale · " : ""}${shortDate(date)}`, old ? "warn" : "neutral");
+}
+
+function bars(parent, series, unit) {
+  const max = Math.max(1, ...series.map(s => s.value));
+  const chart = parent.createDiv({ cls: "hbd-chart", attr: { role: "img", "aria-label": `${unit} per day, last ${series.length} days` } });
+  for (const s of series) {
+    const col = chart.createDiv({ cls: "hbd-bar", attr: { title: `${shortDate(s.date)}: ${s.value.toLocaleString()} ${unit}` } });
+    col.style.height = s.value ? `${Math.max(8, (s.value / max) * 100)}%` : "2px";
+    if (!s.value) col.addClass("hbd-bar-zero");
   }
-
-  const body = el("div", { style: { padding: T.spacing.xl, flex: 1 } });
-  root.appendChild(body);
-  return { root, body };
+  const axis = parent.createDiv({ cls: "hbd-axis" });
+  axis.createSpan({ text: shortDate(series[0].date) });
+  axis.createSpan({ text: shortDate(series[series.length - 1].date) });
 }
 
-function kpi(label, value, sub, { accent = false, trend, color } = {}) {
-  const k = el("div", {
-    style: { display: "flex", flexDirection: "column", gap: T.spacing.sm, padding: T.spacing.lg, background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.radius.md, minWidth: 140 },
-  });
-  ce(k, "span", { text: label, style: { fontSize: "0.8rem", color: T.textSecondary } });
-  const valWrap = el("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: T.spacing.sm } });
-  ce(valWrap, "span", { text: value, style: { fontSize: "1.75rem", fontWeight: 700, color: color || (accent ? T.accent : T.textPrimary) } });
-  if (trend) ce(valWrap, "span", { text: trend.text, style: { fontSize: "0.85rem", fontWeight: 600, color: trend.ok ? T.ok : T.error } });
-  k.appendChild(valWrap);
-  if (sub) ce(k, "span", { text: sub, style: { fontSize: "0.8rem", color: T.textFaint } });
+function kpi(parent, label, value, sub, tone) {
+  const k = parent.createDiv({ cls: "hbd-card hbd-kpi hbd-span-3" });
+  k.createDiv({ cls: "hbd-kpi-label", text: label });
+  k.createDiv({ cls: `hbd-kpi-value${tone ? ` hbd-text-${tone}` : ""}`, text: value });
+  k.createDiv({ cls: "hbd-kpi-sub", text: sub });
   return k;
 }
 
-function sparkline(parent, vals, color = T.accent) {
-  const max = Math.max(1, ...vals);
-  const w = 100, h = 24, bw = w / vals.length;
-  const bars = vals.map((v, i) => {
-    const bh = v ? Math.max(1.5, (v / max) * h) : 1;
-    return `<rect x="${(i * bw + bw * 0.2).toFixed(2)}" y="${(h - bh).toFixed(2)}" width="${(bw * 0.6).toFixed(2)}" height="${bh.toFixed(2)}" rx="1" fill="${color}"/>`;
-  }).join("");
-  ce(parent, "div", { style: { width: "100%" } }).innerHTML =
-    `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true" style="width:100%;height:${h}px;display:block">${bars}</svg>`;
+function statRow(parent, label, value, tone, path) {
+  const row = path ? link(parent, path, "hbd-row") : parent.createDiv({ cls: "hbd-row" });
+  row.createSpan({ text: label });
+  badge(row, value, tone);
 }
 
-const root = dv.el("div", "", { cls: "hb-dash" });
+// ---------- data ----------
+async function loadData() {
+  const [tokens, audit, skills, critique, board, version] = await Promise.all(
+    ["tokens", "audit", "skills", "critique", "board", "version"].map(read));
 
-// ---------- shared data ----------
-const now = new Date();
-const todayISO = localISO(now);
-
-const byDate = {};
-const tokenLog = getFile("04-Archives/Audit-Reports/Token-Usage.log", "Skills-Notes/Token-Usage.log");
-if (tokenLog) {
-  for (const raw of (await vault.read(tokenLog)).split("\n")) {
+  // Token log: "YYYY-MM-DD: N tokens (M session(s))"
+  const byDate = {};
+  for (const raw of (tokens?.text || "").split("\n")) {
     const m = raw.trim().match(/^(\d{4}-\d{2}-\d{2}):\s*(\d+)(?:\s*tokens?\s*\((\d+)\s*session)?/);
     if (!m) continue;
     const d = byDate[m[1]] ||= { tokens: 0, sessions: 0 };
-    d.tokens += parseInt(m[2]);
-    d.sessions += parseInt(m[3] || "0");
+    d.tokens += Number(m[2]);
+    d.sessions += Number(m[3] || 0);
+  }
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (13 - i));
+    return { date, ...(byDate[isoDay(date)] || { tokens: 0, sessions: 0 }) };
+  });
+  const lastLogged = Object.keys(byDate).sort().pop();
+
+  // Memory board: checkbox counts per Kanban column
+  let memory = null;
+  if (board) {
+    memory = { candidates: 0, review: 0, approved: 0, rejected: 0 };
+    let column = null;
+    for (const line of board.text.split("\n")) {
+      if (line.startsWith("## ")) {
+        column = /approved|promoted/i.test(line) ? "approved"
+          : /rejected/i.test(line) ? "rejected"
+          : /review/i.test(line) ? "review" : "candidates";
+      } else if (column && /^\s*- \[.\]/.test(line)) memory[column]++;
+    }
+  }
+
+  const health = audit && {
+    path: audit.file.path,
+    date: generatedAt(audit.text),
+    broken: summaryCount(audit.text, "Broken wikilinks"),
+    stale: summaryCount(audit.text, "Stale Memory-Review"),
+    duplicates: summaryCount(audit.text, "Duplicate sessions"),
+    manifest: summaryCount(audit.text, "Manifest issues"),
+    orphans: summaryCount(audit.text, "Orphaned files"),
+  };
+
+  const review = critique && {
+    path: critique.file.path,
+    date: generatedAt(critique.text),
+    total: summaryCount(critique.text, "Total findings"),
+    serious: [...critique.text.matchAll(/^\|\s*(critical|high|medium)\s*\|/gim)].length,
+    broken: (critique.text.match(/\|\s*Broken wikilink \[\[/g) || []).length,
+  };
+
+  let quality = null;
+  if (skills) {
+    const count = label => (skills.text.match(new RegExp(`^###.*— ${label}\\s*$`, "gm")) || []).length;
+    quality = { path: skills.file.path, date: generatedAt(skills.text), ready: count("READY"), rework: count("NEEDS REWORK"), reject: count("REJECT") };
+    quality.total = quality.ready + quality.rework + quality.reject;
+  }
+
+  const SKIP = new Set(["README", "manifest", "Timeline", "Chat-Correlation"]);
+  const sessions = arr(dv.pages('"04-Archives/Daily" or "Daily"').where(p => !SKIP.has(p.file.name)))
+    .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
+
+  const projects = arr(dv.pages('"01-Projects" or "Projects"').where(p => p.type === "project" && p.status === "active"))
+    .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
+
+  const self = dv.current()?.file?.path;
+  const allPages = arr(dv.pages());
+  const recent = allPages
+    .filter(p => p.file.path !== self && !/^(04-Archives\/)?Daily\//.test(p.file.path))
+    .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime))
+    .slice(0, 6);
+
+  return {
+    days, lastLogged, memory, health, review, quality, sessions, projects, recent,
+    noteCount: allPages.length,
+    version: version?.text.trim().split("|").pop(),
+  };
+}
+
+// Only things that call for action.
+function alerts(d) {
+  const out = [];
+  const add = (tone, text, path) => out.push({ tone, text, path });
+  const h = d.health, r = d.review, q = d.quality;
+  if (h?.broken) add("error", `${plural(h.broken, "broken link")} in the vault audit`, h.path);
+  if (r?.broken) add("error", `${plural(r.broken, "broken link")} in the self-critique`, r.path);
+  if (h?.duplicates) add("warn", plural(h.duplicates, "duplicate session"), h.path);
+  if (h?.manifest) add("warn", plural(h.manifest, "manifest issue"), h.path);
+  if (h?.stale) add("warn", plural(h.stale, "stale memory review"), h.path);
+  if (h && h.stale === null) add("warn", "Stale-review count is unreadable. Re-run vault_audit.py", h.path);
+  if (r?.serious) add("warn", plural(r.serious, "medium-or-higher self-critique finding"), r.path);
+  if (q?.reject) add("warn", plural(q.reject, "rejected skill"), q.path);
+  for (const [name, rep] of [["Vault audit", h], ["Skill quality", q], ["Self-critique", r]]) {
+    if (!rep) add("warn", `${name} report is missing`);
+    else if (rep.date && daysSince(rep.date.getTime()) > STALE_DAYS) add("warn", `${name} report is ${daysSince(rep.date.getTime())} days old`, rep.path);
+  }
+  if (!d.lastLogged) add("warn", "No token usage has been logged");
+  else {
+    const age = daysSince(new Date(`${d.lastLogged}T00:00:00`).getTime());
+    if (age > STALE_DAYS) add("warn", `Token log has no entries for ${age} days`);
+  }
+  return out.sort((a, b) => (a.tone === "error" ? 0 : 1) - (b.tone === "error" ? 0 : 1));
+}
+
+// ---------- sections ----------
+function header(parent) {
+  const bar = parent.createEl("header", { cls: "hbd-header" });
+  const title = bar.createDiv();
+  const now = new Date(), hour = now.getHours();
+  const greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  title.createEl("h2", { text: "Hermes Brain" });
+  title.createDiv({ cls: "hbd-muted", text: `${greet} · ${now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}` });
+
+  const tools = bar.createDiv({ cls: "hbd-tools" });
+  const input = tools.createEl("input", { cls: "hbd-search", attr: { type: "search", placeholder: "Search vault, then press Enter", "aria-label": "Search vault" } });
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && input.value.trim()) search(input.value.trim()); });
+  button(tools, "Refresh", render);
+
+  const actions = parent.createEl("nav", { cls: "hbd-actions", attr: { "aria-label": "Quick actions" } });
+  button(actions, "Today's note", () => runCommand("daily-notes"), "hbd-btn hbd-primary");
+  button(actions, "Memory board", () => openKey("board"));
+  button(actions, "Context preamble", () => openKey("preamble"));
+  button(actions, "New lesson", () => newFromTemplate("_System/Templates/Lesson-Learned.md", "02-Areas/Skills/Lessons-Learned", "Lesson"));
+  button(actions, "New ADR", () => newFromTemplate("_System/Templates/Architecture-Decision-Record.md", "01-Projects/ADR", "ADR"));
+}
+
+function attention(parent, items) {
+  const box = parent.createEl("section", { cls: `hbd-attention hbd-span-12${items.length ? "" : " hbd-clear"}` });
+  if (!items.length) { box.createEl("strong", { text: "✓ All clear. Nothing needs attention." }); return; }
+  box.createEl("strong", { text: `⚠ Needs attention (${items.length})` });
+  const list = box.createDiv({ cls: "hbd-alerts" });
+  for (const i of items) {
+    const cls = `hbd-alert hbd-${i.tone}`;
+    const chip = i.path ? link(list, i.path, cls) : list.createSpan({ cls });
+    chip.setText(i.path ? `${i.text} →` : i.text);
   }
 }
-const lastDays = n => Array.from({ length: n }, (_, i) => {
-  const d = new Date(now);
-  d.setDate(d.getDate() - (n - 1 - i));
-  return byDate[localISO(d)] || { tokens: 0, sessions: 0 };
-});
 
-const SKIP_DAILY = new Set(["README", "manifest", "Timeline", "Chat-Correlation"]);
-const dailyPages = arr(dv.pages('"04-Archives/Daily" or "Daily"').where(p => !SKIP_DAILY.has(p.file.name)))
-  .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
+function kpis(grid, d) {
+  const sum = key => d.days.reduce((s, x) => s + x[key], 0);
+  const series = key => d.days.map(x => ({ date: x.date, value: x[key] }));
+  const none = d.lastLogged ? `Last entry ${shortDate(new Date(`${d.lastLogged}T00:00:00`))}` : "No log entries yet";
+  const today = d.days[d.days.length - 1].tokens;
 
-const memTasks = arr(dv.pages('"04-Archives/Memory-Review" or "Memory-Review"').file.tasks);
-const memDone = memTasks.filter(t => t.completed).length;
-const memOpen = memTasks.length - memDone;
+  const tokens = sum("tokens");
+  const t = kpi(grid, "Tokens · 14 days", tokens ? compact(tokens) : "—", tokens ? `${compact(today)} today` : none);
+  if (tokens) bars(t, series("tokens"), "tokens");
 
-const SKIP_ANALYSIS = new Set(["Personality-Judgment-Analysis", "Personality-Judgment-Dashboard"]);
-const analyses = arr(dv.pages('#personality-judgment or "04-Archives/Daily" or "Daily"')
-  .where(p => p.subject && !SKIP_ANALYSIS.has(p.file.name)))
-  .sort((a, b) => msOf(b.file.mtime) - msOf(a.file.mtime));
+  const count = sum("sessions");
+  const s = kpi(grid, "Sessions · 14 days", count ? String(count) : "—", count ? plural(d.days.filter(x => x.sessions).length, "active day") : none);
+  if (count) bars(s, series("sessions"), "sessions");
 
-let health = { label: "No data", cls: "info", sub: "no archived sessions" };
-if (dailyPages.length) {
-  const hrs = (Date.now() - msOf(dailyPages[0].file.mtime)) / 3600000;
-  const sub = `last archive ${timeAgo(dailyPages[0].file.mtime)}`;
-  health = hrs < 3 ? { label: "Healthy", cls: "ok", sub }
-    : hrs < 48 ? { label: "Idle", cls: "info", sub }
-    : { label: "Stale", cls: "warn", sub };
+  const m = d.memory;
+  const pending = m ? m.candidates + m.review : 0;
+  kpi(grid, "Facts awaiting review", m ? String(pending) : "—", m ? `${m.approved} promoted` : "Memory board not found", pending ? "warn" : undefined);
+
+  const last = d.sessions[0]?.file.mtime;
+  const hours = last ? (Date.now() - msOf(last)) / 3600000 : null;
+  const [label, tone] = hours === null ? ["No data"] : hours < 3 ? ["Healthy", "ok"] : hours < 48 ? ["Idle"] : ["Stale", "warn"];
+  kpi(grid, "Archiver", label, last ? `Last archive ${timeAgo(last)}` : "No archived sessions", tone);
 }
 
-const jobs = [];
-function widget(span, title, opts, fill) {
-  const { root: cardRoot, body } = card(title, opts);
-  jobs.push(Promise.resolve().then(() => fill(body)).catch(err => {
-    body.empty();
-    ce(body, "div", { text: `⚠️ ${err.message}`, style: { color: T.error, padding: T.spacing.lg } });
-    console.error(`[Dashboard-Beta] ${title}`, err);
-  }));
-  root.appendChild(cardRoot);
+function fileList(body, pages, emptyText) {
+  if (!pages.length) return empty(body, emptyText);
+  for (const p of pages) {
+    const row = link(body, p.file.path, "hbd-row");
+    const info = row.createDiv({ cls: "hbd-row-main" });
+    info.createDiv({ cls: "hbd-row-title", text: p.file.name });
+    info.createDiv({ cls: "hbd-row-sub", text: p.file.folder || "Vault root" });
+    row.createSpan({ cls: "hbd-muted", text: timeAgo(p.file.mtime) });
+  }
 }
 
-// ============================================================
-//  TOP BAR
-// ============================================================
-{
-  const bar = ce(root, "header", { cls: "hb-topbar hb-span-12" });
-  bar.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:0 ${T.spacing.xl};height:64px;background:${"var(--background-secondary)"};border-bottom:1px solid ${T.border};flex-shrink:0`;
+const sections = [
+  ["Recent sessions", 8, { action: "Timeline", onAction: () => openKey("timeline") }, ({ body }, d) =>
+    fileList(body, d.sessions.slice(0, 6), "No archived sessions yet. They appear here once saved to 04-Archives/Daily.")],
 
-  const left = ce(bar, "div", { style: { display: "flex", alignItems: "center", gap: T.spacing.lg } });
-  ce(left, "div", { text: new Date().getHours() < 12 ? "Good morning, Siddh" : "Good afternoon, Siddh", style: { fontSize: "0.9rem", color: T.textSecondary } });
+  ["Memory pipeline", 4, { action: "Open board", onAction: () => openKey("board") }, ({ body }, d) => {
+    const m = d.memory;
+    if (!m) return empty(body, "Memory board not found.");
+    const total = m.candidates + m.review + m.approved + m.rejected;
+    if (!total) return empty(body, "The memory board is empty.");
+    const pct = Math.round(((m.approved + m.rejected) / total) * 100);
+    body.createDiv({ cls: "hbd-big", text: `${pct}% reviewed` });
+    const track = body.createDiv({ cls: "hbd-track", attr: { role: "progressbar", "aria-valuenow": String(pct), "aria-valuemin": "0", "aria-valuemax": "100" } });
+    track.createDiv({ cls: "hbd-fill-ok" }).style.width = `${pct}%`;
+    statRow(body, "Candidates", String(m.candidates), m.candidates ? "warn" : "neutral");
+    statRow(body, "Under review", String(m.review), m.review ? "warn" : "neutral");
+    statRow(body, "Promoted", String(m.approved), "ok");
+    statRow(body, "Rejected", String(m.rejected), "neutral");
+  }],
 
-  const search = ce(left, "div", { style: { position: "relative", width: "280px" } });
-  const si = ce(search, "input", { attr: { type: "text", placeholder: "Search vault…" },
-    style: { width: "100%", padding: "8px 12px 8px 32px", borderRadius: T.radius.md, border: `1px solid ${T.border}`, background: T.surface, fontSize: "0.875rem", color: T.textPrimary } });
-  si.addEventListener("focus", () => { si.style.borderColor = T.accent; });
-  si.addEventListener("blur", () => { si.style.borderColor = T.border; });
-  ce(search, "span", { text: "🔍", style: { position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "0.9rem" } });
+  ["Active projects", 6, { action: "All projects", onAction: () => openKey("projects") }, ({ body }, d) =>
+    fileList(body, d.projects.slice(0, 6), "No notes with type: project and status: active.")],
 
-  const right = ce(bar, "div", { style: { display: "flex", alignItems: "center", gap: T.spacing.md } });
-  const notif = ce(right, "button", { text: "🔔",
-    style: { background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem", padding: T.spacing.sm, borderRadius: T.radius.md, color: T.textSecondary } });
-  notif.addEventListener("mouseenter", () => { notif.style.background = T.surfaceHover; });
-  notif.addEventListener("mouseleave", () => { notif.style.background = "none"; });
+  ["Recent activity", 6, {}, ({ body }, d) =>
+    fileList(body, d.recent, "No recent edits.")],
 
-  const user = ce(right, "div", {
-    style: { display: "flex", alignItems: "center", gap: T.spacing.sm, padding: `${T.spacing.sm} ${T.spacing.md}`, background: T.surfaceHover, borderRadius: T.radius.lg, border: `1px solid ${T.border}` },
-  });
-  ce(user, "div", { text: "S", style: { width: "28px", height: "28px", borderRadius: "50%", background: T.accent, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem" } });
-  const ui = ce(user, "div", {});
-  ce(ui, "div", { text: "Siddh Mistry", style: { fontSize: "0.875rem", fontWeight: 600, color: T.textPrimary } });
-  ce(ui, "div", { text: "Owner · Hermes Brain", style: { fontSize: "0.75rem", color: T.textFaint } });
-
-  root.appendChild(bar);
-}
-
-// ============================================================
-//  KPI STRIP
-// ============================================================
-{
-  const section = ce(root, "section", { cls: "hb-span-12", style: { marginBottom: T.spacing.xxl } });
-  ce(section, "h2", { text: "Overview", style: { fontSize: "1rem", fontWeight: 600, color: T.textPrimary, marginBottom: T.spacing.lg, textTransform: "uppercase", letterSpacing: "0.05em" } });
-
-  const strip = ce(section, "div", {
-    style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: T.spacing.lg },
-  });
-
-  const days = Object.values(byDate);
-  const totalTokens = days.reduce((s, d) => s + d.tokens, 0);
-  const activeDays = days.filter(d => d.tokens > 0).length;
-  const last14 = lastDays(14).map(d => d.tokens);
-  const avg7 = last14.slice(7).reduce((a, b) => a + b, 0) / 7;
-  const todayTokens = byDate[todayISO]?.tokens || 0;
-  const weekSessions = lastDays(7).reduce((s, d) => s + d.sessions, 0);
-  const sessions14 = lastDays(14).map(d => d.sessions);
-
-  strip.appendChild(kpi("Total tokens", compact(totalTokens), "last 14 days", { accent: true, color: "#22c55e", trend: { text: `+${Math.round((totalTokens / Math.max(activeDays, 1))).toLocaleString()}/day`, ok: true } }));
-  strip.appendChild(kpi("Tokens today", compact(todayTokens), `7-day avg ${compact(Math.round(avg7))}`));
-  strip.appendChild(kpi("Sessions · 7d", String(weekSessions), "last 14 days"));
-  strip.appendChild(kpi("Active days", String(activeDays), "with token activity"));
-  strip.appendChild(kpi("Open facts", String(memOpen), `${memDone} promoted`, { accent: memOpen > 0 }));
-  strip.appendChild(kpi("Archiver", health.label, health.sub));
-
-  const firstKpi = strip.children[0];
-  const sparkWrap = el("div", { style: { marginTop: T.spacing.md, height: "20px" } });
-  sparkline(sparkWrap, last14, T.accent);
-  firstKpi.appendChild(sparkWrap);
-
-  root.appendChild(section);
-}
-
-// ============================================================
-//  WIDGETS
-// ============================================================
-
-// Row 1: Quick actions · Memory · Vault health · Skill quality
-{
-  widget(6, "Quick actions", { span: 6, subtitle: "Common vault operations" }, async body => {
-    const grid = ce(body, "div", { style: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: T.spacing.md } });
-    const actions = [
-      ["📝", "Daily Review", () => { const tpl = getFile("_System/Templates/Daily-Review.md", "Templates/Daily-Review.md"); if (!tpl) { new Notice("Daily-Review template not found"); return; } try { app.commands.executeCommandById("templater-obsidian:create-new-note-from-template"); } catch { open(tpl.path); } }],
-      ["🧠", "Memory Kanban", () => open("04-Archives/Memory-Review/Memory-Board.md")],
-      ["⚡", "Context Preamble", () => open("04-Archives/Memory-Review/HERMES-PREAMBLE.md")],
-      ["⚠️", "Log Lesson", () => open("_System/Templates/Lesson-Learned.md")],
-      ["📑", "New ADR", () => open("_System/Templates/Architecture-Decision-Record.md")],
-      ["🛡️", "Vault Audit", () => open("04-Archives/Audit-Reports/Vault-Audit-Report.md")],
-    ];
-    for (const [icon, label, fn] of actions) {
-      const b = el("button", {
-        style: { display: "flex", alignItems: "center", gap: T.spacing.md, padding: T.spacing.md, border: `1px solid ${T.border}`, background: "transparent", borderRadius: T.radius.md, fontSize: "0.875rem", cursor: "pointer", transition: "all 0.15s ease" },
-      });
-      ce(b, "span", { text: icon, style: { fontSize: "1.2rem" } });
-      ce(b, "span", { text: label, style: { flex: 1, color: T.textPrimary } });
-      b.addEventListener("mouseenter", () => { b.style.background = T.surfaceHover; b.style.borderColor = T.accent; });
-      b.addEventListener("mouseleave", () => { b.style.background = "transparent"; b.style.borderColor = T.border; });
-      b.addEventListener("click", async () => { try { await fn(); } catch (e) { new Notice(`Failed: ${label}`); } });
-      grid.appendChild(b);
+  ["Vault health", 4, {}, ({ body, meta }, d) => {
+    const h = d.health, r = d.review;
+    if (!h && !r) return empty(body, "No reports. Run vault_audit.py and self_critique.py.");
+    const row = (label, n, path, bad) =>
+      statRow(body, label, n === null ? "Unreadable" : n.toLocaleString(), n === null ? "warn" : n ? bad : "ok", path);
+    if (h) {
+      freshness(meta, h.date);
+      row("Broken links (audit)", h.broken, h.path, "error");
+      row("Stale memory reviews", h.stale, h.path, "warn");
+      row("Duplicate sessions", h.duplicates, h.path, "warn");
+      row("Manifest issues", h.manifest, h.path, "warn");
+      row("Orphaned files (info)", h.orphans, h.path, "neutral");
     }
-    body.appendChild(grid);
-  });
+    if (r) {
+      row("Broken links (critique)", r.broken, r.path, "error");
+      row("Self-critique findings", r.total, r.path, r.serious ? "warn" : "neutral");
+    }
+  }],
 
-  widget(6, "Memory pipeline", { span: 6, subtitle: "Candidate facts → durable memory" }, body => {
-    const total = memTasks.length;
-    const pct = total ? Math.round((memDone / total) * 100) : 100;
-    const h = ce(body, "div", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: T.spacing.lg } });
-    ce(h, "span", { text: `${pct}%`, style: { fontSize: "2rem", fontWeight: 700 } });
-    ce(h, "span", { text: "reviewed", style: { fontSize: "0.875rem", color: T.textSecondary } });
-
-    const track = ce(body, "div", { style: { height: "8px", background: T.border, borderRadius: T.radius.sm, overflow: "hidden", marginBottom: T.spacing.md } });
-    const fill = ce(track, "div", { style: { height: "100%", width: `${pct}%`, background: pct >= 80 ? T.ok : pct >= 50 ? T.warn : T.error, borderRadius: T.radius.sm, transition: "width 0.5s ease" } });
-
-    const stats = ce(body, "div", { style: { display: "flex", justifyContent: "space-between", fontSize: "0.875rem", color: T.textSecondary } });
-    [[memDone, "Promoted"], [memOpen, "Pending"]].forEach(([n, label]) => {
-      const s = ce(stats, "div", { style: { textAlign: "center" } });
-      ce(s, "div", { text: String(n), style: { fontSize: "1.125rem", fontWeight: 700, color: T.textPrimary } });
-      ce(s, "div", { text: label });
+  ["Skill quality", 4, {}, ({ body, meta }, d) => {
+    const q = d.quality;
+    if (!q || !q.total) return empty(body, "No results. Run skill_quality_checker.py.");
+    freshness(meta, q.date);
+    body.createDiv({ cls: "hbd-big", text: `${Math.round((q.ready / q.total) * 100)}% ready` });
+    const track = body.createDiv({ cls: "hbd-track" });
+    [["ok", q.ready], ["warn", q.rework], ["error", q.reject]].forEach(([tone, n]) => {
+      track.createDiv({ cls: `hbd-fill-${tone}` }).style.width = `${(n / q.total) * 100}%`;
     });
-    ce(body, "div", { text: "Nightly: consolidate_memory.py → sync_to_hermes.py", style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.md } });
-  });
+    statRow(body, "Ready", String(q.ready), "ok", q.path);
+    statRow(body, "Needs rework", String(q.rework), q.rework ? "warn" : "neutral", q.path);
+    statRow(body, "Rejected", String(q.reject), q.reject ? "error" : "neutral", q.path);
+  }],
 
-  widget(6, "Vault health", { span: 6, subtitle: "Issues detected by vault_audit.py" }, async body => {
-    const report = getFile("04-Archives/Audit-Reports/Vault-Audit-Report.md", "Skills-Notes/Vault-Audit-Report.md");
-    if (!report) { ce(body, "div", { text: "No audit report found — run vault_audit.py to generate.", style: { color: T.textFaint, padding: T.spacing.lg } }); return; }
-    const txt = await vault.read(report);
-    const summary = txt.match(/## Summary\r?\n\r?\n([\s\S]*?)\r?\n---/)?.[1] || "";
-    const checks = [...summary.matchAll(/-\s+\*\*([^*]+)\*\*:\s*(\d+)/g)];
-    const issues = checks.reduce((s, m) => s + parseInt(m[2]), 0);
+  ["System", 4, {}, ({ body }, d) => {
+    statRow(body, "Vault version", d.version ? `v${d.version}` : "Unknown");
+    statRow(body, "Markdown notes", d.noteCount.toLocaleString());
+    statRow(body, "Archived sessions", d.sessions.length.toLocaleString());
+    statRow(body, "Active projects", d.projects.length.toLocaleString());
+  }],
+];
 
-    const big = ce(body, "div", { style: { display: "flex", alignItems: "baseline", gap: T.spacing.sm, marginBottom: T.spacing.lg } });
-    ce(big, "span", { text: String(issues), style: { fontSize: "2rem", fontWeight: 700, color: issues ? T.error : T.ok } });
-    ce(big, "span", { text: issues ? "open issues" : "all clear", style: { fontSize: "1rem", color: T.textSecondary } });
+// ---------- render ----------
+const container = dv.el("div", "", { cls: "hbd" });
 
-    const list = ce(body, "div", { style: { display: "flex", flexDirection: "column", gap: T.spacing.sm } });
-    for (const [, label, count] of checks) {
-      const r = ce(list, "div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${T.spacing.sm} ${T.spacing.md}`, background: T.surfaceHover, borderRadius: T.radius.md } });
-      ce(r, "span", { text: label, style: { fontSize: "0.875rem", color: T.textPrimary } });
-      ce(r, "span", { text: count, style: { fontSize: "0.875rem", fontWeight: 700, color: +count ? T.warn : T.ok } });
+async function render() {
+  try {
+    const data = await loadData();
+    container.empty();
+    header(container);
+    const grid = container.createDiv({ cls: "hbd-grid" });
+    attention(grid, alerts(data));
+    kpis(grid, data);
+    for (const [title, span, opts, fill] of sections) {
+      const c = card(grid, title, span, opts);
+      try { fill(c, data); }
+      catch (e) { console.error(`[Dashboard-Beta] ${title}`, e); empty(c.body, `Could not load: ${e.message}`); }
     }
-    body.appendChild(list);
-
-    const gen = txt.match(/Generated:\s*([^\n]+)/)?.[1];
-    if (gen) ce(body, "div", { text: `Last audit: ${gen.trim()}`, style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.md } });
-  });
-
-  widget(6, "Skill quality", { span: 6, subtitle: "Multi-harness agent skill compliance" }, async body => {
-    const sqReport = getFile("04-Archives/Audit-Reports/Skill-Quality-Report.md", "Skills-Notes/Skill-Quality-Report.md");
-    if (!sqReport) { ce(body, "div", { text: "No skill quality report found — run skill_quality_checker.py to generate.", style: { color: T.textFaint, padding: T.spacing.lg } }); return; }
-    const content = await vault.read(sqReport);
-    const ready = (content.match(/— READY/g) || []).length;
-    const rework = (content.match(/— NEEDS REWORK/g) || []).length;
-    const reject = (content.match(/— REJECT/g) || []).length;
-    const total = ready + rework + reject;
-    const pct = total ? Math.round((ready / total) * 100) : 0;
-
-    const big = ce(body, "div", { style: { display: "flex", alignItems: "baseline", gap: T.spacing.sm, marginBottom: T.spacing.lg } });
-    ce(big, "span", { text: `${pct}%`, style: { fontSize: "2rem", fontWeight: 700, color: pct >= 80 ? T.ok : pct >= 50 ? T.warn : T.error } });
-    ce(big, "span", { text: `${ready}/${total} READY`, style: { fontSize: "1rem", color: T.textSecondary } });
-
-    const bars = ce(body, "div", { style: { display: "flex", flexDirection: "column", gap: T.spacing.sm } });
-    [[ready, "READY", T.ok], [rework, "Needs rework", T.warn], [reject, "Rejected", T.error]].forEach(([n, label, color]) => {
-      const barPct = total ? Math.round((n / total) * 100) : 0;
-      const row = ce(bars, "div", { style: { display: "flex", flexDirection: "column", gap: T.spacing.xs } });
-      const lr = ce(row, "div", { style: { display: "flex", justifyContent: "space-between", fontSize: "0.8rem" } });
-      ce(lr, "span", { text: label, style: { color: T.textSecondary } });
-      ce(lr, "span", { text: String(n), style: { color: T.textPrimary } });
-      const track = ce(row, "div", { style: { height: "6px", background: T.border, borderRadius: T.radius.sm, overflow: "hidden" } });
-      ce(track, "div", { style: { height: "100%", width: `${barPct}%`, background: color, borderRadius: T.radius.sm } });
-    });
-    ce(body, "div", { text: `${total - ready} skills need attention`, style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.md } });
-  });
+    container.createDiv({ cls: "hbd-footer", text: `Updated ${new Date().toLocaleTimeString()}` });
+  } catch (e) {
+    console.error("[Dashboard-Beta]", e);
+    container.empty();
+    empty(container, `Dashboard failed to load: ${e.message}`);
+  }
 }
 
-// Row 2: Projects · Recent activity · Broken links · System status
-{
-  widget(6, "Active projects", { span: 6, action: "All projects →", actionPath: "01-Projects/Projects.base", subtitle: "Project tracking" }, body => {
-    const projects = arr(dv.pages('"01-Projects" or "Projects"').where(p => p.type === "project" && p.status === "active").sort(p => p.created, "desc"));
-    if (!projects.length) { ce(body, "div", { text: "No active projects.", style: { color: T.textFaint, padding: T.spacing.lg, textAlign: "center" } }); return; }
-    const list = ce(body, "div", { style: { display: "flex", flexDirection: "column", gap: T.spacing.sm } });
-    for (const p of projects.slice(0, 5)) {
-      const r = ce(list, "div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${T.spacing.sm} ${T.spacing.md}`, background: T.surfaceHover, borderRadius: T.radius.md } });
-      const info = ce(r, "div", {});
-      ce(info, "a", { text: p.file.name, href: p.file.path, style: { textDecoration: "none", color: T.accent, fontSize: "0.875rem", fontWeight: 600 } });
-      ce(info, "div", { text: p.file.folder || "(root)", style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.xs } });
-      ce(r, "span", { text: p.status, style: { fontSize: "0.75rem", fontWeight: 600, color: T.ok, background: T.okBg, padding: "2px 8px", borderRadius: T.radius.sm } });
-      r.addEventListener("click", () => open(p.file.path));
-      r.style.cursor = "pointer";
-    }
-    body.appendChild(list);
-  });
-
-  widget(6, "Recent activity", { span: 6, subtitle: "Latest vault edits" }, body => {
-    const self = dv.current()?.file?.path;
-    const recent = arr(dv.pages().where(p => p.file.path !== self && !p.file.path.startsWith("04-Archives/Daily/") && !p.file.path.startsWith("Daily/")).sort(p => p.file.mtime, "desc")).slice(0, 6);
-    if (!recent.length) { ce(body, "div", { text: "No recent activity.", style: { color: T.textFaint, padding: T.spacing.lg, textAlign: "center" } }); return; }
-    const list = ce(body, "div", { style: { display: "flex", flexDirection: "column", gap: T.spacing.sm } });
-    for (const f of recent) {
-      const r = ce(list, "div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${T.spacing.sm} ${T.spacing.md}`, background: T.surfaceHover, borderRadius: T.radius.md } });
-      const info = ce(r, "div", {});
-      ce(info, "a", { text: f.file.name, href: f.file.path, style: { textDecoration: "none", color: T.textPrimary, fontSize: "0.875rem", fontWeight: 500 } });
-      ce(info, "div", { text: timeAgo(f.file.mtime), style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.xs } });
-      ce(r, "span", { text: f.file.folder || "root", style: { fontSize: "0.75rem", color: T.textSecondary } });
-      r.addEventListener("click", () => open(f.file.path));
-      r.style.cursor = "pointer";
-    }
-    body.appendChild(list);
-  });
-
-  widget(6, "Broken links", { span: 6, subtitle: "Wikilinks pointing to missing files" }, async body => {
-    const scReport = getFile("04-Archives/Audit-Reports/Self-Critique-Report.md", "Skills-Notes/Self-Critique-Report.md");
-    if (!scReport) { ce(body, "div", { text: "No self-critique report found.", style: { color: T.textFaint, padding: T.spacing.lg } }); return; }
-    const content = await vault.read(scReport);
-    const broken = content.match(/Broken wikilink \[\[([^\]]+)\]\]/g) || [];
-    const uniqueTargets = new Set();
-    for (const b of broken) { const m = b.match(/\[\[([^\]]+)\]\]/); if (m) uniqueTargets.add(m[1]); }
-    const count = broken.length;
-
-    const big = ce(body, "div", { style: { display: "flex", alignItems: "baseline", gap: T.spacing.sm, marginBottom: T.spacing.lg } });
-    ce(big, "span", { text: count.toLocaleString(), style: { fontSize: "2rem", fontWeight: 700, color: count ? T.error : T.ok } });
-    ce(big, "span", { text: `${uniqueTargets.size} unique targets missing`, style: { fontSize: "1rem", color: T.textSecondary } });
-
-    ce(body, "div", { text: count === 0 ? "✅ All links resolve correctly." : "Run self_critique.py for full details.", style: { fontSize: "0.875rem", color: T.textFaint } });
-    ce(body, "a", { text: count === 0 ? "No action needed" : "View full report →", href: "04-Archives/Audit-Reports/Self-Critique-Report.md", style: { display: "inline-flex", alignItems: "center", gap: T.spacing.sm, marginTop: T.spacing.md, fontSize: "0.875rem", color: T.accent, textDecoration: "none" } });
-  });
-
-  widget(6, "System status", { span: 6, subtitle: "Vault & release information" }, async body => {
-    const versionFile = getFile("VERSION");
-    if (!versionFile) { ce(body, "div", { text: "No VERSION file found.", style: { color: T.textFaint, padding: T.spacing.lg } }); return; }
-    const local = (await vault.read(versionFile)).trim().split("|").pop();
-
-    const r1 = ce(body, "div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${T.spacing.md} ${T.spacing.lg}`, background: T.surfaceHover, borderRadius: T.radius.md, marginBottom: T.spacing.md } });
-    ce(r1, "span", { text: "Vault version", style: { fontSize: "0.875rem", color: T.textSecondary } });
-    ce(r1, "span", { text: `v${local}`, style: { fontSize: "0.875rem", fontWeight: 700, color: T.textPrimary } });
-
-    const r2 = ce(body, "div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${T.spacing.md} ${T.spacing.lg}`, background: T.surfaceHover, borderRadius: T.radius.md } });
-    ce(r2, "span", { text: "Latest release", style: { fontSize: "0.875rem", color: T.textSecondary } });
-    ce(r2, "span", { text: "v1.58.0 · Latest", style: { fontSize: "0.875rem", fontWeight: 700, color: T.ok } });
-
-    ce(body, "div", { text: "GitHub: mistrysiddh/hermes-brain-template", style: { fontSize: "0.75rem", color: T.textFaint, marginTop: T.spacing.lg } });
-  });
-}
-
-// Row 3: Recent sessions (full width)
-{
-  widget(12, "Recent sessions", { span: 12, action: "Full timeline →", actionPath: "04-Archives/Daily/Timeline.md", subtitle: "Archived sessions" }, body => {
-    if (!dailyPages.length) { ce(body, "div", { text: "No archived sessions in 04-Archives/Daily/.", style: { color: T.textFaint, padding: T.spacing.lg, textAlign: "center" } }); return; }
-    const table = ce(body, "table", { cls: "hb-table",
-      style: { width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" } });
-    const thead = ce(ce(table, "thead"), "tr");
-    ["Session", "Folder", "Modified"].forEach(h => ce(thead, "th", { text: h, style: { textAlign: "left", padding: `${T.spacing.sm} ${T.spacing.md}`, fontWeight: 600, color: T.textSecondary, borderBottom: `1px solid ${T.border}` } }));
-    const tbody = ce(table, "tbody");
-    for (const p of dailyPages.slice(0, 8)) {
-      const tr = ce(tbody, "tr", { style: { borderBottom: `1px solid ${T.border}` } });
-      const td1 = ce(tr, "td", { style: { padding: `${T.spacing.sm} ${T.spacing.md}` } });
-      ce(td1, "a", { text: p.file.name, href: p.file.path, style: { textDecoration: "none", color: T.accent, fontWeight: 500 } });
-      ce(tr, "td", { text: p.file.folder || "", style: { padding: `${T.spacing.sm} ${T.spacing.md}`, color: T.textSecondary } });
-      const td3 = ce(tr, "td", { style: { padding: `${T.spacing.sm} ${T.spacing.md}`, color: T.textFaint } });
-      td3.setText(timeAgo(p.file.mtime));
-      td3.setAttribute("title", p.file.mtime?.toISO?.() ?? "");
-    }
-    body.appendChild(table);
-  });
-
-  root.appendChild(root.lastChild); // no-op, widget already appended
-}
-
-// ============================================================
-//  FOOTER
-// ============================================================
-{
-  const foot = ce(root, "footer", {
-    cls: "hb-span-12",
-    style: { padding: `${T.spacing.lg} ${T.spacing.xxl}`, borderTop: `1px solid ${T.border}`, fontSize: "0.75rem", color: T.textFaint, display: "flex", justifyContent: "space-between", alignItems: "center" },
-  });
-  ce(foot, "div", { text: "Hermes Brain · Built with DataviewJS" });
-  const links = ce(foot, "div", { style: { display: "flex", gap: T.spacing.lg } });
-  [["Dashboard", "Dashboard.md"], ["Vault Audit", "04-Archives/Audit-Reports/Vault-Audit-Report.md"], ["Skill Quality", "04-Archives/Audit-Reports/Skill-Quality-Report.md"]].forEach(([label, path]) => {
-    const a = ce(links, "a", { text: label, href: path, style: { color: T.accent, textDecoration: "none" } });
-    a.addEventListener("click", e => { e.preventDefault(); open(path); });
-  });
-}
-
-await Promise.all(jobs);
+await render();
 ```
