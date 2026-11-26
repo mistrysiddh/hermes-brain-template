@@ -59,7 +59,7 @@ def get_vault_path(explicit_path=None):
         script_dir.parent.parent,
         script_dir.parent,
     ]:
-        if (candidate / ".obsidian").exists() or (candidate / os.path.join(VAULT, "01-Projects")).exists():
+        if (candidate / ".obsidian").exists() or (candidate / "01-Projects").exists():
             return candidate.resolve()
 
     return Path.cwd().resolve()
@@ -149,7 +149,7 @@ class VaultCore:
     def get_user_profile(self) -> dict:
         """Fetch User-Profile from 02-Areas/User-Profile.md using os.path.join(VAULT, ...)."""
         candidates = [
-            self.root / os.path.join(VAULT, "02-Areas") / "User-Profile.md",
+            self.root / "02-Areas" / "User-Profile.md",
             self.root / "User-Profile.md"
         ]
         target = next((p for p in candidates if p.exists()), None)
@@ -165,7 +165,7 @@ class VaultCore:
 
     def get_active_adrs(self) -> list:
         """Fetch accepted/active Architectural Decision Records."""
-        adr_dir = self.root / os.path.join(VAULT, "01-Projects") / "ADR"
+        adr_dir = self.root / "01-Projects" / "ADR"
         if not adr_dir.exists():
             return []
 
@@ -193,9 +193,9 @@ class VaultCore:
         Safely stage a memory candidate into 04-Archives/Memory-Review/
         without modifying live/production agent memory directly.
         """
-        review_dir = self.root / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")
+        review_dir = self.root / "04-Archives" / "Memory-Review"
         if not review_dir.exists():
-            review_dir = self.root / os.path.join(VAULT, "Memory-Review")
+            review_dir = self.root / "Memory-Review"
         review_dir.mkdir(parents=True, exist_ok=True)
 
         now_utc = datetime.now(timezone.utc)
@@ -238,13 +238,13 @@ source: "{source or 'mcp-agent'}"
             "status": "staged",
             "path": target_path.relative_to(self.root).as_posix(),
             "filename": filename,
-            "message": os.path.join(VAULT, "Candidate staged for human review in Memory-Review board.")
+            "message": "Candidate staged for human review in Memory-Review board."
         }
 
     def get_stats(self) -> dict:
         """Calculate live vault operational statistics."""
         # Sessions count
-        daily_cand = [self.root / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, os.path.join(VAULT, "Daily")), self.root / os.path.join(VAULT, os.path.join(VAULT, "Daily"))]
+        daily_cand = [self.root / "04-Archives" / "Daily", self.root / "Daily"]
         daily_dir = next((d for d in daily_cand if d.exists()), None)
         session_count = 0
         if daily_dir:
@@ -253,7 +253,7 @@ source: "{source or 'mcp-agent'}"
                     session_count += 1
 
         # Memory review candidates
-        review_cand = [self.root / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, os.path.join(VAULT, "Memory-Review")), self.root / os.path.join(VAULT, os.path.join(VAULT, "Memory-Review"))]
+        review_cand = [self.root / "04-Archives" / "Memory-Review", self.root / "Memory-Review"]
         review_dir = next((d for d in review_cand if d.exists()), None)
         pending_candidates = 0
         if review_dir:
@@ -262,7 +262,7 @@ source: "{source or 'mcp-agent'}"
                     pending_candidates += 1
 
         # Active projects
-        projects_dir = self.root / os.path.join(VAULT, "01-Projects")
+        projects_dir = self.root / "01-Projects"
         project_count = 0
         if projects_dir.exists():
             for p in projects_dir.glob("*.md"):
@@ -270,7 +270,7 @@ source: "{source or 'mcp-agent'}"
                     project_count += 1
 
         # Installed skills
-        skills_dir = self.root / os.path.join(VAULT, "02-Areas") / "Skills"
+        skills_dir = self.root / "02-Areas" / "Skills"
         skills_count = len(list(skills_dir.glob("*.md"))) if skills_dir.exists() else 0
 
         return {

@@ -249,10 +249,10 @@ def run_onboarding(dry_run=True):
 def check_vault_structure():
     """Check that the vault has the expected PARA structure."""
     expected_dirs = [
-        os.path.join(VAULT, "01-Projects"),
-        os.path.join(VAULT, "02-Areas"),
-        os.path.join(VAULT, "03-Resources"),
-        os.path.join(VAULT, "04-Archives"),
+        "01-Projects",
+        "02-Areas",
+        "03-Resources",
+        "04-Archives",
     ]
     results = {}
     for d in expected_dirs:
@@ -296,7 +296,7 @@ def generate_onboarding_report(results, structure, dry_run=True):
         lines.append("## Next Steps")
         lines.append("")
         lines.append("Run with `--apply` to answer the questions and save your profile.")
-        lines.append(os.path.join(VAULT, "Your profile will be saved to `04-Archives", "Onboarding", "user-profile.json`."))
+        lines.append("Your profile will be saved to `04-Archives/Onboarding/user-profile.json`.")
     else:
         lines.append("## Profile saved")
         lines.append("")
@@ -472,8 +472,8 @@ def run_self_test():
             init_paths(tmp)
             os.makedirs(os.path.join(tmp, "01-Projects"), exist_ok=True)
             structure = check_vault_structure()
-            assert structure[os.path.join(VAULT, "01-Projects")] is True
-            assert structure[os.path.join(VAULT, "02-Areas")] is False
+            assert structure["01-Projects"] is True
+            assert structure["02-Areas"] is False
         finally:
             shutil.rmtree(tmp)
     check("check_vault_structure works", test_structure)

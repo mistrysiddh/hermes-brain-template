@@ -69,7 +69,7 @@ def parse_args():
         os.path.abspath(os.path.join(script_dir, "..", "..")),
         os.path.abspath(os.path.join(script_dir, ".."))
     ]:
-        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, os.path.join(VAULT, "01-Projects"))):
+        if os.path.exists(os.path.join(cand, ".obsidian")) or os.path.exists(os.path.join(cand, "01-Projects")):
             return cand
 
     return None
@@ -101,7 +101,7 @@ def load_manifest():
     return sessions
 
 def scan_daily_sessions():
-    ""os.path.join(VAULT, "Walk Daily", " and extract metadata from each session file.")""
+    """Walk Daily/ and extract metadata from each session file."""
     sessions = []
     if not os.path.exists(DAILY):
         return sessions
@@ -261,7 +261,7 @@ def generate_report(sessions, skill_usage, daily_stats, tool_usage):
         lines.append("")
     
     # Daily trends (last 14 days)
-    lines.append(os.path.join(VAULT, "## 📈 Daily Session Trends (Last 14 Days)"))
+    lines.append("## 📈 Daily Session Trends (Last 14 Days)")
     lines.append("")
     lines.append("| Date | Sessions | Messages | Tokens |")
     lines.append("|------|----------|----------|--------|")
@@ -291,7 +291,7 @@ def generate_report(sessions, skill_usage, daily_stats, tool_usage):
         lines.append("")
     
     # Memory-Review throughput
-    lines.append(os.path.join(VAULT, "## 📋 Memory-Review Throughput"))
+    lines.append("## 📋 Memory-Review Throughput")
     lines.append("")
     lines.append("*Run `consolidate_memory.py` to update candidate promotion stats.*")
     lines.append("")

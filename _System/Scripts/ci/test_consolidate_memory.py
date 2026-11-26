@@ -45,7 +45,7 @@ def run_consolidate(vault_root):
 class ConsolidateMemoryTests(unittest.TestCase):
     def setUp(self):
         self.vault = tempfile.mkdtemp(prefix="hb-consolidate-test-")
-        self.mr_dir = os.path.join(self.vault, os.path.join(VAULT, "Memory-Review"))
+        self.mr_dir = os.path.join(self.vault, "Memory-Review")
 
     def tearDown(self):
         shutil.rmtree(self.vault, ignore_errors=True)
@@ -103,7 +103,7 @@ class ConsolidateMemoryTests(unittest.TestCase):
         )
 
     def test_secret_looking_string_is_scrubbed(self):
-        secret_fact = "The deploy script uses api_key: sk-abc...7890"  # Test fixture with fake key - intentional false positive
+        """A fact containing an API-key-shaped string must never reach
         Promotion-Candidates.md, and must land in Excluded-Sensitive.md."""
         secret_fact = "The deploy script uses api_key: sk-abcdef1234567890ABCDEF1234567890"
         write(

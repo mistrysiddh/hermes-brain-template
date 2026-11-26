@@ -40,12 +40,11 @@ except ImportError:
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
-
-parser.add_argument(
-    "--vault",
-    help="Path to the Hermes Brain vault root",
-)
+    parser = argparse.ArgumentParser(description="Semantic search for Hermes Brain vault")
+    parser.add_argument(
+        "--vault",
+        help="Path to the Hermes Brain vault root",
+    )
     parser.add_argument("--build", action="store_true", help="Full rebuild of the index")
     parser.add_argument("--update", action="store_true", help="Incremental update (default)")
     parser.add_argument("--search", type=str, help="Search query to test")
@@ -72,7 +71,7 @@ def main():
             return os.path.abspath(env_vault)
         return None
 
-    VAULT = os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
+    VAULT = args.vault or os.environ.get("HERMES_VAULT_PATH") or resolve_vault()
     if not VAULT:
         print("HERMES_VAULT_PATH is not set — aborting.")
         sys.exit(1)
@@ -89,12 +88,12 @@ def main():
 
     # Files/folders to index
     INCLUDE_DIRS = [
-        os.path.join(VAULT, "01-Projects"),
-        os.path.join(VAULT, "02-Areas"),
-        os.path.join(VAULT, "03-Resources"),
-        os.path.join(VAULT, "04-Archives"),
-        os.path.join(VAULT, "Daily"),
-        os.path.join(VAULT, "Memory-Review"),
+        "01-Projects",
+        "02-Areas",
+        "03-Resources",
+        "04-Archives",
+        "Daily",
+        "Memory-Review",
         "Projects",
         "Research",
         "Skills-Notes",

@@ -21,9 +21,9 @@ class PromoteMemoryTests(unittest.TestCase):
         self.test_dir = tempfile.mkdtemp(prefix="hb-ci-promote-")
         self.vault = Path(self.test_dir) / "Vault"
         self.vault.mkdir()
-        (self.vault / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
-        (self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
-        (self.vault / os.path.join(VAULT, "02-Areas") / "User-Profile.md").write_text("# User Profile\n", encoding="utf-8")
+        (self.vault / "02-Areas").mkdir(parents=True)
+        (self.vault / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (self.vault / "02-Areas" / "User-Profile.md").write_text("# User Profile\n", encoding="utf-8")
 
         self.hermes_mem = Path(self.test_dir) / "MEMORY.md"
         self.promoter = MemoryPromoter(self.vault, self.hermes_mem)
@@ -32,7 +32,7 @@ class PromoteMemoryTests(unittest.TestCase):
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_promotion_lifecycle(self):
-        candidate_file = self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / "candidate_ci_test.md"
+        candidate_file = self.vault / "04-Archives" / "Memory-Review" / "candidate_ci_test.md"
         candidate_file.write_text("""---
 type: memory-candidate
 status: pending-review
@@ -58,7 +58,7 @@ source: "ci-test"
         self.assertIn("2-space indentation", self.hermes_mem.read_text(encoding="utf-8"))
 
         # Verify candidate moved to Reviewed/
-        reviewed_dest = self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / "Reviewed" / "candidate_ci_test.md"
+        reviewed_dest = self.vault / "04-Archives" / "Memory-Review" / "Reviewed" / "candidate_ci_test.md"
         self.assertTrue(reviewed_dest.exists())
 
         # Verify no open candidates left

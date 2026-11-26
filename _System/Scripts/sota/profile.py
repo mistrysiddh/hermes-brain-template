@@ -107,7 +107,7 @@ def build_us_profile(vault_dir):
             break
 
     # Detect domain from folder structure
-    if os.path.isdir(os.path.join(vault_dir, os.path.join(VAULT, "01-Projects"))):
+    if os.path.isdir(os.path.join(vault_dir, "01-Projects")):
         profile["domains"].append("agent-brain-vault")
     if os.path.isdir(os.path.join(vault_dir, "_System")):
         profile["domains"].append("agent-system")

@@ -41,37 +41,37 @@ def parse_args():
 TOPIC_RULES = [
     {
         "name": "Cybersecurity",
-        "link": os.path.join(VAULT, "[[03-Resources", "MOCs", "Cybersecurity-MOC|Cybersecurity Framework MOC]]"),
+        "link": "[[03-Resources/MOCs/Cybersecurity-MOC|Cybersecurity Framework MOC]]",
         "keywords": [r"\bcybersecurity\b", r"\bcve-\d+", r"\bpenetration test", r"\bvulnerability\b", r"\bcobalt strike\b", r"\bred-team", r"\bsecurity-auditor\b", r"\bphishing\b"]
     },
     {
         "name": "AI & Machine Learning",
-        "link": os.path.join(VAULT, "[[03-Resources", "MOCs", "AI-ML-MOC|AI", "ML Workflows MOC]]"),
+        "link": "[[03-Resources/MOCs/AI-ML-MOC|AI/ML Workflows MOC]]",
         "keywords": [r"\bllm\b", r"\bmodels?\b", r"\bprompt\b", r"\btinysid\b", r"\btinyllama\b", r"\blora\b", r"\bollama\b", r"\bhugging ?face\b", r"\btransformer\b", r"\binference\b", r"\bembeddings?\b"]
     },
     {
         "name": "Agentic Architecture",
-        "link": os.path.join(VAULT, "[[03-Resources", "MOCs", "Agentic-Architecture-MOC|Agentic Architecture MOC]]"),
+        "link": "[[03-Resources/MOCs/Agentic-Architecture-MOC|Agentic Architecture MOC]]",
         "keywords": [r"\bagentic\b", r"\bsubagent\b", r"\borchestrat", r"\bdelegat", r"\bmulti-agent\b", r"\bopenclaw\b", r"\bhermes agent\b", r"\bpersona\b"]
     },
     {
         "name": "Technology Stack & Infrastructure",
-        "link": os.path.join(VAULT, "[[03-Resources", "MOCs", "Technology-Stack-MOC|Technology Stack MOC]]"),
+        "link": "[[03-Resources/MOCs/Technology-Stack-MOC|Technology Stack MOC]]",
         "keywords": [r"\bdocker\b", r"\bkubernetes\b", r"\blinux\b", r"\bdietpi\b", r"\braspberry pi\b", r"\bwaveshare\b", r"\bnginx\b", r"\bsystemd\b", r"\bsamba\b", r"\bhyper-v\b"]
     },
     {
         "name": "Memory Review & Staging",
-        "link": os.path.join(VAULT, "[[04-Archives", "Memory-Review", "TEMPLATE|Memory Review Criteria]]"),
+        "link": "[[04-Archives/Memory-Review/TEMPLATE|Memory Review Criteria]]",
         "keywords": [r"\bsupermemory\b", r"\bconsolidat", r"\bcandidate fact\b", r"\bdurable fact\b", r"\bpreamble\b"]
     },
     {
         "name": "User Profile & Alignment",
-        "link": os.path.join(VAULT, "[[02-Areas", "User-Profile|User Profile & Boundaries]]"),
+        "link": "[[02-Areas/User-Profile|User Profile & Boundaries]]",
         "keywords": [r"\bnisha\b", r"\bpersonality judgment\b", r"\buser profile\b", r"\balignment\b"]
     },
     {
         "name": "Projects & Engineering Setup",
-        "link": os.path.join(VAULT, "[[01-Projects", "Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]]"),
+        "link": "[[01-Projects/Hermes-Agent-Vault-Setup|Hermes-Agent-Vault-Setup]]",
         "keywords": [r"\bqms\b", r"\bmace\b", r"\bmsil\b", r"\bmaruti\b"]
     }
 ]

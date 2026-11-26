@@ -207,8 +207,8 @@ def critique_vault():
         if not found:
             findings.append(finding(
                 "info", "drift",
-                os.path.join(VAULT, "No {doc_type} doc found in 03-Resources", "{doc_type}", ""),
-                os.path.join(VAULT, "Create a {doc_type} doc at 03-Resources", "{doc_type}", "README.md"),
+                f"No {doc_type} doc found in 03-Resources/{doc_type}/",
+                f"Create a {doc_type} doc at 03-Resources/{doc_type}/README.md",
             ))
 
     return findings
@@ -598,7 +598,7 @@ def run_self_test():
     try:
         init_paths(tmp)
         assert VAULT == os.path.abspath(tmp), "VAULT not set correctly"
-        assert REPORT_DIR.endswith(os.path.join(VAULT, "04-Archives", "Audit-Reports")), "REPORT_DIR wrong"
+        assert REPORT_DIR.endswith("04-Archives/Audit-Reports"), "REPORT_DIR wrong"
         print("✅ Test 1: init_paths sets vars correctly")
         passed += 1
     except AssertionError as e:

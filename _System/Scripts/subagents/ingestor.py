@@ -105,13 +105,13 @@ def determine_target(content, name):
     """Determine target directory based on content analysis."""
     lower = content.lower()
     if re.search(r"(project|build|deploy|setup|install|sprint|milestone|roadmap)", lower):
-        return os.path.join(VAULT, "01-Projects")
+        return "01-Projects"
     elif re.search(r"(area|topic|domain|field|subject|discipline)", lower):
-        return os.path.join(VAULT, "02-Areas")
+        return "02-Areas"
     elif re.search(r"(resource|reference|link|tool|template|guide|how-to)", lower):
-        return os.path.join(VAULT, "03-Resources")
+        return "03-Resources"
     else:
-        return os.path.join(VAULT, "04-Archives")
+        return "04-Archives"
 
 
 def run_ingestor(vault_dir, dry_run=True):
@@ -178,10 +178,10 @@ def run_self_test():
 
     # Test 2: determine_target routes correctly
     def test_determine_target():
-        assert determine_target("# Project Alpha\n\nBuild the AI system.", "proj") == os.path.join(VAULT, "01-Projects")
-        assert determine_target("# Topic Area\n\nAbout machine learning.", "topic") == os.path.join(VAULT, "02-Areas")
-        assert determine_target("# Resource\n\nLink to docs.", "res") == os.path.join(VAULT, "03-Resources")
-        assert determine_target("# Random note\n\nJust thoughts.", "misc") == os.path.join(VAULT, "04-Archives")
+        assert determine_target("# Project Alpha\n\nBuild the AI system.", "proj") == "01-Projects"
+        assert determine_target("# Topic Area\n\nAbout machine learning.", "topic") == "02-Areas"
+        assert determine_target("# Resource\n\nLink to docs.", "res") == "03-Resources"
+        assert determine_target("# Random note\n\nJust thoughts.", "misc") == "04-Archives"
     check("determine_target routes correctly", test_determine_target)
 
     # Test 3: run_ingestor dry-run

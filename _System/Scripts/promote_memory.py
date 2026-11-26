@@ -55,7 +55,7 @@ def get_vault_path(explicit_path=None):
         script_dir.parent.parent,
         script_dir.parent,
     ]:
-        if (candidate / ".obsidian").exists() or (candidate / os.path.join(VAULT, "01-Projects")).exists():
+        if (candidate / ".obsidian").exists() or (candidate / "01-Projects").exists():
             return candidate.resolve()
 
     return Path.cwd().resolve()
@@ -78,8 +78,8 @@ class MemoryPromoter:
         self.hermes_memory = hermes_memory_path or get_hermes_memory_path()
 
     def get_review_dir(self) -> Path:
-        cand = [self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, os.path.join(VAULT, "Memory-Review")), self.vault / os.path.join(VAULT, os.path.join(VAULT, "Memory-Review"))]
-        review_dir = next((d for d in cand if d.exists()), self.vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review"))
+        cand = [self.vault / "04-Archives" / "Memory-Review", self.vault / "Memory-Review"]
+        review_dir = next((d for d in cand if d.exists()), self.vault / "04-Archives" / "Memory-Review")
         review_dir.mkdir(parents=True, exist_ok=True)
         return review_dir
 
@@ -178,8 +178,8 @@ class MemoryPromoter:
         }
 
     def promote_to_profile(self, fact: str, candidate_path: Path = None) -> dict:
-        ""os.path.join(VAULT, "Promote a fact into 02-Areas", "User-Profile.md.")""
-        profile_path = self.vault / os.path.join(VAULT, "02-Areas") / "User-Profile.md"
+        """Promote a fact into 02-Areas/User-Profile.md."""
+        profile_path = self.vault / "02-Areas" / "User-Profile.md"
         if not profile_path.exists():
             profile_path = self.vault / "User-Profile.md"
 
@@ -292,15 +292,15 @@ def run_self_test():
     try:
         vault = test_dir / "Vault"
         vault.mkdir()
-        (vault / os.path.join(VAULT, "02-Areas")).mkdir(parents=True)
-        (vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review")).mkdir(parents=True)
-        (vault / os.path.join(VAULT, "02-Areas") / "User-Profile.md").write_text("# User Profile\n", encoding="utf-8")
+        (vault / "02-Areas").mkdir(parents=True)
+        (vault / "04-Archives" / "Memory-Review").mkdir(parents=True)
+        (vault / "02-Areas" / "User-Profile.md").write_text("# User Profile\n", encoding="utf-8")
 
         fake_hermes = test_dir / "hermes_memory.md"
         promoter = MemoryPromoter(vault, fake_hermes)
 
         # 1. Create a dummy candidate note
-        candidate_file = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / "candidate_test_fact.md"
+        candidate_file = vault / "04-Archives" / "Memory-Review" / "candidate_test_fact.md"
         candidate_file.write_text("""---
 type: memory-candidate
 status: pending-review
@@ -329,12 +329,12 @@ source: "test-session"
 
         # Verify candidate moved to Reviewed
         assert not candidate_file.exists()
-        reviewed_file = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / "Reviewed" / "candidate_test_fact.md"
+        reviewed_file = vault / "04-Archives" / "Memory-Review" / "Reviewed" / "candidate_test_fact.md"
         assert reviewed_file.exists()
         print("✅ Candidate moved to Reviewed/ -> OK")
 
         # Verify Consolidation-Log.md updated
-        log_file = vault / os.path.join(VAULT, "04-Archives") / os.path.join(VAULT, "Memory-Review") / "Consolidation-Log.md"
+        log_file = vault / "04-Archives" / "Memory-Review" / "Consolidation-Log.md"
         assert log_file.exists()
         assert "WAL mode" in log_file.read_text(encoding="utf-8")
         print("✅ Consolidation-Log.md audit trail -> OK")
@@ -342,7 +342,7 @@ source: "test-session"
         # 4. Test promote_to_profile
         res_p = promoter.promote_to_profile("Prefer async/await over raw callbacks.")
         assert res_p["status"] == "success"
-        prof_content = (vault / os.path.join(VAULT, "02-Areas") / "User-Profile.md").read_text(encoding="utf-8")
+        prof_content = (vault / "02-Areas" / "User-Profile.md").read_text(encoding="utf-8")
         assert "Prefer async/await" in prof_content
         print("✅ promote_to_profile -> OK (Appended to User-Profile.md)")
 

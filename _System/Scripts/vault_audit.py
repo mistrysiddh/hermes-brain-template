@@ -294,7 +294,7 @@ def find_orphaned_files():
     for f, count in incoming.items():
         if count == 0 and not any(f.endswith(p) or f == p for p in ignore_patterns):
             # Also ignore files in .obsidian, Daily/ manifest, etc.
-            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or (os.path.join(VAULT, "Daily", "") in f and ("manifest" in f or "README" in f)):
+            if f.startswith((".obsidian/", "docs/", "website/")) or os.path.basename(f).startswith("candidate_") or ("Daily/" in f and ("manifest" in f or "README" in f)):
                 continue
             # Dated session notes (chat archives in Daily/YYYY/MM/DD/ and cron
             # session notes in Cron/sessions/YYYY/MM/DD/) are a timeline, not a
@@ -302,7 +302,7 @@ def find_orphaned_files():
             # individual session note, so don't count them as orphans
             # (issue #10: this was previously inflating orphan counts by
             # hundreds of entries).
-            if re.search(os.path.join(VAULT, "(Daily|Cron", "sessions)", "", "d{4}", "", "d{2}", "", "d{2}", ""), f):
+            if re.search(r"(Daily|Cron/sessions)/\d{4}/\d{2}/\d{2}/", f):
                 continue
             orphans.append(f)
     return orphans
@@ -320,7 +320,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         "",
         f"## Summary",
         f"- **Broken wikilinks**: {len(broken_links)}",
-        os.path.join(VAULT, "- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}"),
+        f"- **Stale Memory-Review entries (>30 days)**: {len(stale_reviews)}",
         f"- **Duplicate sessions in manifest**: {len(duplicates)}",
         f"- **Orphaned files (no incoming links)**: {len(orphans)}",
         f"- **Manifest issues**: {len(manifest_issues)}",
@@ -341,7 +341,7 @@ def generate_report(broken_links, stale_reviews, duplicates, orphans, manifest_i
         lines.append("")
 
     if stale_reviews:
-        lines.append(os.path.join(VAULT, "## 📋 Stale Memory-Review Entries (>30 days, incomplete)"))
+        lines.append("## 📋 Stale Memory-Review Entries (>30 days, incomplete)")
         lines.append("")
         lines.append("| File | Age (days) | Open Tasks |")
         lines.append("|------|------------|------------|")

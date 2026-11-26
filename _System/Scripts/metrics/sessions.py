@@ -70,10 +70,10 @@ def walk_md(vault_dir, exclude_dirs=None, exclude_files=None):
 # collect_sessions — session metrics from Daily/ archives
 # ---------------------------------------------------------------------------
 def collect_sessions(vault_dir):
-    ""os.path.join(VAULT, "Compute session metrics from Daily", " archives.")""
+    """Compute session metrics from Daily/ archives."""
     daily_dirs = [
-        os.path.join(vault_dir, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Daily")),
-        os.path.join(vault_dir, os.path.join(VAULT, "Daily")),
+        os.path.join(vault_dir, "04-Archives", "Daily"),
+        os.path.join(vault_dir, "Daily"),
     ]
     daily_dir = None
     for d in daily_dirs:

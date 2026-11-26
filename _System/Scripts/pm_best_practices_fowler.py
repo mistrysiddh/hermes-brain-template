@@ -226,7 +226,7 @@ def _init_paths(vault_path: str | None) -> Path | None:
 
 def _ensure_dirs(vault: Path) -> Path:
     """Ensure the PM practices directory exists."""
-    dir_path = vault / os.path.join(VAULT, "02-Areas") / "Skills" / "pm_best_practices_fowler"
+    dir_path = vault / "02-Areas" / "Skills" / "pm_best_practices_fowler"
     dir_path.mkdir(parents=True, exist_ok=True)
     return dir_path
 

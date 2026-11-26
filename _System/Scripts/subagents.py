@@ -146,11 +146,11 @@ def run_ingestor(dry_run=True):
         # Determine target: Projects/ if it looks like a project, else Areas/
         content = item["content"]
         if re.search(r"(project|build|deploy|setup|install)", content, re.I):
-            target_dir = os.path.join(VAULT, "01-Projects")
+            target_dir = "01-Projects"
         elif re.search(r"(area|topic|domain|field)", content, re.I):
-            target_dir = os.path.join(VAULT, "02-Areas")
+            target_dir = "02-Areas"
         else:
-            target_dir = os.path.join(VAULT, "03-Resources")
+            target_dir = "03-Resources"
 
         target_name = slugify(item["name"])
         target_rel = f"{target_dir}/{target_name}.md"

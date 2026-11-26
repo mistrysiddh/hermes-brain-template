@@ -75,7 +75,7 @@ WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
 def collect_mocs(vault_dir):
     """Compute MOC health metrics."""
     moc_dirs = [
-        os.path.join(vault_dir, os.path.join(VAULT, "03-Resources"), "MOCs"),
+        os.path.join(vault_dir, "03-Resources", "MOCs"),
         os.path.join(vault_dir, "MOCs"),
     ]
     moc_dir = None

@@ -205,13 +205,13 @@ def main():
         print("🎉 consolidate_memory.py self-tests: 0 passed, 0 failed")
         sys.exit(0)
 
-    vault = get_vault(args.vault_root)
+    vault = get_vault(args.vault or args.vault_root)
     if not vault:
         print("Could not resolve vault path — pass vault_root or set HERMES_VAULT_PATH.")
         sys.exit(1)
-    mr_cand = os.path.join(vault, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Memory-Review"))
+    mr_cand = os.path.join(vault, "04-Archives", "Memory-Review")
 
-    mr_dir = mr_cand if os.path.exists(mr_cand) else os.path.join(vault, os.path.join(VAULT, "Memory-Review"))
+    mr_dir = mr_cand if os.path.exists(mr_cand) else os.path.join(vault, "Memory-Review")
     os.makedirs(mr_dir, exist_ok=True)
 
     all_entries_path = os.path.join(mr_dir, "Supermemory-All-Memory-Entries.md")
@@ -223,10 +223,10 @@ def main():
 
     has_supermemory = os.path.exists(all_entries_path) or os.path.exists(explicit_path)
     if not has_supermemory:
-        print(os.path.join(VAULT, "[consolidate_memory] No Supermemory export files found in Memory-Review", " — ")
+        print("[consolidate_memory] No Supermemory export files found in Memory-Review/ — "
               "that's fine, they're optional. This run will produce 0 candidates from this "
-              os.path.join(VAULT, "source. Add facts to Memory-Review", "Promotion-Candidates.md by hand, or pull ")
-              os.path.join(VAULT, "them from Daily", " sessions and Research", " notes per Memory-Review", "TEMPLATE.md, ")
+              "source. Add facts to Memory-Review/Promotion-Candidates.md by hand, or pull "
+              "them from Daily/ sessions and Research/ notes per Memory-Review/TEMPLATE.md, "
               "until Supermemory (or another automated source) is wired up.")
 
     raw = parse_bullet_entries(read(all_entries_path)) + parse_table_entries(read(explicit_path))
@@ -329,7 +329,7 @@ def main():
     lines.append(f"Regenerated {datetime.now(timezone.utc).isoformat()} by `Scripts/consolidate_memory.py`. "
                   "Check a box and re-run the script to archive your decision to "
                   "[[Consolidation-Log]] — nothing here is auto-promoted to native "
-                  os.path.join(VAULT, "MEMORY.md", "USER.md, that step stays manual per [[TEMPLATE|Memory-Review criteria]]."))
+                  "MEMORY.md/USER.md, that step stays manual per [[TEMPLATE|Memory-Review criteria]].")
     lines.append("")
     lines.append(f"- New this run: **{new_count}** · Deduped/skipped: **{dup_count}** · "
                   f"Sensitive excluded: **{len(excluded_secrets)}** (see [[Excluded-Sensitive]])")

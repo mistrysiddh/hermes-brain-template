@@ -508,7 +508,7 @@ def main():
         thinking_fields=thinking_fields_list,
     )
     report_path = os.path.join(
-        args.vault, os.path.join(VAULT, "04-Archives"), "Audit-Reports",
+        args.vault, "04-Archives", "Audit-Reports",
         "Skill-Pack-Education-Report.md",
     )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)

@@ -433,7 +433,7 @@ def generate_digest(items, digest_type="daily", days=7):
 
     lines.append("## Next Steps")
     lines.append("")
-    lines.append(os.path.join(VAULT, "Review items above. To add a source, append a JSONL entry to `04-Archives", "Radar", "sources.jsonl`."))
+    lines.append("Review items above. To add a source, append a JSONL entry to `04-Archives/Radar/sources.jsonl`.")
     lines.append("To run again: `radar.py --vault <path> scan --days 7`")
     return "\n".join(lines)
 

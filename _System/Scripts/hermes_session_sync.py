@@ -133,19 +133,19 @@ def resolve_vault(explicit_vault=None):
 
 
 def init_vault_paths(vault_path):
-    daily_cand = os.path.join(vault_path, os.path.join(VAULT, "04-Archives"), os.path.join(VAULT, "Daily"))
-    daily = daily_cand if os.path.exists(daily_cand) else os.path.join(vault_path, os.path.join(VAULT, "Daily"))
+    daily_cand = os.path.join(vault_path, "04-Archives", "Daily")
+    daily = daily_cand if os.path.exists(daily_cand) else os.path.join(vault_path, "Daily")
     os.makedirs(daily, exist_ok=True)
     manifest = os.path.join(daily, "manifest.jsonl")
 
-    audit_dir = os.path.join(vault_path, os.path.join(VAULT, "04-Archives"), "Audit-Reports")
+    audit_dir = os.path.join(vault_path, "04-Archives", "Audit-Reports")
     if os.path.exists(audit_dir):
         token_log = os.path.join(audit_dir, "Token-Usage.log")
     else:
         token_log = os.path.join(vault_path, "Skills-Notes", "Token-Usage.log")
 
     # Cron metadata goes in separate Cron/ folder
-    cron_dir = os.path.join(vault_path, os.path.join(VAULT, "04-Archives"), "Cron")
+    cron_dir = os.path.join(vault_path, "04-Archives", "Cron")
     os.makedirs(cron_dir, exist_ok=True)
     lock_file = os.path.join(cron_dir, ".hourly_archive.lock")
     cron_log = os.path.join(cron_dir, "cron-runs.log")
