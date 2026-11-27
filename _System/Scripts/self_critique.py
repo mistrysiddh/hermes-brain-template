@@ -223,6 +223,12 @@ def _find_hardcoded_paths_in_code(content: str) -> list[str]:
     lines = content.split('\n')
     in_triple_quote = False
     triple_quote_char = None
+    in_test_function = False
+    in_text_call_continuation = False
+    continuation_paren_depth = 0
+    in_vault_call_continuation = False
+    vault_call_paren_depth = 0
+    awaiting_vault_call_check = False
     results = []
 
     for line in lines:
@@ -232,26 +238,84 @@ def _find_hardcoded_paths_in_code(content: str) -> list[str]:
         if not stripped:
             continue
 
-        # Track triple-quoted docstrings
+        # Track continuation lines of a multi-line os.path.join(.../Path(...
+        # call where the opening line ends bare (e.g. `report_path = os.path.join(`)
+        # and the actual vault-derived first arg (VAULT, args.vault, self.vault,
+        # vault_root, cand*, root, tmp) is on the next line, e.g.:
+        #   report_path = os.path.join(
+        #       args.vault, "04-Archives", "Audit-Reports", "Report.md",
+        #   )
+        if in_vault_call_continuation:
+            vault_call_paren_depth += stripped.count('(') - stripped.count(')')
+            if vault_call_paren_depth <= 0:
+                in_vault_call_continuation = False
+            continue
+        if awaiting_vault_call_check:
+            awaiting_vault_call_check = False
+            if re.match(r'^(\w+\.)?(\w*[Vv]ault\w*|cand\w*|root|tmp)\b', stripped, re.IGNORECASE):
+                in_vault_call_continuation = True
+                vault_call_paren_depth = 1 + stripped.count('(') - stripped.count(')')
+                if vault_call_paren_depth <= 0:
+                    in_vault_call_continuation = False
+                continue
+            # Not vault-derived on the first continuation line — fall through
+            # to the normal checks below for this line (don't assume it's safe).
+
+        # Track continuation lines of a multi-line print(...)/list.append(...)
+        # call built from adjacent string-literal concatenation, e.g.:
+        #   print("...no Supermemory files found in Memory-Review/ -- "
+        #         "that's fine, pull them from Daily/ sessions instead.")
+        # The opening line is caught by the is_text_output check below, which
+        # also starts this continuation tracking; subsequent pure-string-literal
+        # lines belong to the same human-readable message, not a path literal.
+        if in_text_call_continuation:
+            continuation_paren_depth += stripped.count('(') - stripped.count(')')
+            is_pure_string_continuation = bool(
+                re.match(r'^f?["\'].*["\']\)?,?$', stripped)
+            )
+            if continuation_paren_depth <= 0:
+                in_text_call_continuation = False
+            if is_pure_string_continuation:
+                continue
+
+        # Track whether we're inside a --test self-test function (e.g. cmd_test,
+        # test_*, _test_*). These build sample/fixture data (e.g. a dataclass
+        # field set to "02-Areas/Wiki/sources/test.md") that looks like a path
+        # literal but is test fixture data, not a production path bypassing
+        # --vault. Scope ends at the next top-level def/class.
+        if not in_triple_quote and re.match(r'^def\s+\w*test\w*\s*\(', stripped, re.IGNORECASE):
+            in_test_function = True
+        elif not in_triple_quote and re.match(r'^(def|class)\s+\w+', stripped):
+            in_test_function = False
+        if in_test_function:
+            continue
+
+        # Track triple-quoted docstrings (including single-line docstrings that
+        # open and close """ ... """ on the same line — those must also be
+        # skipped, not fall through to the path-literal check below)
+        single_line_docstring = False
         if not in_triple_quote:
             if '"""' in stripped:
                 parts = stripped.split('"""')
                 if len(parts) >= 3:
-                    pass
+                    single_line_docstring = True
                 else:
                     in_triple_quote = True
                     triple_quote_char = '"""'
             elif "'''" in stripped:
                 parts = stripped.split("'''")
                 if len(parts) >= 3:
-                    pass
+                    single_line_docstring = True
                 else:
                     in_triple_quote = True
                     triple_quote_char = "'''"
+            # Skip single-line docstrings entirely
+            if single_line_docstring:
+                continue
             # Skip comment-only lines
             if stripped.startswith('#'):
                 continue
-            # Skip VAULT-derived paths — these are correct (os.path.join(VAULT, ...))
+            # Skip VAULT-derived paths — os.path.join(VAULT, ...) / Path(VAULT, ...)
             if 'os.path.join(VAULT' in stripped or 'Path(VAULT' in stripped:
                 continue
             # Skip regex pattern definitions (re.compile, re.findall, re.search)
@@ -260,21 +324,113 @@ def _find_hardcoded_paths_in_code(content: str) -> list[str]:
             # Skip f-strings (path segments inside {} are variables, not literals)
             if stripped.startswith('f"') or stripped.startswith("f'") or ' f"' in stripped or " f'" in stripped:
                 continue
-            # Skip path exclusion checks (rel.startswith(...))
-            if 'rel.startswith(' in stripped:
+            # Whether this line performs real filesystem path construction
+            # (used by several of the exclusions below to tell "this is a path
+            # operation" apart from "this string merely mentions a folder name").
+            has_path_construction = any(
+                kw in stripped
+                for kw in ('open(', 'Path(', '.mkdir(', '.write_text(', '.exists(', '.is_file(', '.is_dir(', 'os.path.join(')
+            )
+            # Skip path membership/comparison checks — e.g. rel.startswith(...),
+            # REPORT_DIR.endswith("04-Archives/Audit-Reports"), or
+            # "Daily/" in some_path_variable. These compare an already-resolved
+            # path/string against a literal, they don't construct a new
+            # hardcoded path that bypasses --vault.
+            if re.search(r'\w+\.(startswith|endswith)\(', stripped):
                 continue
-            # Skip function-parameter-derived paths (vault_root, cand_*, etc.)
-            if re.search(r'os\.path\.join\((vault_root|cand_\w+|root|tmp)', stripped):
+            if re.search(r'["\'][^"\']*["\']\s+in\s+\w+\b', stripped) and not has_path_construction:
+                continue
+            # Skip function-parameter-derived paths (vault_root, vault_dir, VAULT,
+            # cand_*, etc.) via os.path.join(...) — any identifier containing
+            # "vault" (case-insensitive) as the first arg is vault-derived.
+            if re.search(r'os\.path\.join\(\s*(\w+\.)?(\w*[Vv]ault\w*|cand\w*|root|tmp)\b', stripped, re.IGNORECASE):
+                continue
+            # Skip pathlib `/` operator usage — vault_root / "02-Areas" / "..." is
+            # the correct vault-derived pattern, just using pathlib instead of
+            # os.path.join(). The scanner previously only recognized os.path.join
+            # and Path(VAULT, so this flagged every pathlib-style script as broken.
+            # Also covers self.vault / "...", self.root / "...", and candidate
+            # (not just cand_<suffix>) as vault-root-discovery variable names.
+            if re.search(r'\b(\w+\.)?(\w*[Vv]ault\w*|root|tmp|cand\w*)\s*/\s*["\']', stripped, re.IGNORECASE):
+                continue
+            # Skip custom vault-derived helper calls, e.g.
+            # find_dir(vault_root, ("04-Archives", "Memory-Review"), "...")
+            if re.search(r'\bfind_dir\(\s*\w*[Vv]ault\w*\b', stripped):
                 continue
             # Skip argparse help/description strings (descriptive text, not code paths)
             if 'help=' in stripped or 'description=' in stripped:
                 continue
-            # Check for hardcoded paths in non-docstring, non-comment code
+            # Skip human-readable report/log text — print(...) and list.append(...)
+            # calls that contain words like "Daily" or "Memory-Review" as plain
+            # prose (e.g. a report heading or status message), not an actual
+            # filesystem path. Only treat these as real findings if the same
+            # line also does path construction (open/Path/mkdir/write_text/exists).
+            is_text_output = (
+                stripped.startswith('print(') or '.append(' in stripped
+            )
+            if is_text_output and not has_path_construction:
+                depth = stripped.count('(') - stripped.count(')')
+                if depth > 0:
+                    in_text_call_continuation = True
+                    continuation_paren_depth = depth
+                continue
+            # Skip dict-literal key/value entries — e.g. "target": "01-Projects/..."
+            # or "01-Projects": ["01-Projects"] in a PARA-taxonomy config dict or
+            # a template-showcase metadata table. These are reference/documentation
+            # data describing the vault's folder structure, not executable path
+            # construction that bypasses --vault.
+            if re.match(r'^["\'][\w\- .]+["\']\s*:', stripped):
+                continue
+            # Skip dict/list subscript lookups by string key — e.g.
+            # positions["01-Projects/Alpha.md"] or "... " in positions — these
+            # read an in-memory structure by key, they don't construct a
+            # filesystem path.
+            if re.search(r'\w+\[\s*["\']', stripped) and not has_path_construction:
+                continue
+            # Skip standalone list-literal items — e.g. a bare "01-Projects",
+            # possibly trailing comma, as one element of a folder-name/category
+            # reference list (PARA taxonomy constants), not a path operation.
+            if re.match(r'^["\'][\w\- .]+["\'],?$', stripped):
+                continue
+            # Skip tuple/set membership checks — e.g.
+            # top_dir in ("01-Projects", "02-Areas", "03-Resources") — comparing
+            # a variable against folder-name constants, not constructing a path.
+            if ' in (' in stripped and not has_path_construction:
+                continue
+            # Skip `return "<bare-folder-name>"` — a function returning a bare
+            # top-level folder name (no "/" inside) as a classification label
+            # (e.g. determine_target() categorizing content into "01-Projects"
+            # vs "02-Areas"), not constructing or hardcoding a path. A real
+            # hardcoded path literal nearly always includes a "/" segment.
+            if stripped.startswith('return ') and not has_path_construction:
+                bare_match = re.fullmatch(
+                    r'return\s+["\'](01-Projects|02-Areas|03-Resources|04-Archives|Daily|Memory-Review)["\']',
+                    stripped,
+                )
+                if bare_match:
+                    continue
+            # Skip `var = "<bare-folder-name>"` — assigning a bare top-level
+            # folder name as a classification label (e.g. target_dir =
+            # "01-Projects" in subagents.py's content router), same reasoning
+            # as the `return` case above.
+            if not has_path_construction:
+                assign_match = re.fullmatch(
+                    r'\w+\s*=\s*["\'](01-Projects|02-Areas|03-Resources|04-Archives|Daily|Memory-Review)["\']',
+                    stripped,
+                )
+                if assign_match:
+                    continue
             matches = re.findall(
                 r'["\']([^"\']*(?:01-Projects|02-Areas|03-Resources|04-Archives|Daily|Memory-Review)[^"\']*)["\']',
                 stripped,
             )
             results.extend(matches)
+            # If this line is a bare os.path.join(/Path( opener with nothing
+            # else after it (the actual args are on the next line), flag that
+            # we need to check the next line for a vault-derived first arg
+            # before deciding whether its contents are hardcoded paths.
+            if re.search(r'(os\.path\.join|Path)\(\s*$', stripped):
+                awaiting_vault_call_check = True
         else:
             if triple_quote_char in stripped:
                 in_triple_quote = False
@@ -693,7 +849,10 @@ def run_self_test():
     tmp = tempfile.mkdtemp()
     try:
         with open(os.path.join(tmp, "config.env"), "w") as f:
-            f.write('API_KEY=[REDACTED]\n')  # Test fixture with redacted key - intentional false positive
+            # Synthetic test value — NOT a real credential, NOT a placeholder
+            # string like "[REDACTED]" (that would trip the false-positive
+            # filter a few lines up and silently exclude this fixture).
+            f.write('API_KEY=sj7Qp2mXz9LwRn4KtVy8\n')
         init_paths(tmp)
         result = critique_security()
         secrets = [x for x in result if x["category"] == "secret_exposure"]
